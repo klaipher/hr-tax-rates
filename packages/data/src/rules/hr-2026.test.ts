@@ -76,7 +76,13 @@ describe('ruleset 2026', () => {
     it('prosječna plaća не зашита в ruleset', () => {
       // ADR-0001: правила і припущення — окремі шари. Найдешевший спосіб це
       // зламати — покласти 1 993 € у ruleset «щоб було під рукою».
-      expect(JSON.stringify(ruleset2026)).not.toContain('1993')
+      const serijalizirano = JSON.stringify(ruleset2026)
+
+      // Спершу доводимо, що пошук взагалі щось бачить: якби Decimal перестав
+      // серіалізуватися в рядок із цифрами, «немає 1993» стало б правдою з
+      // хибної причини, і тест мовчки перетворився б на декорацію.
+      expect(serijalizirano).toContain('11300')
+      expect(serijalizirano).not.toContain('1993')
     })
 
     it('osnovica з двох шарів збігається з тією, яку друкує Naredba', () => {

@@ -149,7 +149,7 @@ describe('usporediRezime', () => {
       // Розряд 4: paušalni dohodak 4 590,00 € × 12%.
       const { porez } = pausal('20000')
 
-      expect(toCentString(porez.osnovica)).toBe('4590.00')
+      expect(toCentString(porez.poreznaOsnovica)).toBe('4590.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('550.80')
       expect(porez.stopa.toString()).toBe('0.12')
     })

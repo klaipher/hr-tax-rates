@@ -2,6 +2,7 @@ import { pretpostavke2026, ruleset2026 } from '@hr-tax/data'
 import type { Podloga } from '@hr-tax/engine'
 import { eur, formatEur, usporediRezime } from '@hr-tax/engine'
 import { useMemo, useState } from 'react'
+import { IzvorStatistike } from './Izvor.tsx'
 import { RezimKartica } from './RezimKartica.tsx'
 
 const PODLOGA: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
@@ -66,16 +67,7 @@ export const App = () => {
           перевизначена.
         </p>
         <p>
-          <a
-            className="izvor"
-            href={prosjecnaPlaca.source.url}
-            target="_blank"
-            rel="noreferrer"
-            title={`звірено ${prosjecnaPlaca.source.checkedOn}`}
-          >
-            {prosjecnaPlaca.source.publisher}, {prosjecnaPlaca.source.period} (
-            {prosjecnaPlaca.source.publication})
-          </a>
+          <IzvorStatistike izvor={prosjecnaPlaca.source} />
         </p>
       </footer>
     </main>

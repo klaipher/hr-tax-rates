@@ -48,7 +48,7 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => (
           <span className="redak__naziv">
             {izracun.porez.naziv.hr}
             <span className="udio">
-              {formatPostotak(izracun.porez.stopa)} від {formatEur(izracun.porez.osnovica)}
+              {formatPostotak(izracun.porez.stopa)} від {formatEur(izracun.porez.poreznaOsnovica)}
             </span>
           </span>
           <span className="prijevod">{izracun.porez.naziv.uk}</span>

@@ -30,10 +30,16 @@ export interface Unos {
  * приходить сюди ззовні, тож той самий рушій рахує і чинний рік, і проєкт.
  */
 export interface Podloga {
+  /** `ruleset` (набір правил / ruleset) — усе, що написано в законі. */
   readonly ruleset: Ruleset
+  /**
+   * `pretpostavke` (припущення / assumptions) — величини, на які закон
+   * посилається, але яких не встановлює.
+   */
   readonly pretpostavke: Pretpostavke
 }
 
+/** `režim` (режим / regime), який калькулятор уміє показати. */
 export type RezimId = 'pausalni-obrt' | 'obrt-na-dohodak' | 'obrt-na-dobit' | 'zaposlenik' | 'doo'
 
 /** `razred` (розряд / bracket), що застосувався до цього `primitak`. */
@@ -46,27 +52,42 @@ export interface PrimijenjeniRazred {
    * розряду сума не змінюється, а на межі стрибає.
    */
   readonly gornjaGranica: Money<'EUR'>
+  /** Стаття з таблицею розрядів. */
   readonly izvor: LegalReference
 }
 
 /** Річний податок режиму. */
 export interface Porez {
+  /** Як податок зветься в законі: у паушальному обрті — `paušalni porez`. */
   readonly naziv: Naziv
   /**
-   * База, з якої нарахований податок. У паушальному обрті це
-   * `paušalni dohodak` (паушальний дохід / deemed income) — юридична фікція,
-   * а не різниця `primitak` і `izdatak`.
+   * `porezna osnovica` (база оподаткування / tax base) — з чого нарахований
+   * податок.
+   *
+   * Не плутати з `osnovica`: у цьому глосарії `osnovica` значить базу
+   * нарахування внесків і будується з `prosječna plaća`, тоді як база
+   * оподаткування береться з іншого закону і з іншої величини. Одне ім'я на
+   * обидві схлопнуло б два різні числа.
+   *
+   * У паушальному обрті базою є `paušalni dohodak` (паушальний дохід /
+   * deemed income) — юридична фікція, а не різниця `primitak` і `izdatak`.
    */
-  readonly osnovica: Money<'EUR'>
+  readonly poreznaOsnovica: Money<'EUR'>
+  /** Ставка податку — частка від 0 до 1, а не відсотки. */
   readonly stopa: Decimal
+  /** Сума податку за рік. */
   readonly godisnjiIznos: Money<'EUR'>
+  /** Стаття, з якої взята ставка. */
   readonly izvor: LegalReference
 }
 
 /** Одна складова `doprinosi` (внески / social contributions). */
 export interface Doprinos {
+  /** Як внесок зветься: `MO — I. stup`, `MO — II. stup`, `ZO`. */
   readonly naziv: Naziv
+  /** Ставка до `osnovica` — частка від 0 до 1, а не відсотки. */
   readonly stopa: Decimal
+  /** Сума внеску за рік. */
   readonly godisnjiIznos: Money<'EUR'>
   /**
    * Чи гроші лишаються персональними. II. stup іде на індивідуальний рахунок
@@ -74,18 +95,27 @@ export interface Doprinos {
    * показувати нарівні з податком.
    */
   readonly osobnaStednja: boolean
+  /** Стаття, з якої взята ставка. */
   readonly izvor: LegalReference
 }
 
 export interface Doprinosi {
   /**
-   * `osnovica` (база нарахування внесків / contribution base) за місяць.
-   * Не залежить від фактичного `primitak`.
+   * `osnovica` (база нарахування внесків / contribution base) за місяць:
+   * `prosječna plaća × koeficijent`. Не залежить ні від розряду, ні від
+   * фактичного `primitak`.
    */
   readonly mjesecnaOsnovica: Money<'EUR'>
+  /** MO — I. stup (пенсійне, генераційна солідарність / pay-as-you-go pillar). */
   readonly moPrviStup: Doprinos
+  /**
+   * MO — II. stup (пенсійне, індивідуальна капіталізована ощадність /
+   * funded pillar).
+   */
   readonly moDrugiStup: Doprinos
+  /** ZO (медичне страхування / health insurance). */
   readonly zo: Doprinos
+  /** Усі складові разом за рік. */
   readonly ukupnoGodisnje: Money<'EUR'>
 }
 
@@ -97,7 +127,9 @@ export interface Doprinosi {
 export interface Izracun {
   /** `undefined` у режимів, які не знають розрядів. */
   readonly razred: PrimijenjeniRazred | undefined
+  /** Податкова частина за рік. */
   readonly porez: Porez
+  /** `doprinosi` (внески / social contributions), розбиті на складові. */
   readonly doprinosi: Doprinosi
   /**
    * Скільки лишається людині за рік: `primitak` без податку і без `doprinosi`.
@@ -121,8 +153,10 @@ export type Ishod =
   | { readonly status: 'izracunato'; readonly izracun: Izracun }
   | { readonly status: 'nedostupno'; readonly razlog: string }
 
+/** Один `režim` (режим / regime) у порівнянні. */
 export interface Rezim {
   readonly id: RezimId
+  /** Канонічна хорватська назва режиму з українським перекладом поруч. */
   readonly naziv: Naziv
   readonly ishod: Ishod
 }

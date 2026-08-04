@@ -8,9 +8,11 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-import { eur, type Money, toCentString } from './money.ts'
+import { eur, toCentString } from './money.ts'
 import type { Izracun, Podloga } from './types.ts'
 import { usporediRezime } from './usporedba.ts'
+
+const MJESECI_U_GODINI = 12
 
 /**
  * Голден-тести проти калькулятора HOK на чинний 2026 рік.
@@ -94,26 +96,35 @@ describe('паушальний обрт проти калькулятора HOK 
 
   describe('кешовані комірки книги — розрахунок за нульового primitak', () => {
     const izracun = pausal(0)
-    const uHok = (cell: string, actual: Money<'EUR'>) =>
-      assertMatchesHok({ ...pausalnaCelija(cell), actual: actual.amount.toString() })
+
+    /**
+     * Звірка одного числа з коміркою книги.
+     *
+     * `assertMatchesHok`, а не `checkAgainstHok`: перший валить виклик на
+     * незареєстрованій розбіжності, другий лише повертає статус, і той, хто
+     * забуде його перевірити, отримає зелений тест на розбіжності (ADR-0003).
+     * Твердження про `match` іде понад те: жодна з цих комірок у реєстрі не
+     * стоїть, тож поява там запису має стати видимою, а не мовчки пройти.
+     */
+    const uHok = (cell: string, actual: Decimal) =>
+      assertMatchesHok({ ...pausalnaCelija(cell), actual: actual.toString() })
 
     it('місячні doprinosi сходяться (C5)', () => {
-      const mjesecno = izracun.doprinosi.ukupnoGodisnje.amount.div(12)
-      expect(
-        assertMatchesHok({ ...pausalnaCelija('C5'), actual: mjesecno.toString() }).status,
-      ).toBe('match')
+      const mjesecno = izracun.doprinosi.ukupnoGodisnje.amount.div(MJESECI_U_GODINI)
+
+      expect(uHok('C5', mjesecno).status).toBe('match')
     })
 
     it('річні doprinosi сходяться (C6)', () => {
-      expect(uHok('C6', izracun.doprinosi.ukupnoGodisnje).status).toBe('match')
+      expect(uHok('C6', izracun.doprinosi.ukupnoGodisnje.amount).status).toBe('match')
     })
 
     it('річна податкова повинність сходиться (C19)', () => {
-      expect(uHok('C19', izracun.porez.godisnjiIznos).status).toBe('match')
+      expect(uHok('C19', izracun.porez.godisnjiIznos.amount).status).toBe('match')
     })
 
     it('сума, що лишається обртнику за рік, сходиться (C21)', () => {
-      expect(uHok('C21', izracun.netoZaOsobu).status).toBe('match')
+      expect(uHok('C21', izracun.netoZaOsobu.amount).status).toBe('match')
     })
   })
 })

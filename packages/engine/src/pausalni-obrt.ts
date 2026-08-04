@@ -87,13 +87,13 @@ const doprinosiZa = ({ ruleset, pretpostavke }: Podloga): Doprinosi => {
  * юридичною фікцією, яку акт друкує готовою для кожного розряду.
  */
 const porezZa = (razred: Razred, pravila: PausalniObrtPravila): Porez => {
-  const osnovica = eur(razred.godisnjiPausalniDohodak)
+  const poreznaOsnovica = eur(razred.godisnjiPausalniDohodak)
 
   return {
     naziv: { hr: 'paušalni porez', uk: 'паушальний податок' },
-    osnovica,
+    poreznaOsnovica,
     stopa: pravila.stopaPoreza.value,
-    godisnjiIznos: scale(osnovica, pravila.stopaPoreza.value),
+    godisnjiIznos: scale(poreznaOsnovica, pravila.stopaPoreza.value),
     izvor: pravila.stopaPoreza.source,
   }
 }
