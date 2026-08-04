@@ -1,11 +1,40 @@
+import { pretpostavkeNajave2027, rulesetNajave2027 } from '@hr-tax/data'
 import { eur, usporediRezime } from '@hr-tax/engine'
 import { useMemo, useState } from 'react'
+import { GrafOpterecenja } from './graf/GrafOpterecenja.tsx'
 import { IzvorStatistike } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 import { LanguageSwitcher } from './i18n/LanguageSwitcher.tsx'
 import { Prijevod } from './i18n/Prijevod.tsx'
+import { Izvori } from './izvori/index.ts'
 import { PODLOGA } from './podloga.ts'
 import { RezimKartica } from './RezimKartica.tsx'
+
+/**
+ * Два сценарії на графіку: чинний закон і заплановані зміни.
+ *
+ * `podlogaZa` — функція, а не готова `Podloga`, бо в проєкті `priznati
+ * izdatak` і `koeficijent` різні по розрядах, а тип правил тримає по одному
+ * скаляру, як і чинний закон. Розряд вибирається з `primitak` — так само, як
+ * його вибирає рушій.
+ */
+const SCENARIJI = [
+  {
+    id: 'na-snazi',
+    naziv: 'чинний закон',
+    status: 'in-force',
+    podlogaZa: () => PODLOGA,
+  },
+  {
+    id: 'najava',
+    naziv: 'заплановані зміни',
+    status: 'draft',
+    podlogaZa: (primitak: ReturnType<typeof eur>) => ({
+      ruleset: rulesetNajave2027(primitak.amount),
+      pretpostavke: pretpostavkeNajave2027,
+    }),
+  },
+] as const
 
 /** Трохи вище за поріг паушалу — щоб було видно, де режим закінчується. */
 const NAJVISI_PRIMITAK = 70_000
@@ -64,6 +93,15 @@ export const App = () => {
           <RezimKartica key={rezim.id} rezim={rezim} />
         ))}
       </section>
+
+      <GrafOpterecenja
+        scenariji={SCENARIJI}
+        godisnjiPrimitak={godisnjiPrimitak}
+        najvisiPrimitak={NAJVISI_PRIMITAK}
+        onOdabir={setGodisnjiPrimitak}
+      />
+
+      <Izvori podloga={PODLOGA} />
 
       <footer className="pretpostavke">
         <h2>{t.pretpostavke.naslov}</h2>
