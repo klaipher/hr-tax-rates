@@ -438,3 +438,43 @@ body {
   padding-inline-start: 0.75rem;
   margin-block: 1rem;
 }
+
+/* --- ПДВ і календар ------------------------------------------------------ */
+.pdv,
+.kalendar {
+  margin-block: 2rem;
+}
+.pdv__inverzija {
+  border-inline-start: 3px solid var(--naglasak, #d2691a);
+  padding-inline-start: 0.75rem;
+}
+.kalendar__popis {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.kalendar__obrok {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr auto;
+  gap: 0.5rem 1rem;
+  padding-block: 0.4rem;
+  border-bottom: 1px solid var(--rub, #b9c4cf);
+}
+.kalendar__datum {
+  font-variant-numeric: tabular-nums;
+}
+.kalendar__iznos {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.kalendar__obrok .prijevod {
+  grid-column: 2 / -1;
+}
+@media (max-width: 32rem) {
+  .kalendar__obrok {
+    grid-template-columns: 1fr auto;
+  }
+  .kalendar__datum {
+    grid-column: 1 / -1;
+  }
+}

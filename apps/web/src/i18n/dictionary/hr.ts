@@ -134,6 +134,33 @@ export const hr: Dictionary = {
       'Iznad limita nastupa viša stopa i prelazak na opći sustav — kalkulator to namjerno ' +
       'ne računa, nego samo javlja.',
   },
+  pdv: {
+    tipKlijenta: 'Odakle su klijenti',
+    tipKlijentaPrijevod: 'o tome ovisi hoće li na vašim računima biti PDV',
+    klijenti: {
+      'poslovni-eu': 'poslovni subjekti u EU',
+      'poslovni-izvan-eu': 'poslovni subjekti izvan EU',
+      tuzemni: 'tuzemni klijenti',
+    },
+    inozemneUsluge: 'Inozemne usluge godišnje',
+    inozemneUslugePrijevod: 'hosting, podizvođači, pretplate — kupljeni izvan Hrvatske',
+    status: (status: string) => `Zakon na ovaj primitak nameće stanje: ${status}.`,
+    statusi: { 'izvan-sustava': 'izvan sustava PDV-a', 'u-sustavu': 'u sustavu PDV-a' },
+    izlaz: 'PDV na vašim računima',
+    nepovratni: 'Nepovratni PDV na inozemne usluge',
+    uSustavuNepovratni: 'Isto, da ste u sustavu PDV-a',
+    usteda: (iznos: string) =>
+      `Ulazak u sustav PDV-a uklanja ${iznos} godišnje nepovratnog poreza. To je inverzija: ` +
+      'što je više inozemnih usluga, to skuplje stoji život ispod praga.',
+    pdvId: 'Potreban je PDV ID — i ispod praga ulaska u sustav.',
+  },
+  kalendar: {
+    naslov: 'Kalendar plaćanja',
+    prijevod:
+      'Godišnji iznos ne govori ništa o novčanom toku: paušalni porez ide tromjesečnim ' +
+      'predujmovima, doprinosi mjesečno, a razlika po godišnjem izvješću dolazi tek iduće godine.',
+    pomaknuto: 'rok je pao na neradni dan — pomaknuto',
+  },
   izvor: {
     provjereno: (datum: string) => `provjereno ${datum}`,
   },

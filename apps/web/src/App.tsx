@@ -13,6 +13,8 @@ import { useI18n } from './i18n/context.tsx'
 import { LanguageSwitcher } from './i18n/LanguageSwitcher.tsx'
 import { Prijevod } from './i18n/Prijevod.tsx'
 import { Izvori } from './izvori/index.ts'
+import { Kalendar } from './Kalendar.tsx'
+import { Pdv } from './Pdv.tsx'
 import { PODLOGA } from './podloga.ts'
 import { RezimKartica } from './RezimKartica.tsx'
 import { RidnaKrajina } from './RidnaKrajina.tsx'
@@ -121,6 +123,13 @@ export const App = () => {
         najvisiPrimitak={NAJVISI_PRIMITAK}
         onOdabir={setGodisnjiPrimitak}
       />
+
+      {/* Календар будується для паушалу — режиму, який рахується завжди. */}
+      {usporedba.rezimi[0]?.ishod.status === 'izracunato' && (
+        <Kalendar izracun={usporedba.rezimi[0].ishod.izracun} godina={usporedba.godina} />
+      )}
+
+      <Pdv godisnjiPrimitak={eur(godisnjiPrimitak)} />
 
       <RidnaKrajina godisnjiPrimitak={eur(godisnjiPrimitak)} />
 

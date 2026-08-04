@@ -136,6 +136,33 @@ export const en: Dictionary = {
       'limit a higher rate applies and the taxpayer moves to the general system — the ' +
       'calculator deliberately does not compute either, it only reports.',
   },
+  pdv: {
+    tipKlijenta: 'Where your clients are',
+    tipKlijentaPrijevod: 'this decides whether your invoices carry PDV',
+    klijenti: {
+      'poslovni-eu': 'businesses in the EU',
+      'poslovni-izvan-eu': 'businesses outside the EU',
+      tuzemni: 'Croatian clients',
+    },
+    inozemneUsluge: 'Foreign services per year',
+    inozemneUslugePrijevod: 'hosting, contractors, subscriptions — bought outside Croatia',
+    status: (status: string) => `At this primitak the law imposes: ${status}.`,
+    statusi: { 'izvan-sustava': 'outside the PDV system', 'u-sustavu': 'inside the PDV system' },
+    izlaz: 'PDV on your invoices',
+    nepovratni: 'Non-deductible PDV on foreign services',
+    uSustavuNepovratni: 'The same, were you inside the PDV system',
+    usteda: (iznos: string) =>
+      `Entering the PDV system removes ${iznos} a year of non-deductible tax. That is the ` +
+      'inversion: the more foreign services you buy, the more staying below the threshold costs.',
+    pdvId: 'A PDV ID is required — even below the registration threshold.',
+  },
+  kalendar: {
+    naslov: 'Payment calendar',
+    prijevod:
+      'The annual figure says nothing about cash flow: paušalni porez is paid in quarterly ' +
+      'advances, doprinosi monthly, and the year-end settlement only falls due the next year.',
+    pomaknuto: 'the deadline fell on a non-working day — moved',
+  },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,
   },
