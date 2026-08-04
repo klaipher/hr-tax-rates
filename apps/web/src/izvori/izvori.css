@@ -1,0 +1,364 @@
+/*
+ * Стилі сторінки джерел.
+ *
+ * Усі селектори починаються з `izvori`: файл під'їжджає глобально, і
+ * сусідні секції застосунку не мають про нього спотикатися. Кольори беруться
+ * зі змінних теми, оголошених у `styles.css`, — сторінка джерел не заводить
+ * власної палітри, інакше темна тема розповзлася б.
+ */
+
+.izvori {
+  margin: 3rem 0 0;
+  padding-top: 2rem;
+  border-top: 1px solid var(--rub);
+}
+
+.izvori__zaglavlje h2 {
+  margin: 0;
+  font-size: clamp(1.3rem, 1rem + 1.2vw, 1.7rem);
+  letter-spacing: -0.01em;
+}
+
+.izvori__uvod {
+  margin: 0.5rem 0 0;
+  max-width: 46rem;
+  color: var(--tekst-prigušen);
+}
+
+.izvori__godina {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+}
+
+.izvori__godina strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.izvori h3 {
+  margin: 2.2rem 0 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+
+.izvori-opis {
+  margin: 0.5rem 0 0;
+  max-width: 46rem;
+  font-size: 0.88rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Посилання на джерело */
+
+.izvori-poveznica {
+  color: inherit;
+  text-decoration-color: var(--rub);
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.izvori-poveznica:hover,
+.izvori-poveznica:focus-visible {
+  color: var(--naglasak);
+}
+
+.izvori a:focus-visible,
+.izvori [tabindex]:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 2px;
+  border-radius: 0.25rem;
+}
+
+.izvori-poveznica__znak {
+  margin-left: 0.15em;
+  font-size: 0.85em;
+}
+
+/* Позначки статусу */
+
+.izvori-znak {
+  display: inline-block;
+  padding: 0.05rem 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  border: 1px solid currentcolor;
+  border-radius: 0.6rem;
+  white-space: nowrap;
+}
+
+.izvori-znak--na-snazi {
+  color: var(--stednja);
+}
+
+.izvori-znak--nacrt {
+  color: var(--naglasak);
+  background: var(--naglasak-tlo);
+}
+
+.izvori-znak--oznaka {
+  color: var(--naglasak);
+}
+
+/* Картки: акт із числами, величина припущення, запис реєстру */
+
+.izvori-akt,
+.izvori-zapis,
+.izvori-statistika .izvori-norma {
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+
+.izvori-akt {
+  margin: 1.1rem 0 0;
+  padding: 1rem 1.2rem 0.6rem;
+}
+
+.izvori-akt__naslov {
+  margin: 0;
+  font-size: 1rem;
+  letter-spacing: 0.01em;
+}
+
+.izvori-objava {
+  display: block;
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: var(--tekst-prigušen);
+  overflow-wrap: anywhere;
+}
+
+.izvori-akt__norme {
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.izvori-akt__norme .izvori-norma {
+  padding: 0.8rem 0;
+  border-top: 1px solid var(--rub);
+}
+
+.izvori-akt__norme .izvori-norma:first-child {
+  border-top: none;
+}
+
+.izvori-statistika .izvori-norma {
+  margin: 1.1rem 0 0;
+  padding: 1rem 1.2rem 1.1rem;
+}
+
+.izvori-norma__zaglavlje {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.izvori-norma__naziv {
+  margin: 0;
+  font-weight: 600;
+}
+
+.izvori-norma__vrijednost {
+  margin: 0;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.izvori-prijevod {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+}
+
+.izvori-norma__vrijednost .izvori-prijevod {
+  text-align: right;
+}
+
+.izvori-norma__opis {
+  margin: 0.35rem 0 0;
+  max-width: 46rem;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Підпис числа статтею */
+
+.izvori-potpis {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+}
+
+.izvori-potpis__datum {
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Таблиця розрядів */
+
+.izvori-razredi {
+  margin: 0.7rem 0 0;
+  overflow-x: auto;
+}
+
+.izvori-razredi table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.izvori-razredi__natpis {
+  padding-bottom: 0.35rem;
+  text-align: left;
+  font-size: 0.78rem;
+  color: var(--tekst-prigušen);
+}
+
+.izvori-razredi th,
+.izvori-razredi td {
+  padding: 0.35rem 0.6rem 0.35rem 0;
+  text-align: left;
+  border-bottom: 1px solid var(--rub);
+  white-space: nowrap;
+}
+
+.izvori-razredi thead th {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--tekst-prigušen);
+  white-space: normal;
+}
+
+.izvori-razredi td {
+  font-variant-numeric: tabular-nums;
+}
+
+.izvori-razredi tbody th {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Реєстр розбіжностей */
+
+.izvori-registar__sazetak {
+  margin: 0.8rem 0 0;
+  font-size: 0.82rem;
+  color: var(--tekst-prigušen);
+}
+
+.izvori-registar__brojevi {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1.2rem;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--tekst-prigušen);
+}
+
+.izvori-registar__sazetak strong,
+.izvori-registar__brojevi strong {
+  color: var(--tekst);
+  font-variant-numeric: tabular-nums;
+}
+
+.izvori-registar__zapisi {
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+}
+
+.izvori-zapis {
+  padding: 1rem 1.2rem 1.1rem;
+}
+
+/*
+ * Не flex: позначка й предмет мусять лишатися звичайним рядковим потоком,
+ * інакше пробіл між ними зникає з доступної назви заголовка.
+ */
+.izvori-zapis__naslov {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.izvori-zapis__naslov .izvori-znak {
+  margin-right: 0.2rem;
+}
+
+.izvori-zapis__predmet {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.izvori-zapis__razlog {
+  margin: 0.6rem 0 0;
+  max-width: 52rem;
+  font-size: 0.88rem;
+}
+
+.izvori-polja {
+  margin: 0.7rem 0 0;
+  font-size: 0.8rem;
+}
+
+.izvori-polja__redak {
+  display: grid;
+  grid-template-columns: minmax(6rem, 12rem) minmax(0, 1fr);
+  gap: 0.2rem 0.8rem;
+  padding: 0.25rem 0;
+  border-top: 1px solid var(--rub);
+}
+
+.izvori-polja__redak dt {
+  color: var(--tekst-prigušen);
+}
+
+.izvori-polja__redak dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.izvori-polja code {
+  font-size: 0.95em;
+  overflow-wrap: anywhere;
+}
+
+.izvori-zapis__temelj {
+  margin: 0.8rem 0 0;
+  font-size: 0.82rem;
+}
+
+/* Примітка про характер розрахунку */
+
+.izvori__napomena {
+  margin: 2.2rem 0 0;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--rub);
+  max-width: 52rem;
+}
+
+.izvori__napomena p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--tekst-prigušen);
+}
+
+@media (max-width: 30rem) {
+  .izvori-polja__redak {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
