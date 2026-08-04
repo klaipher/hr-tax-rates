@@ -124,6 +124,31 @@ export interface Doprinosi {
 }
 
 /**
+ * Обов'язковий платіж поза податками і `doprinosi`.
+ *
+ * `komorski doprinos` платить кожен `obrt` незалежно від режиму, а
+ * `turistička članarina` і `spomenička renta` — лише за певних `NKD` і місць.
+ * Незастосовний платіж лишається в списку зі своєю причиною: людина має
+ * відрізняти «не забули» від «нічого не винен».
+ */
+export type ObveznoDavanje =
+  | {
+      readonly status: 'obračunato'
+      readonly naziv: Naziv
+      readonly godisnjiIznos: Money<'EUR'>
+      /** Звідки взялася сума: база й ставка, словами. */
+      readonly obracun: string
+      readonly napomene: readonly string[]
+      readonly izvor: LegalReference
+    }
+  | {
+      readonly status: 'ne-primjenjuje-se'
+      readonly naziv: Naziv
+      readonly razlog: string
+      readonly izvor: LegalReference
+    }
+
+/**
  * Розрахунок режиму. Структура однакова для всіх режимів — саме на ній
  * тримається зіставність, тож поле, якого режим не має, лишається присутнім
  * зі значенням `undefined`, а не зникає.
@@ -145,9 +170,19 @@ export interface Izracun {
   /** `doprinosi` (внески / social contributions), розбиті на складові. */
   readonly doprinosi: Doprinosi
   /**
-   * Скільки лишається людині за рік: `primitak` без податку і без `doprinosi`.
-   * Головне число картки. Фактичний `izdatak` цей зріз ще не знає, тож сума
-   * рахується до нього.
+   * Обов'язкові платежі поза податками і внесками — разом із тими, що не
+   * застосувалися, з названою причиною.
+   */
+  readonly obveznaDavanja: readonly ObveznoDavanje[]
+  /** Сума нарахованих `obveznaDavanja` за рік. */
+  readonly ukupnaDavanja: Money<'EUR'>
+  /**
+   * Скільки лишається людині за рік: `primitak` без податку, без `doprinosi`
+   * і без обов'язкових платежів. Головне число картки.
+   *
+   * Калькулятори HOK сюди `komorski doprinos` не включають — це зареєстрована
+   * розбіжність, а не наша похибка: внесок платить кожен `obrt`, і без нього
+   * сума систематично завищена.
    */
   readonly netoZaOsobu: Money<'EUR'>
   /**

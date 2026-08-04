@@ -84,6 +84,8 @@ export const uk = {
     razredPrijevod: (gornjaGranica: string) => `розряд · стеля ${gornjaGranica}`,
     udioOsnovice: (stopa: string) => `${stopa} від osnovica`,
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} від ${poreznaOsnovica}`,
+    davanja: 'Обов’язкові платежі',
+    davanjaNema: 'не застосовується',
     doprinosiUkupno: 'doprinosi разом',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} на місяць`,
     osobnaStednja: 'персональні відкладені кошти',

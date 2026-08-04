@@ -138,6 +138,9 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
       porezi: [porez],
       ukupanPorez: porez.godisnjiIznos,
       doprinosi,
+      // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
+      obveznaDavanja: [],
+      ukupnaDavanja: eur(0),
       netoZaOsobu: subtract(godisnjiPrimitak, obvezniPlacanja),
       efektivnaStopa: godisnjiPrimitak.amount.isZero()
         ? undefined

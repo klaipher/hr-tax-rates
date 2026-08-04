@@ -64,6 +64,8 @@ export const hr: Dictionary = {
     razredPrijevod: (gornjaGranica: string) => `gornja granica ${gornjaGranica}`,
     udioOsnovice: (stopa: string) => `${stopa} osnovice`,
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} od ${poreznaOsnovica}`,
+    davanja: 'Obvezna davanja',
+    davanjaNema: 'ne primjenjuje se',
     doprinosiUkupno: 'doprinosi ukupno',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} mjesečno`,
     osobnaStednja: 'osobna ušteđevina, a ne porez',

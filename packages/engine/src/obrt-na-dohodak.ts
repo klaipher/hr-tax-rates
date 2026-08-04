@@ -324,6 +324,9 @@ export const izracunajObrtNaDohodak = (
       porezi: [porez],
       ukupanPorez: porez.godisnjiIznos,
       doprinosi,
+      // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
+      obveznaDavanja: [],
+      ukupnaDavanja: eur(0),
       // `doprinosi` вже відняті всередині `dohodak` як визнаний `izdatak`, тож
       // удруге їх віднімати не можна. У паушальній картці те саме число
       // рахується від `primitak`, бо той зріз фактичного `izdatak` не знає.

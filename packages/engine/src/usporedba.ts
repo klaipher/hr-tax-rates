@@ -1,9 +1,11 @@
 import type {
   DrugaDjelatnostPravila,
+  KomorskiDoprinosPravila,
   ObrtNaDobitPravila,
   ObrtNaDohodakPravila,
   ParStopa,
 } from '@hr-tax/data'
+import { KOMORSKI_DOPRINOS_U_SNAZI, komorskiDoprinos } from '@hr-tax/data'
 import { eur, type Money, subtract, sum } from './money.ts'
 import {
   izracunajPausalniObrtZaRazdoblje,
@@ -18,7 +20,17 @@ import {
   type UzdrzavaniClanovi,
 } from './obrt-na-dohodak.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
-import type { Ishod, Izracun, Naziv, Podloga, Rezim, RezimId, Unos, Usporedba } from './types.ts'
+import type {
+  Ishod,
+  Izracun,
+  Naziv,
+  ObveznoDavanje,
+  Podloga,
+  Rezim,
+  RezimId,
+  Unos,
+  Usporedba,
+} from './types.ts'
 import { doprinosiUzRadniOdnos } from './uz-radni-odnos.ts'
 
 /**
@@ -38,6 +50,11 @@ export interface UnosUsporedbe extends Unos {
   readonly pocetak?: PocetakDjelatnosti | undefined
   /** Чи ведеться обрт паралельно з роботою за наймом. */
   readonly uzRadniOdnos?: boolean | undefined
+  /**
+   * Чи обрт відкрито менш ніж два роки тому: `čl. 15.` Odluke звільняє
+   * новий `obrt` від `komorski doprinos` на перші два роки.
+   */
+  readonly noviObrt?: boolean | undefined
 }
 
 /**
@@ -51,6 +68,7 @@ export interface PodlogaUsporedbe extends Podloga {
   readonly obrtNaDobit?: ObrtNaDobitPravila | undefined
   readonly drugaDjelatnost?: DrugaDjelatnostPravila | undefined
   readonly nepunaGodina?: PravilaNepuneGodine | undefined
+  readonly komorskiDoprinos?: KomorskiDoprinosPravila | undefined
 }
 
 const NAZIVI: Readonly<Record<RezimId, Naziv>> = {
@@ -71,6 +89,55 @@ const nedostupno = (razlog: string): Ishod => ({ status: 'nedostupno', razlog })
  * Прирівнювання одного до одного — припущення форми, назване на картці.
  */
 const zbrojIzdataka = (izdaci: IzdaciPoStavkama): Money<'EUR'> => sum('EUR', Object.values(izdaci))
+
+const NAZIV_KOMORSKOG = {
+  hr: 'komorski doprinos',
+  uk: 'внесок до обртницької палати',
+} as const
+
+/**
+ * Додає обов'язкові платежі й перераховує «на руки».
+ *
+ * Робиться в одному місці на всі режими навмисно: платежі однакові для
+ * кожного `obrt`, і рознесення їх по трьох модулях дало б три копії того
+ * самого закону.
+ */
+const sObveznimDavanjima = (
+  izracun: Izracun,
+  unos: UnosUsporedbe,
+  podloga: PodlogaUsporedbe,
+): Izracun => {
+  const rezultat = komorskiDoprinos(
+    { uPrveDvijeGodine: unos.noviObrt === true },
+    podloga.komorskiDoprinos ?? KOMORSKI_DOPRINOS_U_SNAZI,
+  )
+
+  const davanje: ObveznoDavanje =
+    rezultat.kind === 'due'
+      ? {
+          status: 'obračunato',
+          naziv: NAZIV_KOMORSKOG,
+          godisnjiIznos: eur(rezultat.godisnjiIznos),
+          obracun: rezultat.obracun,
+          napomene: rezultat.napomene,
+          izvor: rezultat.source,
+        }
+      : {
+          status: 'ne-primjenjuje-se',
+          naziv: NAZIV_KOMORSKOG,
+          razlog: rezultat.obrazlozenje,
+          izvor: rezultat.source,
+        }
+
+  const ukupnaDavanja = davanje.status === 'obračunato' ? davanje.godisnjiIznos : eur(0)
+
+  return {
+    ...izracun,
+    obveznaDavanja: [davanje],
+    ukupnaDavanja,
+    netoZaOsobu: subtract(izracun.netoZaOsobu, ukupnaDavanja),
+  }
+}
 
 /**
  * Замінює `doprinosi` на ті, що чинні для діяльності поряд із наймом.
@@ -213,6 +280,8 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
         izracunDobiti.porezi.map((porez) => porez.godisnjiIznos),
       ),
       doprinosi: izracunDobiti.doprinosi,
+      obveznaDavanja: [],
+      ukupnaDavanja: eur(0),
       netoZaOsobu: izracunDobiti.netoZaOsobu,
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
@@ -245,14 +314,27 @@ const NEMODELIRANI: readonly { readonly id: RezimId; readonly razlog: string }[]
  * припущення приходять у `podloga` (ADR-0001).
  */
 export const usporediRezime = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Usporedba => {
+  const sDavanjima = (ishod: Ishod): Ishod =>
+    ishod.status === 'izracunato'
+      ? { status: 'izracunato', izracun: sObveznimDavanjima(ishod.izracun, unos, podloga) }
+      : ishod
+
   const rezimi: readonly Rezim[] = [
-    { id: 'pausalni-obrt', naziv: NAZIVI['pausalni-obrt'], ishod: pausalniObrt(unos, podloga) },
+    {
+      id: 'pausalni-obrt',
+      naziv: NAZIVI['pausalni-obrt'],
+      ishod: sDavanjima(pausalniObrt(unos, podloga)),
+    },
     {
       id: 'obrt-na-dohodak',
       naziv: NAZIVI['obrt-na-dohodak'],
-      ishod: obrtNaDohodak(unos, podloga),
+      ishod: sDavanjima(obrtNaDohodak(unos, podloga)),
     },
-    { id: 'obrt-na-dobit', naziv: NAZIVI['obrt-na-dobit'], ishod: obrtNaDobit(unos, podloga) },
+    {
+      id: 'obrt-na-dobit',
+      naziv: NAZIVI['obrt-na-dobit'],
+      ishod: sDavanjima(obrtNaDobit(unos, podloga)),
+    },
     ...NEMODELIRANI.map(
       ({ id, razlog }): Rezim => ({ id, naziv: NAZIVI[id], ishod: nedostupno(razlog) }),
     ),

@@ -9,7 +9,7 @@ import {
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
 import type { Money } from './money.ts'
-import { eur, sum, toCentString } from './money.ts'
+import { add, eur, sum, toCentString } from './money.ts'
 import type { Izracun, Podloga, Rezim, RezimId, Usporedba } from './types.ts'
 import { jediniPorez } from './types.ts'
 import type { PodlogaUsporedbe, UnosUsporedbe } from './usporedba.ts'
@@ -232,9 +232,16 @@ describe('usporediRezime', () => {
   })
 
   describe('paušalni obrt — на руки та ефективна ставка', () => {
-    it('лишає людині primitak без податку і без внесків', () => {
-      // 20 000,00 − 550,80 − 3 491,736.
-      expect(toCentString(pausal('20000').netoZaOsobu)).toBe('15957.46')
+    it('лишає людині primitak без податку, внесків і внеску до палати', () => {
+      // 20 000,00 − 550,80 − 3 491,736 − 136,80.
+      expect(toCentString(pausal('20000').netoZaOsobu)).toBe('15820.66')
+    })
+
+    it('внесок до палати входить у «на руки» — на відміну від калькулятора HOK', () => {
+      const izracun = pausal('20000')
+
+      expect(toCentString(izracun.ukupnaDavanja)).toBe('136.80')
+      expect(toCentString(add(izracun.netoZaOsobu, izracun.ukupnaDavanja))).toBe('15957.46')
     })
 
     it('рахує ефективну ставку від усіх обов’язкових платежів', () => {
@@ -246,7 +253,8 @@ describe('usporediRezime', () => {
       const { efektivnaStopa, netoZaOsobu } = pausal('0')
 
       expect(efektivnaStopa).toBeUndefined()
-      expect(toCentString(netoZaOsobu)).toBe('-3695.14')
+      // 0 − 203,40 − 3 491,736 − 136,80.
+      expect(toCentString(netoZaOsobu)).toBe('-3831.94')
     })
 
     it('ефективна ставка падає з ростом primitak усередині розряду', () => {

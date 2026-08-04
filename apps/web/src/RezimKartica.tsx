@@ -89,6 +89,26 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
         <DoprinosRedak doprinos={izracun.doprinosi.moDrugiStup} />
         <DoprinosRedak doprinos={izracun.doprinosi.zo} />
 
+        {/*
+          Обов'язкові платежі поза податками і внесками. Незастосовний
+          лишається в списку з причиною: людина має відрізняти «не забули»
+          від «нічого не винен».
+        */}
+        {izracun.obveznaDavanja.map((davanje) => (
+          <div className="redak" key={davanje.naziv.hr}>
+            <dt>
+              <span className="redak__naziv">{davanje.naziv.hr}</span>
+              <Prijevod pojam={davanje.naziv.hr} />
+              <Izvor izvor={davanje.izvor} />
+            </dt>
+            <dd>
+              {davanje.status === 'obračunato'
+                ? format.eur(davanje.godisnjiIznos)
+                : t.kartica.davanjaNema}
+            </dd>
+          </div>
+        ))}
+
         <div className="redak redak--zbroj">
           <dt>
             <span className="redak__naziv">{t.kartica.doprinosiUkupno}</span>

@@ -8,7 +8,7 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-import { eur, toCentString } from './money.ts'
+import { add, eur, toCentString } from './money.ts'
 import type { Izracun, Podloga } from './types.ts'
 import { usporediRezime } from './usporedba.ts'
 
@@ -123,8 +123,24 @@ describe('паушальний обрт проти калькулятора HOK 
       expect(uHok('C19', izracun.ukupanPorez.amount).status).toBe('match')
     })
 
-    it('сума, що лишається обртнику за рік, сходиться (C21)', () => {
-      expect(uHok('C21', izracun.netoZaOsobu.amount).status).toBe('match')
+    it('сума, що лишається обртнику за рік, сходиться (C21) — до внеску палати', () => {
+      // Порівнюється сума ДО obveznaDavanja навмисно. HOK не рахує komorski
+      // doprinos — це зареєстрована розбіжність `komorski-doprinos-omitted`,
+      // а не наша похибка: внесок платить кожен obrt, і без нього «на руки»
+      // систематично завищене. Наше кінцеве число менше рівно на цей внесок,
+      // що доводить наступний тест.
+      const prijeDavanja = add(izracun.netoZaOsobu, izracun.ukupnaDavanja)
+
+      expect(uHok('C21', prijeDavanja.amount).status).toBe('match')
+    })
+
+    it('наше «на руки» менше за HOK рівно на внесок до палати', () => {
+      const [davanje] = izracun.obveznaDavanja
+      if (davanje?.status !== 'obračunato') throw new Error('внесок палати не нарахований')
+
+      // 1,9 % osnovnog osobnog odbitka × 12 = 136,80 € на рік.
+      expect(toCentString(davanje.godisnjiIznos)).toBe('136.80')
+      expect(toCentString(izracun.ukupnaDavanja)).toBe('136.80')
     })
   })
 })

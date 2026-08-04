@@ -326,6 +326,9 @@ export const izracunajPausalniObrtZaRazdoblje = (
       porezi: [porez],
       ukupanPorez: porez.godisnjiIznos,
       doprinosi,
+      // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
+      obveznaDavanja: [],
+      ukupnaDavanja: eur(0),
       netoZaOsobu: subtract(ukupniPrimitak, obvezniPlacanja),
       efektivnaStopa: ukupniPrimitak.amount.isZero()
         ? undefined

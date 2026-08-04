@@ -65,6 +65,8 @@ export const en: Dictionary = {
     razredPrijevod: (gornjaGranica: string) => `bracket · cap ${gornjaGranica}`,
     udioOsnovice: (stopa: string) => `${stopa} of the osnovica`,
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} of ${poreznaOsnovica}`,
+    davanja: 'Mandatory levies',
+    davanjaNema: 'not applicable',
     doprinosiUkupno: 'doprinosi in total',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} per month`,
     osobnaStednja: 'personal savings, not a tax',

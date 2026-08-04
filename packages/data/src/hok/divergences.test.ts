@@ -66,11 +66,12 @@ describe('реєстр розбіжностей', () => {
     }
   })
 
-  it('містить обидві відомі помилки HOK і пропущений внесок до палати', () => {
+  it('містить усі відомі помилки HOK і пропущений внесок до палати', () => {
     expect(divergences.map((d) => d.id).sort()).toEqual([
       'higher-rate-formula-always-zero',
       'komorski-doprinos-omitted',
       'stale-contribution-cap-for-second-activity',
+      'unfounded-cent-in-poduzetnicka-placa',
     ])
   })
 })
