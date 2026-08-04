@@ -118,13 +118,14 @@ export const DEADLINES: Readonly<Record<ObligationKind, Sourced<Deadline>>> = {
    * Річна різниця `paušalni porez` за звітом PO-SD (Izvješće o paušalnom
    * dohotku od samostalnih djelatnosti).
    *
-   * Закон прив'язує сплату не до дати, а до події: «razliku godišnjeg
-   * paušalnog poreza uplatiti s danom podnošenja izvješća». Крайній строк
-   * подання — 15 днів після кінця року, тобто 15 січня. Календар показує
+   * Сплата прив'язана не до дати, а до події: `čl. 6. st. 2.` — «Razlika za
+   * uplatu manje uplaćenog paušalnog poreza … plaća se s danom podnošenja
+   * izvješća». Дату задає крайній строк подання: `čl. 7. st. 4.` — «najkasnije
+   * 15 dana po isteku kalendarske godine», тобто 15 січня. Календар показує
    * саме цю крайню дату: раніше подаси — раніше й заплатиш.
    *
    * Форма записана окремо, а не спільною з `doprinosi`: там 15 число названо
-   * законом прямо, а тут воно виходить із «15 dana od dana isteka godine».
+   * прямо, а тут воно виходить із «15 dana po isteku kalendarske godine».
    * Дати збігаються лише тому, що податковий рік — календарний.
    */
   'razlika paušalnog poreza': sourced(
@@ -132,7 +133,7 @@ export const DEADLINES: Readonly<Record<ObligationKind, Sourced<Deadline>>> = {
       cadence: 'godišnje',
       dueDate: { kind: 'nakon razdoblja', monthsAfterPeriodEnd: 1, dayOfMonth: 15 },
     },
-    { ...ZAKON_O_POREZU_NA_DOHODAK, article: 'čl. 82. st. 6.', checkedOn: CHECKED_ON },
+    { ...PRAVILNIK_O_PAUSALNOM_OPOREZIVANJU, article: 'čl. 7. st. 4.', checkedOn: CHECKED_ON },
   ),
 
   /** `doprinosi` (внески) паушального обрту — «do 15. dana u mjesecu za prethodni mjesec». */
