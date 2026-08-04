@@ -12,6 +12,16 @@ import { blizuObriva, type Obriv, type ObrivRazreda, obrivZa, type PodlogaZa } f
 import type { Izracun } from './types.ts'
 import { usporediRezime } from './usporedba.ts'
 
+/**
+ * Місячна `osnovica` там, де закон її має. У діяльності поряд із наймом її
+ * немає — тест, який туди зазирає, помиляється в припущенні, тож падає.
+ */
+const mjesecnaOsnovicaIliPad = (doprinosi: { mjesecnaOsnovica: Money<'EUR'> | undefined }) => {
+  const { mjesecnaOsnovica } = doprinosi
+  if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
+  return mjesecnaOsnovica
+}
+
 /** Чинний закон: набір правил від `primitak` не залежить узагалі. */
 const naSnazi: PodlogaZa = () => ({ ruleset: ruleset2026, pretpostavke: pretpostavke2026 })
 
@@ -262,7 +272,7 @@ describe('обрив розряду', () => {
       // рушій — щоб узяти paušalni dohodak. Якби ці два вибори розійшлися,
       // внески рахувалися б за одним розрядом, а податок за іншим.
       const izracun = pausal(eur(primitak), najava)
-      const primijenjeni = izracun.doprinosi.mjesecnaOsnovica.amount.div(
+      const primijenjeni = mjesecnaOsnovicaIliPad(izracun.doprinosi).amount.div(
         pretpostavkeNajave2027.prosjecnaPlaca.value,
       )
 

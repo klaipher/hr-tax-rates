@@ -92,9 +92,16 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
         <div className="redak redak--zbroj">
           <dt>
             <span className="redak__naziv">{t.kartica.doprinosiUkupno}</span>
-            <span className="prijevod">
-              {t.kartica.doprinosiOsnovica(format.eur(izracun.doprinosi.mjesecnaOsnovica))}
-            </span>
+            {/*
+              Місячної `osnovica` немає в діяльності поряд із наймом: там база
+              річна за законом. Показувати «місячну базу» там означало б
+              вигадати число, тож рядок просто зникає.
+            */}
+            {izracun.doprinosi.mjesecnaOsnovica !== undefined && (
+              <span className="prijevod">
+                {t.kartica.doprinosiOsnovica(format.eur(izracun.doprinosi.mjesecnaOsnovica))}
+              </span>
+            )}
           </dt>
           <dd>{format.eur(izracun.doprinosi.ukupnoGodisnje)}</dd>
         </div>

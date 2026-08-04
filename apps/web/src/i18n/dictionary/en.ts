@@ -41,7 +41,22 @@ export const en: Dictionary = {
 
   unos: {
     oznaka: 'Annual primitak',
-    prijevod: 'money received from the activity, on a cash basis',
+    prijevod: 'receipts from the activity, on a cash basis',
+    izdaciNaslov: 'Annual izdatak',
+    izdaciPrijevod:
+      'expenditure on a cash basis — the book-keeping regimes cannot be computed without it',
+    ostalo: 'Ordinary expenditure',
+    reprezentacija: 'Entertainment',
+    osobnoVozilo: 'Personal vehicle',
+    polovicno: 'recognised at 50%',
+    grad: 'City or municipality',
+    gradPrijevod: 'jedinica lokalne samouprave — its odluka sets the porez na dohodak rates',
+    gradNijeOdabran: 'not selected',
+    uzRadniOdnos: 'I run the obrt alongside employment',
+    uzRadniOdnosPrijevod: 'druga djelatnost — a different contribution rate and an annual base',
+    pocetak: 'Month the obrt opened',
+    pocetakPrijevod: 'in the opening year the razred boundaries scale proportionally',
+    punaGodina: 'full year',
   },
 
   kartica: {

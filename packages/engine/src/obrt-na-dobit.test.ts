@@ -15,9 +15,20 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
+import type { Money } from './money.ts'
 import { eur, toCentString } from './money.ts'
 import { izracunajObrtNaDobit, type UlazObrtNaDobit } from './obrt-na-dobit.ts'
 import type { Podloga } from './types.ts'
+
+/**
+ * Місячна `osnovica` там, де закон її має. У діяльності поряд із наймом її
+ * немає — тест, який туди зазирає, помиляється в припущенні, тож падає.
+ */
+const mjesecnaOsnovicaIliPad = (doprinosi: { mjesecnaOsnovica: Money<'EUR'> | undefined }) => {
+  const { mjesecnaOsnovica } = doprinosi
+  if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
+  return mjesecnaOsnovica
+}
 
 /**
  * `obrt na dobit` — режим із трьома різними податками під двома законами.
@@ -232,7 +243,7 @@ describe('izracunajObrtNaDobit', () => {
     it('розбиває внески на MO I. stup, MO II. stup і ZO від osnovica плаће', () => {
       const { doprinosi } = izracunaj()
 
-      expect(toCentString(doprinosi.mjesecnaOsnovica)).toBe('2192.30')
+      expect(toCentString(mjesecnaOsnovicaIliPad(doprinosi))).toBe('2192.30')
       expect(toCentString(doprinosi.moPrviStup.godisnjiIznos)).toBe('3946.14')
       expect(toCentString(doprinosi.moDrugiStup.godisnjiIznos)).toBe('1315.38')
       expect(toCentString(doprinosi.zo.godisnjiIznos)).toBe('4340.75')
@@ -387,7 +398,7 @@ describe('izracunajObrtNaDobit', () => {
 
       it('osnovica внесків збігається з тією, що вшита у формулу HOK (D5)', () => {
         expect(brojIzFormule('D5', /^([\d.]+)\*/).toString()).toBe(
-          izracun.doprinosi.mjesecnaOsnovica.amount.toString(),
+          mjesecnaOsnovicaIliPad(izracun.doprinosi).amount.toString(),
         )
       })
 

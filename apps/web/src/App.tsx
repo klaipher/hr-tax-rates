@@ -1,6 +1,12 @@
-import { pretpostavkeNajave2027, rulesetNajave2027 } from '@hr-tax/data'
+import {
+  jedinicaBySifra,
+  pretpostavkeNajave2027,
+  resolveStope,
+  rulesetNajave2027,
+} from '@hr-tax/data'
 import { eur, usporediRezime } from '@hr-tax/engine'
 import { useMemo, useState } from 'react'
+import { Forma, izdaciIzForme, POCETNO_STANJE } from './Forma.tsx'
 import { GrafOpterecenja } from './graf/GrafOpterecenja.tsx'
 import { IzvorStatistike } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
@@ -47,11 +53,23 @@ const PROSJECNA_PLACA = 'prosječna plaća'
 export const App = () => {
   const { t, format } = useI18n()
   const [godisnjiPrimitak, setGodisnjiPrimitak] = useState(POCETNI_PRIMITAK)
+  const [forma, setForma] = useState(POCETNO_STANJE)
 
-  const usporedba = useMemo(
-    () => usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, PODLOGA),
-    [godisnjiPrimitak],
-  )
+  const usporedba = useMemo(() => {
+    const jedinica = jedinicaBySifra(forma.sifraJedinice)
+    return usporediRezime(
+      {
+        godisnjiPrimitak: eur(godisnjiPrimitak),
+        godisnjiIzdaci: izdaciIzForme(forma),
+        // Ставки бере довідник; місто не обране — режимів із porez na dohodak
+        // просто немає, і вони самі кажуть, чого бракує.
+        ...(jedinica === undefined ? {} : { stope: resolveStope({ jedinica }) }),
+        ...(forma.mjesecPocetka === undefined ? {} : { pocetak: { mjesec: forma.mjesecPocetka } }),
+        uzRadniOdnos: forma.uzRadniOdnos,
+      },
+      PODLOGA,
+    )
+  }, [godisnjiPrimitak, forma])
 
   const { prosjecnaPlaca } = PODLOGA.pretpostavke
 
@@ -87,6 +105,8 @@ export const App = () => {
           <span>{format.eur(eur(NAJVISI_PRIMITAK))}</span>
         </p>
       </section>
+
+      <Forma stanje={forma} onPromjena={setForma} />
 
       <section className="rezimi">
         {usporedba.rezimi.map((rezim) => (

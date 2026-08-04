@@ -62,6 +62,20 @@ export const uk = {
   unos: {
     oznaka: 'Річний primitak',
     prijevod: 'надходження від діяльності за касовим методом',
+    izdaciNaslov: 'Річний izdatak',
+    izdaciPrijevod: 'видатки за касовим методом — без них режими з обліком не рахуються',
+    ostalo: 'Звичайні видатки',
+    reprezentacija: 'Репрезентація',
+    osobnoVozilo: 'Особистий автомобіль',
+    polovicno: 'визнається наполовину',
+    grad: 'Місто або община',
+    gradPrijevod: 'jedinica lokalne samouprave — її odluka встановлює ставки porez na dohodak',
+    gradNijeOdabran: 'не обрано',
+    uzRadniOdnos: 'Веду обрт паралельно з роботою за наймом',
+    uzRadniOdnosPrijevod: 'druga djelatnost — інша ставка внесків і річна база',
+    pocetak: 'Місяць відкриття обрту',
+    pocetakPrijevod: 'у рік відкриття межі розрядів масштабуються пропорційно',
+    punaGodina: 'повний рік',
   },
 
   kartica: {

@@ -104,8 +104,12 @@ export interface Doprinosi {
    * `osnovica` (база нарахування внесків / contribution base) за місяць:
    * `prosječna plaća × koeficijent`. Не залежить ні від розряду, ні від
    * фактичного `primitak`.
+   *
+   * `undefined` у діяльності поряд із наймом: там закон місячної `osnovica`
+   * не знає взагалі — база береться з річного результату діяльності
+   * (`čl. 185.` ZoD). Показати «місячну базу» там означало б вигадати її.
    */
-  readonly mjesecnaOsnovica: Money<'EUR'>
+  readonly mjesecnaOsnovica: Money<'EUR'> | undefined
   /** MO — I. stup (пенсійне, генераційна солідарність / pay-as-you-go pillar). */
   readonly moPrviStup: Doprinos
   /**

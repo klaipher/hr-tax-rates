@@ -41,7 +41,21 @@ export const hr: Dictionary = {
 
   unos: {
     oznaka: 'Godišnji primitak',
-    prijevod: 'novac primljen od djelatnosti, po načelu blagajne',
+    prijevod: 'primici od djelatnosti po načelu blagajne',
+    izdaciNaslov: 'Godišnji izdatak',
+    izdaciPrijevod: 'izdaci po načelu blagajne — bez njih se režimi s knjigama ne računaju',
+    ostalo: 'Ostali izdaci',
+    reprezentacija: 'Reprezentacija',
+    osobnoVozilo: 'Osobno vozilo',
+    polovicno: 'priznaje se 50 %',
+    grad: 'Grad ili općina',
+    gradPrijevod: 'jedinica lokalne samouprave — njezina odluka propisuje stope poreza na dohodak',
+    gradNijeOdabran: 'nije odabrano',
+    uzRadniOdnos: 'Obrt vodim uz radni odnos',
+    uzRadniOdnosPrijevod: 'druga djelatnost — druga stopa doprinosa i godišnja osnovica',
+    pocetak: 'Mjesec otvaranja obrta',
+    pocetakPrijevod: 'u godini otvaranja granice razreda razmjerno se umanjuju',
+    punaGodina: 'puna godina',
   },
 
   kartica: {

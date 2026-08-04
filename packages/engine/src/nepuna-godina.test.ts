@@ -1,6 +1,7 @@
 import { komorskiDoprinos, type LegalReference, pretpostavke2026, ruleset2026 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
+import type { Money } from './money.ts'
 import { eur, toCentString } from './money.ts'
 import {
   brojMjeseciDjelatnosti,
@@ -15,6 +16,18 @@ import {
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
 import type { Izracun, Podloga } from './types.ts'
 import { jediniPorez } from './types.ts'
+
+/**
+ * Місячна `osnovica` там, де закон її має. У діяльності поряд із наймом її
+ * немає — тест, який туди зазирає, помиляється в припущенні, тож падає.
+ */
+const mjesecnaOsnovicaIliPad = (doprinosi: {
+  readonly mjesecnaOsnovica: Money<'EUR'> | undefined
+}): Money<'EUR'> => {
+  const { mjesecnaOsnovica } = doprinosi
+  if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
+  return mjesecnaOsnovica
+}
 
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
 
@@ -263,8 +276,12 @@ describe('неповний податковий період', () => {
       // Розмірність скорочує період, а не базу нарахування. Порахована на
       // місяць osnovica мусить лишитися тією самою, що й за повний рік, —
       // інакше картка показувала б вигадану місячну суму.
-      expect(toCentString(pausal('12000', { mjesec: 8 }).doprinosi.mjesecnaOsnovica)).toBe('797.20')
-      expect(toCentString(pausal('900', { mjesec: 12 }).doprinosi.mjesecnaOsnovica)).toBe('797.20')
+      expect(toCentString(mjesecnaOsnovicaIliPad(pausal('12000', { mjesec: 8 }).doprinosi))).toBe(
+        '797.20',
+      )
+      expect(toCentString(mjesecnaOsnovicaIliPad(pausal('900', { mjesec: 12 }).doprinosi))).toBe(
+        '797.20',
+      )
     })
 
     it('у рік відкриття komorski doprinos ділити немає чого', () => {

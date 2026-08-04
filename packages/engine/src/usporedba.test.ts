@@ -1,10 +1,31 @@
-import { pretpostavke2026, ruleset2026 } from '@hr-tax/data'
+import {
+  drugaDjelatnost2026,
+  obrtNaDobit2026,
+  obrtNaDohodak2026,
+  PRAVILA_NEPUNE_GODINE,
+  pretpostavke2026,
+  ruleset2026,
+} from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-import { eur, toCentString } from './money.ts'
+import type { Money } from './money.ts'
+import { eur, sum, toCentString } from './money.ts'
 import type { Izracun, Podloga, Rezim, RezimId, Usporedba } from './types.ts'
 import { jediniPorez } from './types.ts'
+import type { PodlogaUsporedbe, UnosUsporedbe } from './usporedba.ts'
 import { usporediRezime } from './usporedba.ts'
+
+/**
+ * Місячна `osnovica` там, де закон її має. У діяльності поряд із наймом її
+ * немає — тест, який туди зазирає, помиляється в припущенні, тож падає.
+ */
+const mjesecnaOsnovicaIliPad = (doprinosi: {
+  readonly mjesecnaOsnovica: Money<'EUR'> | undefined
+}): Money<'EUR'> => {
+  const { mjesecnaOsnovica } = doprinosi
+  if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
+  return mjesecnaOsnovica
+}
 
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
 
@@ -174,7 +195,7 @@ describe('usporediRezime', () => {
   describe('paušalni obrt — doprinosi', () => {
     it('будує osnovica з prosječna plaća та koeficijent', () => {
       // 1 993,00 € × 0,40.
-      expect(toCentString(pausal('20000').doprinosi.mjesecnaOsnovica)).toBe('797.20')
+      expect(toCentString(mjesecnaOsnovicaIliPad(pausal('20000').doprinosi))).toBe('797.20')
     })
 
     it('розбиває внески на MO I. stup, MO II. stup і ZO', () => {
@@ -261,5 +282,115 @@ describe('usporediRezime', () => {
     it('на однакових входах дає однаковий результат і нічого не запам’ятовує', () => {
       expect(usporedi('20000')).toEqual(usporedi('20000'))
     })
+  })
+})
+
+describe('усі три обртні режими в одному порівнянні', () => {
+  const IZDACI = {
+    najamnina: eur(3000),
+    nabavkaRobe: eur(0),
+    nabavkaUsluga: eur(1200),
+    placeRadnika: eur(0),
+    troskoviBanke: eur(300),
+    reprezentacija: eur(0),
+    osobnoVozilo: eur(0),
+    ostalo: eur(500),
+  }
+  const ZAGREB = { niza: 2300, visa: 3300 } as const
+
+  const PUNA_PODLOGA: PodlogaUsporedbe = {
+    ...podloga2026,
+    obrtNaDohodak: obrtNaDohodak2026,
+    obrtNaDobit: obrtNaDobit2026,
+    drugaDjelatnost: drugaDjelatnost2026,
+    nepunaGodina: PRAVILA_NEPUNE_GODINE,
+  }
+
+  const usporedi = (unos: Partial<UnosUsporedbe> = {}) =>
+    usporediRezime(
+      { godisnjiPrimitak: eur(30000), godisnjiIzdaci: IZDACI, stope: ZAGREB, ...unos },
+      PUNA_PODLOGA,
+    )
+
+  const izracunZa = (id: string) => {
+    const rezim = usporedi().rezimi.find((r) => r.id === id)
+    if (rezim?.ishod.status !== 'izracunato') {
+      throw new Error(
+        `${id} недоступний: ${rezim?.ishod.status === 'nedostupno' ? rezim.ishod.razlog : 'немає'}`,
+      )
+    }
+    return rezim.ishod.izracun
+  }
+
+  it('рахує всі три обртні режими, а не лише паушал', () => {
+    for (const id of ['pausalni-obrt', 'obrt-na-dohodak', 'obrt-na-dobit']) {
+      expect(() => izracunZa(id), id).not.toThrow()
+    }
+  })
+
+  it('віддає однакову структуру результату — на ній тримається зіставність', () => {
+    const kljucevi = ['pausalni-obrt', 'obrt-na-dohodak', 'obrt-na-dobit'].map((id) =>
+      Object.keys(izracunZa(id)).sort(),
+    )
+
+    expect(kljucevi[1]).toEqual(kljucevi[0])
+    expect(kljucevi[2]).toEqual(kljucevi[0])
+  })
+
+  it('у obrt na dobit три різні податки, а не один', () => {
+    // Саме заради цього Izracun.porezi — множина: податок із poduzetnička
+    // plaća, porez na dobit і податок на виплату власнику.
+    expect(izracunZa('obrt-na-dobit').porezi.length).toBe(3)
+    expect(izracunZa('pausalni-obrt').porezi.length).toBe(1)
+  })
+
+  it('ukupanPorez завжди дорівнює сумі своїх складових', () => {
+    for (const id of ['pausalni-obrt', 'obrt-na-dohodak', 'obrt-na-dobit']) {
+      const { porezi, ukupanPorez } = izracunZa(id)
+      const zbroj = sum(
+        'EUR',
+        porezi.map((porez) => porez.godisnjiIznos),
+      )
+      expect(toCentString(ukupanPorez), id).toBe(toCentString(zbroj))
+    }
+  })
+
+  it('без izdatak режими з обліком кажуть, чого саме бракує', () => {
+    const bezIzdataka = usporediRezime(
+      { godisnjiPrimitak: eur(30000), stope: ZAGREB },
+      PUNA_PODLOGA,
+    )
+    const rezim = bezIzdataka.rezimi.find((r) => r.id === 'obrt-na-dohodak')
+
+    expect(rezim?.ishod.status).toBe('nedostupno')
+    if (rezim?.ishod.status === 'nedostupno') {
+      expect(rezim.ishod.razlog).toContain('izdatak')
+    }
+  })
+
+  it('без обраного міста каже саме про ставки, а не про витрати', () => {
+    const bezGrada = usporediRezime(
+      { godisnjiPrimitak: eur(30000), godisnjiIzdaci: IZDACI },
+      PUNA_PODLOGA,
+    )
+    const rezim = bezGrada.rezimi.find((r) => r.id === 'obrt-na-dohodak')
+
+    expect(rezim?.ishod.status).toBe('nedostupno')
+    if (rezim?.ishod.status === 'nedostupno') {
+      expect(rezim.ishod.razlog).toContain('jedinica lokalne samouprave')
+    }
+  })
+
+  it('модифікатор найму зменшує внески паушалу', () => {
+    const bez = izracunZa('pausalni-obrt')
+    const rezimUzRad = usporedi({ uzRadniOdnos: true }).rezimi[0]
+    if (rezimUzRad?.ishod.status !== 'izracunato') throw new Error('паушал уз рад недоступний')
+    const uzRad = rezimUzRad.ishod.izracun
+
+    expect(
+      uzRad.doprinosi.ukupnoGodisnje.amount.lessThan(bez.doprinosi.ukupnoGodisnje.amount),
+    ).toBe(true)
+    // Закон другої діяльності місячної osnovica не знає — база річна.
+    expect(uzRad.doprinosi.mjesecnaOsnovica).toBeUndefined()
   })
 })

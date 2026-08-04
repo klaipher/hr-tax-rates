@@ -24,6 +24,18 @@ import {
 import type { Izracun } from './types.ts'
 import { jediniPorez } from './types.ts'
 
+/**
+ * Місячна `osnovica` там, де закон її має. У діяльності поряд із наймом її
+ * немає — тест, який туди зазирає, помиляється в припущенні, тож падає.
+ */
+const mjesecnaOsnovicaIliPad = (doprinosi: {
+  readonly mjesecnaOsnovica: Money<'EUR'> | undefined
+}): Money<'EUR'> => {
+  const { mjesecnaOsnovica } = doprinosi
+  if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
+  return mjesecnaOsnovica
+}
+
 const MJESECI_U_GODINI = 12
 
 const podloga: PodlogaObrtaNaDohodak = {
@@ -330,7 +342,7 @@ describe('obrt na dohodak', () => {
     it('doprinosi розкладені на три складові, з яких лише II. stup персональний', () => {
       const { doprinosi } = izracunaj({ primitak: PRIMITAK_POD_PRAGOM })
 
-      expect(toCentString(doprinosi.mjesecnaOsnovica)).toBe('1295.45')
+      expect(toCentString(mjesecnaOsnovicaIliPad(doprinosi))).toBe('1295.45')
       expect([
         doprinosi.moPrviStup.osobnaStednja,
         doprinosi.moDrugiStup.osobnaStednja,
