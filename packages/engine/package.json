@@ -1,0 +1,13 @@
+{
+  "name": "@hr-tax/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Чистий рушій обчислень. Нуль залежностей від UI, нуль вводу-виводу.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "decimal.js": "catalog:"
+  }
+}

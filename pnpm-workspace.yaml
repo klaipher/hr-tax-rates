@@ -1,0 +1,30 @@
+packages:
+  - packages/*
+  - apps/*
+
+# Єдине місце, де живуть версії залежностей на весь монорепо.
+# Пакети посилаються на них через `catalog:`.
+catalog:
+  '@biomejs/biome': 2.5.7
+  '@types/node': 24.11.1
+  '@types/react': 19.2.18
+  '@types/react-dom': 19.2.4
+  '@vitejs/plugin-react': 6.0.5
+  decimal.js: 10.6.0
+  knip: 6.31.0
+  react: 19.2.8
+  react-dom: 19.2.8
+  typescript: 7.0.2
+  vite: 8.2.0
+  vitest: 4.1.10
+
+minimumReleaseAgeExclude:
+  - '@biomejs/biome@2.5.7'
+  - '@biomejs/cli-darwin-arm64@2.5.7'
+  - '@biomejs/cli-darwin-x64@2.5.7'
+  - '@biomejs/cli-linux-arm64-musl@2.5.7'
+  - '@biomejs/cli-linux-arm64@2.5.7'
+  - '@biomejs/cli-linux-x64-musl@2.5.7'
+  - '@biomejs/cli-linux-x64@2.5.7'
+  - '@biomejs/cli-win32-arm64@2.5.7'
+  - '@biomejs/cli-win32-x64@2.5.7'

@@ -1,0 +1,10 @@
+{
+  "name": "@hr-tax/data",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Набори правил (ruleset), припущення (pretpostavke), довідники міст і NKD.",
+  "exports": {
+    ".": "./src/index.ts"
+  }
+}

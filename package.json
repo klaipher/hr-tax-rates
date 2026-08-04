@@ -1,0 +1,33 @@
+{
+  "name": "hr-tax-rates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Калькулятор податкових режимів Хорватії",
+  "license": "MIT",
+  "packageManager": "pnpm@11.20.0",
+  "engines": {
+    "node": ">=26",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "build": "pnpm -r build",
+    "check": "pnpm run typecheck && pnpm run lint && pnpm run test",
+    "dev": "pnpm --filter @hr-tax/web dev",
+    "format": "biome format --write .",
+    "lint": "pnpm run lint:biome && pnpm run lint:knip",
+    "lint:biome": "biome check .",
+    "lint:fix": "biome check --write .",
+    "lint:knip": "knip",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p apps/web/tsconfig.json"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@types/node": "catalog:",
+    "knip": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}
