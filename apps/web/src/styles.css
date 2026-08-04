@@ -1,0 +1,314 @@
+:root {
+  --tlo: #fbfaf7;
+  --tlo-kartica: #ffffff;
+  --tekst: #1b1a17;
+  --tekst-prigušen: #6a675e;
+  --rub: #e3e0d7;
+  --naglasak: #7a4b2a;
+  --naglasak-tlo: #f1e9e1;
+  --stednja: #2f6b4f;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tlo: #16161a;
+    --tlo-kartica: #1e1e23;
+    --tekst: #ecebe6;
+    --tekst-prigušen: #a09d94;
+    --rub: #32323a;
+    --naglasak: #d99f72;
+    --naglasak-tlo: #2b2320;
+    --stednja: #7fc0a0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--tlo);
+  color: var(--tekst);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+.stranica {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.zaglavlje h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 1.1rem + 2vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.zaglavlje p {
+  margin: 0.4rem 0 0;
+  color: var(--tekst-prigušen);
+  max-width: 46rem;
+}
+
+/* Ввід */
+
+.unos {
+  margin: 2rem 0 2.5rem;
+  padding: 1.25rem 1.5rem 1rem;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+
+.unos label {
+  display: block;
+  font-weight: 600;
+}
+
+.unos__iznos {
+  display: block;
+  margin: 0.15rem 0 0.6rem;
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 2.9rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.unos input[type="range"] {
+  display: block;
+  width: 100%;
+  accent-color: var(--naglasak);
+}
+
+.unos__skala {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Переклад поруч із хорватським терміном */
+
+.prijevod {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+}
+
+/* Посилання від числа до статті акта */
+
+.izvor {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--tekst-prigušen);
+  text-decoration-color: var(--rub);
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.izvor:hover,
+.izvor:focus-visible {
+  color: var(--naglasak);
+}
+
+/* Сітка карток */
+
+.rezimi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.kartica {
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+  padding: 1.25rem 1.4rem 1.4rem;
+}
+
+.kartica--nedostupna {
+  background: transparent;
+  border-style: dashed;
+}
+
+.kartica__zaglavlje h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+.kartica__zaglavlje .prijevod {
+  margin: 0.1rem 0 0;
+}
+
+/* Головне число картки */
+
+.glavno {
+  margin: 1.1rem 0 0.2rem;
+}
+
+.glavno__iznos {
+  display: block;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.2rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.glavno__oznaka {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+}
+
+.stopa {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tekst-prigušen);
+}
+
+.stopa strong {
+  color: var(--tekst);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Розбивка платежів */
+
+/* Застосований розряд */
+
+.razred {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  padding: 0.5rem 0.7rem;
+  background: var(--naglasak-tlo);
+  border-radius: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.razred .prijevod {
+  display: inline;
+}
+
+.razred .izvor {
+  flex-basis: 100%;
+}
+
+/* Розбивка платежів */
+
+.rozbivka {
+  margin: 1rem 0 0;
+  border-top: 1px solid var(--rub);
+}
+
+.redak {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rub);
+}
+
+.redak:last-child {
+  border-bottom: none;
+}
+
+.redak--zbroj {
+  font-weight: 600;
+}
+
+.redak dt {
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.redak dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.redak__naziv {
+  display: block;
+}
+
+.udio {
+  margin-left: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+  white-space: nowrap;
+}
+
+.znak-stednje {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.72rem;
+  color: var(--stednja);
+  border: 1px solid currentcolor;
+  border-radius: 0.6rem;
+}
+
+/* Недоступні режими */
+
+.oznaka-nedostupno {
+  display: inline-block;
+  margin: 1rem 0 0;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+  background: var(--naglasak-tlo);
+  border-radius: 0.6rem;
+}
+
+.razlog {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Припущення */
+
+.pretpostavke {
+  margin: 2.5rem 0 0;
+  padding: 1.1rem 1.4rem 1.3rem;
+  border: 1px dashed var(--rub);
+  border-radius: 0.9rem;
+  max-width: 52rem;
+}
+
+.pretpostavke h2 {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+
+.pretpostavke p {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+}
+
+.pretpostavke strong {
+  font-variant-numeric: tabular-nums;
+}

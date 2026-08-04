@@ -1,20 +1,75 @@
-import { eur, scale, toCentString } from '@hr-tax/engine'
+import { pretpostavke2026, ruleset2026 } from '@hr-tax/data'
+import type { Podloga } from '@hr-tax/engine'
+import { eur, formatEur, usporediRezime } from '@hr-tax/engine'
+import { useMemo, useState } from 'react'
+import { IzvorStatistike } from './Izvor.tsx'
+import { RezimKartica } from './RezimKartica.tsx'
 
-/**
- * Заглушка каркаса: доводить лише, що збірка проходить крізь усі пакети
- * робочого простору й рушій справді підключений.
- *
- * Числа тут навмисно вигадані. Показувати реальну ставку чи межу розряду
- * без джерела заборонено (ADR-0002), а джерела приходять із наповненням
- * пакета даних — не тут.
- */
-export const App = () => (
-  <main>
-    <h1>Податкові режими Хорватії</h1>
-    <p>Каркас на місці. Калькулятор у розробці.</p>
-    <p>
-      Рушій підключений, десяткова арифметика працює:{' '}
-      <output>{toCentString(scale(eur('1.10'), '3'))} €</output>
-    </p>
-  </main>
-)
+const PODLOGA: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
+
+/** Трохи вище за поріг паушалу — щоб було видно, де режим закінчується. */
+const NAJVISI_PRIMITAK = 70_000
+const KORAK = 100
+const POCETNI_PRIMITAK = 20_000
+
+export const App = () => {
+  const [godisnjiPrimitak, setGodisnjiPrimitak] = useState(POCETNI_PRIMITAK)
+
+  const usporedba = useMemo(
+    () => usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, PODLOGA),
+    [godisnjiPrimitak],
+  )
+
+  const { prosjecnaPlaca } = PODLOGA.pretpostavke
+
+  return (
+    <main className="stranica">
+      <header className="zaglavlje">
+        <h1>Податкові режими Хорватії</h1>
+        <p>Один річний primitak — усі режими одразу, з посиланням на статтю за кожним числом.</p>
+      </header>
+
+      <section className="unos">
+        <label htmlFor="primitak">
+          Річний primitak
+          <span className="prijevod">надходження від діяльності за касовим методом</span>
+        </label>
+        <output className="unos__iznos" htmlFor="primitak">
+          {formatEur(eur(godisnjiPrimitak))}
+        </output>
+        <input
+          id="primitak"
+          type="range"
+          min={0}
+          max={NAJVISI_PRIMITAK}
+          step={KORAK}
+          value={godisnjiPrimitak}
+          onChange={(event) => setGodisnjiPrimitak(Number(event.target.value))}
+        />
+        <p className="unos__skala">
+          <span>{formatEur(eur(0))}</span>
+          <span>{formatEur(eur(NAJVISI_PRIMITAK))}</span>
+        </p>
+      </section>
+
+      <section className="rezimi">
+        {usporedba.rezimi.map((rezim) => (
+          <RezimKartica key={rezim.id} rezim={rezim} />
+        ))}
+      </section>
+
+      <footer className="pretpostavke">
+        <h2>Припущення</h2>
+        <p>
+          Правила чинні на {usporedba.godina} рік. Внески рахуються з prosječna plaća{' '}
+          <strong>{formatEur(eur(prosjecnaPlaca.value))}</strong> — цю величину закон не встановлює,
+          а лише на неї посилається, тому вона лежить окремим шаром від правил і може бути
+          перевизначена.
+        </p>
+        <p>
+          <IzvorStatistike izvor={prosjecnaPlaca.source} />
+        </p>
+      </footer>
+    </main>
+  )
+}

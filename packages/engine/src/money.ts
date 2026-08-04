@@ -36,6 +36,13 @@ export const zero = <C extends Currency>(currency: C): Money<C> => make(currency
 export const add = <C extends Currency>(a: Money<C>, b: NoInfer<Money<C>>): Money<C> =>
   make(a.currency, a.amount.plus(b.amount))
 
+export const subtract = <C extends Currency>(a: Money<C>, b: NoInfer<Money<C>>): Money<C> =>
+  make(a.currency, a.amount.minus(b.amount))
+
+/** Строге порівняння сум однієї валюти. */
+export const isGreaterThan = <C extends Currency>(a: Money<C>, b: NoInfer<Money<C>>): boolean =>
+  a.amount.greaterThan(b.amount)
+
 /** Множення на безрозмірний коефіцієнт — ставку, коефіцієнт, частку. */
 export const scale = <C extends Currency>(a: Money<C>, factor: Decimal.Value): Money<C> =>
   make(a.currency, a.amount.times(factor))

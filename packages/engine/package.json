@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "@hr-tax/data": "workspace:*",
     "decimal.js": "catalog:"
   }
 }
