@@ -14,6 +14,7 @@ import {
 } from './nepuna-godina.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
 import type { Izracun, Podloga } from './types.ts'
+import { jediniPorez } from './types.ts'
 
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
 
@@ -207,8 +208,10 @@ describe('неповний податковий період', () => {
       // Якби межі не масштабувалися, платник лишився б у другому розряді і
       // податок за п’ять місяців був би 2 295 € × 5/12 × 12% = 114,75 €.
       // Масштабування переносить його в четвертий: 4 590 € × 5/12 × 12%.
-      expect(toCentString(pausal('12000', { mjesec: 8 }).porez.godisnjiIznos)).toBe('229.50')
-      expect(toCentString(pausal('12000', { mjesec: 8 }).porez.poreznaOsnovica)).toBe('1912.50')
+      expect(toCentString(pausal('12000', { mjesec: 8 }).ukupanPorez)).toBe('229.50')
+      expect(toCentString(jediniPorez(pausal('12000', { mjesec: 8 })).poreznaOsnovica)).toBe(
+        '1912.50',
+      )
     })
 
     it.each(SVI_MJESECI)(
@@ -333,7 +336,9 @@ describe('неповний податковий період', () => {
 
   describe('відкриття в грудні', () => {
     it('рахує один місяць податку і один місяць внесків', () => {
-      const { porez, doprinosi, netoZaOsobu } = pausal('900', { mjesec: 12 })
+      const izracun = pausal('900', { mjesec: 12 })
+      const { doprinosi, netoZaOsobu } = izracun
+      const porez = jediniPorez(izracun)
 
       // 1 695 € × 1/12 = 141,25 € × 12%.
       expect(toCentString(porez.poreznaOsnovica)).toBe('141.25')
@@ -350,8 +355,8 @@ describe('неповний податковий період', () => {
 
       // 900 € за грудень і 11 300 € за рік — обидва в першому розряді, тож
       // грудневий податок мусить бути рівно дванадцятою частиною річного.
-      expect(toCentString(pausal('900', { mjesec: 12 }).porez.godisnjiIznos)).toBe(
-        toCentString(eur(godisnji.izracun.porez.godisnjiIznos.amount.div(PUNIH_MJESECI))),
+      expect(toCentString(pausal('900', { mjesec: 12 }).ukupanPorez)).toBe(
+        toCentString(eur(godisnji.izracun.ukupanPorez.amount.div(PUNIH_MJESECI))),
       )
     })
   })

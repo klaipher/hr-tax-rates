@@ -135,7 +135,8 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
         gornjaGranica: eur(razred.gornjaGranica),
         izvor: pravila.razredi.source,
       },
-      porez,
+      porezi: [porez],
+      ukupanPorez: porez.godisnjiIznos,
       doprinosi,
       netoZaOsobu: subtract(godisnjiPrimitak, obvezniPlacanja),
       efektivnaStopa: godisnjiPrimitak.amount.isZero()

@@ -1,19 +1,19 @@
+// TODO(злиття): замінити на `@hr-tax/data`, коли `packages/data/src/index.ts`
+// експортуватиме модуль. Файл індексу належить злиттю гілок, а не цьому
+// тікету, тож поки що правила доводиться діставати шляхом.
 import {
   assertMatchesHok,
   type HokCellRef,
   hokFormula,
   hokRawValue,
   jedinicaBySifra,
+  obrtNaDohodak2026,
   type ParStopa,
   pretpostavke2026,
   ruleset2026,
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-// TODO(злиття): замінити на `@hr-tax/data`, коли `packages/data/src/index.ts`
-// експортуватиме модуль. Файл індексу належить злиттю гілок, а не цьому
-// тікету, тож поки що правила доводиться діставати шляхом.
-import { obrtNaDohodak2026 } from '../../data/src/rules/porez-na-dohodak.ts'
 import { eur, type Money, toCentString } from './money.ts'
 import {
   type IzdaciPoStavkama,
@@ -22,6 +22,7 @@ import {
   type UnosObrtaNaDohodak,
 } from './obrt-na-dohodak.ts'
 import type { Izracun } from './types.ts'
+import { jediniPorez } from './types.ts'
 
 const MJESECI_U_GODINI = 12
 
@@ -103,7 +104,7 @@ const PRIMITAK_POD_PRAGOM = 70000
  * тут інша — `doprinosi.mjesecnaOsnovica` (CONTEXT.md).
  */
 const poreznaOsnovicaZa = (argumenti: Argumenti): Decimal =>
-  izracunaj(argumenti).porez.poreznaOsnovica.amount
+  jediniPorez(izracunaj(argumenti)).poreznaOsnovica.amount
 
 describe('obrt na dohodak', () => {
   describe('izdaci за статтями', () => {
@@ -224,7 +225,7 @@ describe('obrt na dohodak', () => {
 
   describe('прогресія', () => {
     it('нижча ставка застосовується до всієї бази під порогом', () => {
-      const { porez } = izracunaj({ primitak: PRIMITAK_POD_PRAGOM })
+      const porez = jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM }))
 
       expect(porez.poreznaOsnovica.amount.lessThan(60000)).toBe(true)
       expect(toCentString(porez.godisnjiIznos)).toBe(
@@ -233,7 +234,7 @@ describe('obrt na dohodak', () => {
     })
 
     it('вища ставка бере лише перевищення над порогом', () => {
-      const { porez } = izracunaj({ primitak: 150000 })
+      const porez = jediniPorez(izracunaj({ primitak: 150000 }))
       const poreznaOsnovica = porez.poreznaOsnovica.amount
 
       expect(poreznaOsnovica.greaterThan(60000)).toBe(true)
@@ -251,7 +252,7 @@ describe('obrt na dohodak', () => {
       const naPragu = new Decimal(60000)
         .plus(GODISNJI_DOPRINOSI)
         .plus(GODISNJI_ODBITAK_BEZ_UZDRZAVANIH)
-      const { porez } = izracunaj({ primitak: naPragu })
+      const porez = jediniPorez(izracunaj({ primitak: naPragu }))
 
       expect(toCentString(porez.poreznaOsnovica)).toBe('60000.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('13800.00')
@@ -261,7 +262,7 @@ describe('obrt na dohodak', () => {
       const iznadPraga = new Decimal(60001)
         .plus(GODISNJI_DOPRINOSI)
         .plus(GODISNJI_ODBITAK_BEZ_UZDRZAVANIH)
-      const { porez } = izracunaj({ primitak: iznadPraga })
+      const porez = jediniPorez(izracunaj({ primitak: iznadPraga }))
 
       expect(toCentString(porez.poreznaOsnovica)).toBe('60001.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('13800.33')
@@ -269,8 +270,8 @@ describe('obrt na dohodak', () => {
 
     it('нижча ставка міста рухає лише податок, а не базу', () => {
       const najniza: ParStopa = { niza: 1500, visa: 2500 }
-      const uOpcini = izracunaj({ primitak: PRIMITAK_POD_PRAGOM, stope: najniza }).porez
-      const uZagrebu = izracunaj({ primitak: PRIMITAK_POD_PRAGOM }).porez
+      const uOpcini = jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM, stope: najniza }))
+      const uZagrebu = jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM }))
 
       expect(toCentString(uOpcini.poreznaOsnovica)).toBe(toCentString(uZagrebu.poreznaOsnovica))
       expect(toCentString(uOpcini.godisnjiIznos)).toBe(
@@ -286,7 +287,7 @@ describe('obrt na dohodak', () => {
       const zagreb = jedinicaBySifra('1333')
       if (zagreb === undefined) throw new Error('У довіднику немає одиниці з шифрою 1333 (ZAGREB)')
 
-      const { porez } = izracunaj({ primitak: PRIMITAK_POD_PRAGOM, stope: zagreb.stope })
+      const porez = jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM, stope: zagreb.stope }))
 
       expect(porez.poreznaOsnovica.amount.lessThan(60000)).toBe(true)
       expect(toCentString(porez.godisnjiIznos)).toBe(
@@ -295,7 +296,7 @@ describe('obrt na dohodak', () => {
     })
 
     it("база не буває від'ємною — збиток не породжує від'ємного податку", () => {
-      const { porez } = izracunaj({ primitak: 1000 })
+      const porez = jediniPorez(izracunaj({ primitak: 1000 }))
 
       expect(toCentString(porez.poreznaOsnovica)).toBe('0.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('0.00')
@@ -305,7 +306,7 @@ describe('obrt na dohodak', () => {
       // `Porez.stopa` — одне число, а ставок у режимі дві. Тому там лежить
       // ефективна ставка на базу, і ця рівність — її визначення.
       for (const primitak of [PRIMITAK_POD_PRAGOM, 150000, 400000]) {
-        const { porez } = izracunaj({ primitak })
+        const porez = jediniPorez(izracunaj({ primitak }))
 
         expect(porez.poreznaOsnovica.amount.times(porez.stopa).toFixed(2)).toBe(
           toCentString(porez.godisnjiIznos),
@@ -314,7 +315,7 @@ describe('obrt na dohodak', () => {
     })
 
     it('ефективна ставка лежить між нижчою і вищою, коли працюють обидві', () => {
-      const { stopa } = izracunaj({ primitak: 150000 }).porez
+      const { stopa } = jediniPorez(izracunaj({ primitak: 150000 }))
 
       expect(stopa.greaterThan('0.23')).toBe(true)
       expect(stopa.lessThan('0.33')).toBe(true)
@@ -339,21 +340,23 @@ describe('obrt na dohodak', () => {
     })
 
     it('податок зветься так, як його зве закон', () => {
-      expect(izracunaj({ primitak: PRIMITAK_POD_PRAGOM }).porez.naziv).toEqual({
+      expect(jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM })).naziv).toEqual({
         hr: 'porez na dohodak',
         uk: 'податок на дохідок',
       })
     })
 
     it('податок веде до čl. 19., звідки закон бере обидві ставки', () => {
-      const { izvor } = izracunaj({ primitak: PRIMITAK_POD_PRAGOM }).porez
+      const { izvor } = jediniPorez(izracunaj({ primitak: PRIMITAK_POD_PRAGOM }))
 
       expect(izvor.act).toBe('Zakon o porezu na dohodak')
       expect(izvor.article).toBe('čl. 19.')
     })
 
     it("efektivna stopa рахує всі обов'язкові платежі разом", () => {
-      const { porez, doprinosi, efektivnaStopa } = izracunaj({ primitak: PRIMITAK_POD_PRAGOM })
+      const izracunZaTest = izracunaj({ primitak: PRIMITAK_POD_PRAGOM })
+      const { doprinosi, efektivnaStopa } = izracunZaTest
+      const porez = jediniPorez(izracunZaTest)
 
       expect(efektivnaStopa?.toFixed(6)).toBe(
         porez.godisnjiIznos.amount
@@ -368,10 +371,12 @@ describe('obrt na dohodak', () => {
     })
 
     it('на руки лишається dohodak без податку', () => {
-      const { porez, doprinosi, netoZaOsobu } = izracunaj({
+      const izracunZaTest = izracunaj({
         primitak: PRIMITAK_POD_PRAGOM,
         izdaci: { najamnina: eur(4000) },
       })
+      const { doprinosi, netoZaOsobu } = izracunZaTest
+      const porez = jediniPorez(izracunZaTest)
 
       expect(toCentString(netoZaOsobu)).toBe(
         new Decimal(PRIMITAK_POD_PRAGOM)
@@ -421,11 +426,11 @@ describe('obrt na dohodak', () => {
     })
 
     it('база оподаткування сходиться (B12)', () => {
-      expect(uHok('B12', izracun.porez.poreznaOsnovica).status).toBe('match')
+      expect(uHok('B12', jediniPorez(izracun).poreznaOsnovica).status).toBe('match')
     })
 
     it('річна податкова повинність сходиться (B19)', () => {
-      expect(uHok('B19', izracun.porez.godisnjiIznos).status).toBe('match')
+      expect(uHok('B19', izracun.ukupanPorez).status).toBe('match')
     })
 
     it('сума, що лишається обртнику за рік, сходиться (B21)', () => {
@@ -440,7 +445,7 @@ describe('obrt na dohodak', () => {
       // Значенням її не зловити — у книзі всі входи нульові, і там нуль правда.
       expect(hokFormula(dohodovnaCelija('B15'))).toContain('>=60000*((')
 
-      const { porez } = izracunaj({ primitak: 150000 })
+      const porez = jediniPorez(izracunaj({ primitak: 150000 }))
       const samoNizom = porez.poreznaOsnovica.amount.times('0.23')
 
       expect(porez.godisnjiIznos.amount.greaterThan(samoNizom)).toBe(true)

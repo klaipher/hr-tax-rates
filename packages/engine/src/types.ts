@@ -127,8 +127,17 @@ export interface Doprinosi {
 export interface Izracun {
   /** `undefined` у режимів, які не знають розрядів. */
   readonly razred: PrimijenjeniRazred | undefined
-  /** Податкова частина за рік. */
-  readonly porez: Porez
+  /**
+   * Податки режиму за рік, у порядку, в якому вони виникають.
+   *
+   * Множина, а не один: `obrt na dobit` платить `porez na dobit`, податок із
+   * `poduzetnička plaća` і податок на виплату власнику — три різні податки за
+   * двома законами. Схлопнути їх в один означало б втратити і суми, і статті.
+   * Режими з одним податком мають список із одного елемента.
+   */
+  readonly porezi: readonly Porez[]
+  /** Сума всіх податків режиму — щоб картка не складала їх сама. */
+  readonly ukupanPorez: Money<'EUR'>
   /** `doprinosi` (внески / social contributions), розбиті на складові. */
   readonly doprinosi: Doprinosi
   /**
@@ -166,4 +175,20 @@ export interface Usporedba {
   readonly godina: number
   /** Усі режими, завжди всі й завжди в тому самому порядку. */
   readonly rezimi: readonly Rezim[]
+}
+
+/**
+ * Єдиний податок режиму, який має рівно один.
+ *
+ * Існує заради читаності тих режимів, де податок один: `porezi[0]` під
+ * `noUncheckedIndexedAccess` дає `Porez | undefined`, а розбирати цю
+ * невизначеність у кожному виклику — шум. Режим із кількома податками сюди
+ * потрапити не має, тому виклик падає замість того, щоб мовчки взяти перший.
+ */
+export const jediniPorez = (izracun: Izracun): Porez => {
+  const [porez] = izracun.porezi
+  if (porez === undefined || izracun.porezi.length !== 1) {
+    throw new Error(`Очікувався рівно один податок, а є ${String(izracun.porezi.length)}`)
+  }
+  return porez
 }

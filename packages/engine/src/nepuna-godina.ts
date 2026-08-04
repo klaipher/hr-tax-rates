@@ -323,7 +323,8 @@ export const izracunajPausalniObrtZaRazdoblje = (
           ? pravila.razredi.source
           : razdoblje.pravila.mjeseciUPunomRazdoblju.source,
       },
-      porez,
+      porezi: [porez],
+      ukupanPorez: porez.godisnjiIznos,
       doprinosi,
       netoZaOsobu: subtract(ukupniPrimitak, obvezniPlacanja),
       efektivnaStopa: ukupniPrimitak.amount.isZero()

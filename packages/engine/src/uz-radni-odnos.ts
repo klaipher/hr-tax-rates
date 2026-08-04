@@ -1,8 +1,7 @@
-import type { LegalReference, Pretpostavke, Sourced } from '@hr-tax/data'
-import type Decimal from 'decimal.js'
 // Правила ще не проходять через `index.ts` пакета: барель належить злиттю
 // гілок. Після нього імпорт стане пакетним, шлях — зникне.
-import type { DrugaDjelatnostPravila } from '../../data/src/rules/doprinosi-druge-djelatnosti.ts'
+import type { DrugaDjelatnostPravila, LegalReference, Pretpostavke, Sourced } from '@hr-tax/data'
+import type Decimal from 'decimal.js'
 import { eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
 import type { Doprinos, Doprinosi, Naziv } from './types.ts'
 

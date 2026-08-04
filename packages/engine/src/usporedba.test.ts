@@ -3,6 +3,7 @@ import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
 import { eur, toCentString } from './money.ts'
 import type { Izracun, Podloga, Rezim, RezimId, Usporedba } from './types.ts'
+import { jediniPorez } from './types.ts'
 import { usporediRezime } from './usporedba.ts'
 
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
@@ -147,7 +148,7 @@ describe('usporediRezime', () => {
   describe('paušalni obrt — paušalni porez', () => {
     it('рахує податок зі стелі розряду, а не з фактичного primitak', () => {
       // Розряд 4: paušalni dohodak 4 590,00 € × 12%.
-      const { porez } = pausal('20000')
+      const porez = jediniPorez(pausal('20000'))
 
       expect(toCentString(porez.poreznaOsnovica)).toBe('4590.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('550.80')
@@ -155,18 +156,18 @@ describe('usporediRezime', () => {
     })
 
     it('не змінює податок, поки primitak лишається в тому самому розряді', () => {
-      expect(toCentString(pausal('19901').porez.godisnjiIznos)).toBe(
-        toCentString(pausal('30600').porez.godisnjiIznos),
+      expect(toCentString(pausal('19901').ukupanPorez)).toBe(
+        toCentString(pausal('30600').ukupanPorez),
       )
     })
 
     it('податок стрибає на межі розряду без стрибка primitak', () => {
-      expect(toCentString(pausal('19900').porez.godisnjiIznos)).toBe('358.20')
-      expect(toCentString(pausal('19900.01').porez.godisnjiIznos)).toBe('550.80')
+      expect(toCentString(pausal('19900').ukupanPorez)).toBe('358.20')
+      expect(toCentString(pausal('19900.01').ukupanPorez)).toBe('550.80')
     })
 
     it('веде податок до статті закону', () => {
-      expect(pausal('20000').porez.izvor.article).toBe('čl. 82. st. 6.')
+      expect(jediniPorez(pausal('20000')).izvor.article).toBe('čl. 82. st. 6.')
     })
   })
 
@@ -246,7 +247,7 @@ describe('usporediRezime', () => {
         },
       }
 
-      expect(toCentString(pausal('20000', prognoza).porez.godisnjiIznos)).toBe('550.80')
+      expect(toCentString(pausal('20000', prognoza).ukupanPorez)).toBe('550.80')
       // 2 180,00 × 0,40 × 36,5% × 12.
       expect(toCentString(pausal('20000', prognoza).doprinosi.ukupnoGodisnje)).toBe('3819.36')
     })

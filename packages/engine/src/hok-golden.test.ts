@@ -44,7 +44,7 @@ const pausal = (godisnjiPrimitak: Decimal.Value): Izracun => {
 }
 
 const pausalniPorez = (godisnjiPrimitak: Decimal.Value): string =>
-  toCentString(pausal(godisnjiPrimitak).porez.godisnjiIznos)
+  toCentString(pausal(godisnjiPrimitak).ukupanPorez)
 
 const pausalNedostupan = (godisnjiPrimitak: Decimal.Value): boolean => {
   const { rezimi } = usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, podloga2026)
@@ -120,7 +120,7 @@ describe('паушальний обрт проти калькулятора HOK 
     })
 
     it('річна податкова повинність сходиться (C19)', () => {
-      expect(uHok('C19', izracun.porez.godisnjiIznos.amount).status).toBe('match')
+      expect(uHok('C19', izracun.ukupanPorez.amount).status).toBe('match')
     })
 
     it('сума, що лишається обртнику за рік, сходиться (C21)', () => {

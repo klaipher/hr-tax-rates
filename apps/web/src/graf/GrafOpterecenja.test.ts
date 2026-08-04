@@ -1,8 +1,7 @@
-import { pretpostavke2026, ruleset2026 } from '@hr-tax/data'
-import { describe, expect, it } from 'vitest'
 // Відносний шлях, а не пакетний імпорт: `index.ts` пакета даних до цієї гілки
 // не належить. Після зведення гілок імпорт стане пакетним.
-import { rulesetNajave2027 } from '../../../../packages/data/src/rules/najava-2027.ts'
+import { pretpostavke2026, ruleset2026, rulesetNajave2027 } from '@hr-tax/data'
+import { describe, expect, it } from 'vitest'
 import {
   izgradiGraf,
   type ModelGrafa,

@@ -1,11 +1,13 @@
-import type { LegalReference, ParStopa, Sourced } from '@hr-tax/data'
-import Decimal from 'decimal.js'
 // Правила ще не проходять через `index.ts` пакета: барель належить злиттю
 // гілок. Після нього імпорт стане пакетним, шлях — зникне.
 import type {
+  LegalReference,
   ObrtNaDobitPravila,
+  ParStopa,
   PorezNaDobitPravila,
-} from '../../data/src/rules/porez-na-dobit.ts'
+  Sourced,
+} from '@hr-tax/data'
+import Decimal from 'decimal.js'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
 import type { Doprinos, Doprinosi, Naziv, Podloga, Porez } from './types.ts'
 

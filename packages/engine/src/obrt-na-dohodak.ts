@@ -9,8 +9,6 @@
  *
  * Жодного числа з закону модуль не знає — усе приходить у `podloga` (ADR-0001).
  */
-import type { ParStopa, Sourced } from '@hr-tax/data'
-import Decimal from 'decimal.js'
 // TODO(злиття): замінити на `@hr-tax/data`, коли `packages/data/src/index.ts`
 // експортуватиме модуль. Файл індексу належить злиттю гілок, а не цьому
 // тікету, тож поки що правила доводиться діставати шляхом.
@@ -18,8 +16,11 @@ import type {
   NepriznatiIzdaciPravila,
   ObrtNaDohodakPravila,
   OsobniOdbitakPravila,
+  ParStopa,
   ProgresijaPravila,
-} from '../../data/src/rules/porez-na-dohodak.ts'
+  Sourced,
+} from '@hr-tax/data'
+import Decimal from 'decimal.js'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
 import type { Doprinos, Doprinosi, Ishod, Naziv, Podloga, Porez, Unos } from './types.ts'
 
@@ -320,7 +321,8 @@ export const izracunajObrtNaDohodak = (
     izracun: {
       // Розрядів режим не знає: вони існують лише там, де `dohodak` презюмується.
       razred: undefined,
-      porez,
+      porezi: [porez],
+      ukupanPorez: porez.godisnjiIznos,
       doprinosi,
       // `doprinosi` вже відняті всередині `dohodak` як визнаний `izdatak`, тож
       // удруге їх віднімати не можна. У паушальній картці те саме число

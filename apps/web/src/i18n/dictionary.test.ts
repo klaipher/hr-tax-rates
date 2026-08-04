@@ -85,8 +85,8 @@ describe('покриття того, що повертає рушій', () => {
         if (rezim.ishod.status !== 'izracunato') {
           continue
         }
-        const { porez, doprinosi } = rezim.ishod.izracun
-        pojmovi.add(porez.naziv.hr)
+        const { porezi, doprinosi } = rezim.ishod.izracun
+        for (const porez of porezi) pojmovi.add(porez.naziv.hr)
         for (const doprinos of [doprinosi.moPrviStup, doprinosi.moDrugiStup, doprinosi.zo]) {
           pojmovi.add(doprinos.naziv.hr)
         }

@@ -61,22 +61,29 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
       )}
 
       <dl className="rozbivka">
-        <div className="redak">
-          <dt>
-            <span className="redak__naziv">
-              {izracun.porez.naziv.hr}
-              <span className="udio">
-                {t.kartica.udioPoreza(
-                  format.percent(izracun.porez.stopa),
-                  format.eur(izracun.porez.poreznaOsnovica),
-                )}
+        {/*
+          Податків може бути кілька: `obrt na dobit` платить три різні за двома
+          законами. Кожен показується своїм рядком зі своєю статтею — схлопнути
+          їх в один означало б втратити і суми, і джерела.
+        */}
+        {izracun.porezi.map((porez) => (
+          <div className="redak" key={porez.naziv.hr}>
+            <dt>
+              <span className="redak__naziv">
+                {porez.naziv.hr}
+                <span className="udio">
+                  {t.kartica.udioPoreza(
+                    format.percent(porez.stopa),
+                    format.eur(porez.poreznaOsnovica),
+                  )}
+                </span>
               </span>
-            </span>
-            <Prijevod pojam={izracun.porez.naziv.hr} />
-            <Izvor izvor={izracun.porez.izvor} />
-          </dt>
-          <dd>{format.eur(izracun.porez.godisnjiIznos)}</dd>
-        </div>
+              <Prijevod pojam={porez.naziv.hr} />
+              <Izvor izvor={porez.izvor} />
+            </dt>
+            <dd>{format.eur(porez.godisnjiIznos)}</dd>
+          </div>
+        ))}
 
         <DoprinosRedak doprinos={izracun.doprinosi.moPrviStup} />
         <DoprinosRedak doprinos={izracun.doprinosi.moDrugiStup} />

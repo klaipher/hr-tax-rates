@@ -1,8 +1,12 @@
-import { pretpostavke2026, ruleset2026 } from '@hr-tax/data'
-import { describe, expect, it } from 'vitest'
 // Відносний шлях, а не пакетний імпорт: `index.ts` пакета даних до цієї гілки
 // не належить. Після зведення гілок імпорт стане пакетним.
-import { pretpostavkeNajave2027, rulesetNajave2027 } from '../../data/src/rules/najava-2027.ts'
+import {
+  pretpostavke2026,
+  pretpostavkeNajave2027,
+  ruleset2026,
+  rulesetNajave2027,
+} from '@hr-tax/data'
+import { describe, expect, it } from 'vitest'
 import { add, eur, type Money, toCentString } from './money.ts'
 import { blizuObriva, type Obriv, type ObrivRazreda, obrivZa, type PodlogaZa } from './obriv.ts'
 import type { Izracun } from './types.ts'
@@ -40,8 +44,8 @@ const pausal = (godisnjiPrimitak: Money<'EUR'>, podlogaZa: PodlogaZa): Izracun =
 
 /** Річна повинність режиму: податок і внески разом, до цента. */
 const obveza = (godisnjiPrimitak: Money<'EUR'>, podlogaZa: PodlogaZa): string => {
-  const { porez, doprinosi } = pausal(godisnjiPrimitak, podlogaZa)
-  return toCentString(add(porez.godisnjiIznos, doprinosi.ukupnoGodisnje))
+  const { ukupanPorez, doprinosi } = pausal(godisnjiPrimitak, podlogaZa)
+  return toCentString(add(ukupanPorez, doprinosi.ukupnoGodisnje))
 }
 
 /**

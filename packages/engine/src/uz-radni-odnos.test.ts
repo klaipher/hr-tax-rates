@@ -1,5 +1,8 @@
+// Правила ще не проходять через `index.ts` пакета: барель належить злиттю
+// гілок. Після нього імпорт стане пакетним, шлях — зникне.
 import {
   assertMatchesHok,
+  drugaDjelatnost2026,
   type HokCellRef,
   hokFormula,
   pretpostavke2026,
@@ -7,12 +10,10 @@ import {
 } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-// Правила ще не проходять через `index.ts` пакета: барель належить злиттю
-// гілок. Після нього імпорт стане пакетним, шлях — зникне.
-import { drugaDjelatnost2026 } from '../../data/src/rules/doprinosi-druge-djelatnosti.ts'
 import { eur, subtract, toCentString } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
 import type { Podloga } from './types.ts'
+import { jediniPorez } from './types.ts'
 import { doprinosiUzRadniOdnos, ustedaNaDoprinosima } from './uz-radni-odnos.ts'
 
 /**
@@ -43,7 +44,7 @@ const uzRadPausal = (godisnjiPausalniDohodak: Decimal.Value) =>
 const pausalniDohodak = (godisnjiPrimitak: Decimal.Value) => {
   const ishod = izracunajPausalniObrt(eur(godisnjiPrimitak), podloga2026)
   if (ishod.status !== 'izracunato') throw new Error('Паушал недоступний')
-  return ishod.izracun.porez.poreznaOsnovica
+  return jediniPorez(ishod.izracun).poreznaOsnovica
 }
 
 describe('doprinosiUzRadniOdnos', () => {
@@ -165,7 +166,8 @@ describe('doprinosiUzRadniOdnos', () => {
     it('рахує різницю зі звичайними внесками режиму', () => {
       const ishod = izracunajPausalniObrt(eur('20000'), podloga2026)
       if (ishod.status !== 'izracunato') throw new Error('Паушал недоступний')
-      const { doprinosi, porez } = ishod.izracun
+      const { doprinosi } = ishod.izracun
+      const porez = jediniPorez(ishod.izracun)
 
       const uzRad = doprinosiUzRadniOdnos(
         { vrsta: 'pausalni-dohodak', godisnjaOsnovica: porez.poreznaOsnovica },
@@ -184,7 +186,8 @@ describe('doprinosiUzRadniOdnos', () => {
       // тож із наймом внески менші завжди — питання лише наскільки.
       const ishod = izracunajPausalniObrt(eur('60000'), podloga2026)
       if (ishod.status !== 'izracunato') throw new Error('Паушал недоступний')
-      const { doprinosi, porez } = ishod.izracun
+      const { doprinosi } = ishod.izracun
+      const porez = jediniPorez(ishod.izracun)
 
       const uzRad = doprinosiUzRadniOdnos(
         { vrsta: 'pausalni-dohodak', godisnjaOsnovica: porez.poreznaOsnovica },
@@ -232,7 +235,7 @@ describe('doprinosiUzRadniOdnos', () => {
       if (ishod.status !== 'izracunato') throw new Error('Паушал недоступний')
 
       const netoZaOsobu = subtract(
-        subtract(eur(0), ishod.izracun.porez.godisnjiIznos),
+        subtract(eur(0), ishod.izracun.ukupanPorez),
         pausalUzRad.ukupnoGodisnje,
       )
 

@@ -1,11 +1,10 @@
-import { sourced } from '@hr-tax/data'
-import Decimal from 'decimal.js'
-import { describe, expect, it } from 'vitest'
 // Пряме посилання на файл, а не на `@hr-tax/data`: `rules/pdv.ts` ще не
 // виведений через index пакета, а саме цей імпорт і є доказом, що набір правил
 // з `@hr-tax/data` структурно задовольняє контракт `PdvPravila` рушія. Коли
 // index буде дописаний при злитті, шлях стане звичайним іменем пакета.
-import { pdvPravila2026 } from '../../data/src/rules/pdv.ts'
+import { pdvPravila2026, sourced } from '@hr-tax/data'
+import Decimal from 'decimal.js'
+import { describe, expect, it } from 'vitest'
 import { eur, toCentString } from './money.ts'
 import { type PdvPravila, type PdvUnos, usporediSustavPdv } from './pdv.ts'
 

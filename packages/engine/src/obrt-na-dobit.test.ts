@@ -1,3 +1,5 @@
+// Правила ще не проходять через `index.ts` пакета: барель належить злиттю
+// гілок. Після нього імпорт стане пакетним, шлях — зникне.
 import {
   assertMatchesHok,
   type Divergence,
@@ -5,6 +7,7 @@ import {
   hokCell,
   hokFormula,
   hokRawValue,
+  obrtNaDobit2026,
   type ParStopa,
   pretpostavke2026,
   ruleset2026,
@@ -12,9 +15,6 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
-// Правила ще не проходять через `index.ts` пакета: барель належить злиттю
-// гілок. Після нього імпорт стане пакетним, шлях — зникне.
-import { obrtNaDobit2026 } from '../../data/src/rules/porez-na-dobit.ts'
 import { eur, toCentString } from './money.ts'
 import { izracunajObrtNaDobit, type UlazObrtNaDobit } from './obrt-na-dobit.ts'
 import type { Podloga } from './types.ts'

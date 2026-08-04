@@ -82,8 +82,8 @@ export interface KrajRezima {
 
 export type Obriv = ObrivRazreda | KrajRezima
 
-const obveza = ({ porez, doprinosi }: Izracun): Money<'EUR'> =>
-  add(porez.godisnjiIznos, doprinosi.ukupnoGodisnje)
+const obveza = ({ ukupanPorez, doprinosi }: Izracun): Money<'EUR'> =>
+  add(ukupanPorez, doprinosi.ukupnoGodisnje)
 
 /**
  * Обрив, до якого йде цей `primitak`.
@@ -135,7 +135,7 @@ export const obrivZa = (
     granica,
     doGranice,
     skok: {
-      porez: subtract(poslije.porez.godisnjiIznos, prije.porez.godisnjiIznos),
+      porez: subtract(poslije.ukupanPorez, prije.ukupanPorez),
       doprinosi,
       ukupno: subtract(obveza(poslije), obveza(prije)),
       retroaktivnihMjeseci: doprinosi.amount.isZero() ? 0 : MJESECI_U_GODINI,

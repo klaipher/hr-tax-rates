@@ -82,8 +82,8 @@ const obvezaZa = (scenarij: ScenarijGrafa, primitak: number): number | undefined
   const ishod = rezimi.find((rezim) => rezim.id === 'pausalni-obrt')?.ishod
   if (ishod === undefined || ishod.status !== 'izracunato') return undefined
 
-  const { porez, doprinosi } = ishod.izracun
-  return porez.godisnjiIznos.amount.plus(doprinosi.ukupnoGodisnje.amount).toNumber()
+  const { ukupanPorez, doprinosi } = ishod.izracun
+  return ukupanPorez.amount.plus(doprinosi.ukupnoGodisnje.amount).toNumber()
 }
 
 /** Найменший крок, яким закон розводить розряди: межі задані до цента. */
