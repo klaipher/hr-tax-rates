@@ -134,7 +134,7 @@ export const en: Dictionary = {
     ukupno: 'Total',
     ostaje: 'left per year',
     prekoracenje: (limit: string, nadlimit: string) =>
-      `Annual income exceeds the group-3 limit of ${limit} ₴ by ${nadlimit} ₴. Above the ` +
+      `Annual income exceeds the group-3 limit of ${limit} by ${nadlimit}. Above the ` +
       'limit a higher rate applies and the taxpayer moves to the general system — the ' +
       'calculator deliberately does not compute either, it only reports.',
   },
@@ -164,6 +164,9 @@ export const en: Dictionary = {
       'The annual figure says nothing about cash flow: paušalni porez is paid in quarterly ' +
       'advances, doprinosi monthly, and the year-end settlement only falls due the next year.',
     pomaknuto: 'the deadline fell on a non-working day — moved',
+    razlika: (godina: string) =>
+      `The year-end settlement only falls due in ${godina}. In a steady state it is zero — ` +
+      'an amount appears when the actual result diverges from the advances.',
   },
   scenarij: {
     naslov: 'Rule set',

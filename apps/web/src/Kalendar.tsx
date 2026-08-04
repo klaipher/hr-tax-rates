@@ -1,56 +1,91 @@
-import { buildPaymentSchedule, DEADLINES } from '@hr-tax/data'
-import type { Izracun } from '@hr-tax/engine'
-import { useMemo } from 'react'
+import { type AnnualObligation, buildPaymentSchedule, DEADLINES } from '@hr-tax/data'
+import type { Rezim } from '@hr-tax/engine'
+import { useMemo, useState } from 'react'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 
 /**
  * Коли і скільки платити протягом року.
  *
- * Річна сума нічого не каже про кеш: `paušalni porez` іде квартальними
- * авансами, `doprinosi` — щомісяця, а доплата за річним звітом настає вже
- * наступного року. Саме вона стає несподіванкою для тих, хто планував лише
- * поточний.
+ * Річна сума нічого не каже про кеш: податок іде авансами, `doprinosi` —
+ * щомісяця, `komorski doprinos` — щокварталу наперед, а доплата за річним
+ * звітом настає вже наступного року. Саме вона стає несподіванкою для тих,
+ * хто планував лише поточний.
+ *
+ * Строки різні не лише за видом платежу, а й за режимом: `Zakon o doprinosima`
+ * розводить режими по главах, і `obrt na dobit` платить внески в останній день
+ * місяця, а не 15-го. Тому види обов'язків приходять із розрахунку, а не
+ * вгадуються тут.
  *
  * Аванси будуються для фактичного розряду — стійкий стан. Розбіжність між
  * очікуваним і фактичним розрядом протягом року не моделюється: вона
  * вимагала б ще одного входу, «а що ви планували в січні».
  */
 export const Kalendar = ({
-  izracun,
+  rezimi,
   godina,
 }: {
-  readonly izracun: Izracun
+  readonly rezimi: readonly Rezim[]
   readonly godina: number
 }) => {
   const { t, format } = useI18n()
 
-  const rate = useMemo(() => {
-    const komorski = izracun.obveznaDavanja.find(
-      (davanje) => davanje.status === 'obračunato' && davanje.naziv.hr === 'komorski doprinos',
-    )
+  const dostupni = rezimi.filter((rezim) => rezim.ishod.status === 'izracunato')
+  const [odabrani, setOdabrani] = useState(dostupni[0]?.id)
 
-    return buildPaymentSchedule(godina, [
-      { obligation: 'paušalni porez', annualAmount: izracun.ukupanPorez.amount },
+  const rezim = dostupni.find((r) => r.id === odabrani) ?? dostupni[0]
+  const izracun = rezim?.ishod.status === 'izracunato' ? rezim.ishod.izracun : undefined
+
+  const rate = useMemo(() => {
+    if (izracun === undefined) return []
+    const { vrsteObveza } = izracun
+
+    const obveze: AnnualObligation[] = [
+      { obligation: vrsteObveza.porez, annualAmount: izracun.ukupanPorez.amount },
       {
-        obligation: 'doprinosi (paušalni obrt)',
+        obligation: vrsteObveza.doprinosi,
         annualAmount: izracun.doprinosi.ukupnoGodisnje.amount,
       },
-      ...(komorski?.status === 'obračunato'
-        ? [
-            {
-              obligation: 'komorski doprinos' as const,
-              annualAmount: komorski.godisnjiIznos.amount,
-            },
-          ]
-        : []),
-    ])
+    ]
+
+    // Незастосовний платіж у календар не потрапляє: рядок на нуль євро
+    // читався б як платіж, якого насправді немає.
+    if (izracun.ukupnaDavanja.amount.greaterThan(0)) {
+      obveze.push({
+        obligation: vrsteObveza.komorskiDoprinos,
+        annualAmount: izracun.ukupnaDavanja.amount,
+      })
+    }
+
+    return buildPaymentSchedule(godina, obveze)
   }, [izracun, godina])
+
+  if (rezim === undefined || izracun === undefined) return null
 
   return (
     <section className="kalendar">
       <h2>{t.kalendar.naslov}</h2>
       <p className="forma__prijevod">{t.kalendar.prijevod}</p>
+
+      {dostupni.length > 1 && (
+        <fieldset className="kalendar__izbor">
+          <legend className="vizualno-skriveno">{t.kalendar.naslov}</legend>
+          {dostupni.map((kandidat) => (
+            <label key={kandidat.id} className="scenarij__izbor">
+              <input
+                type="radio"
+                name="kalendar-rezim"
+                value={kandidat.id}
+                checked={rezim.id === kandidat.id}
+                onChange={() => {
+                  setOdabrani(kandidat.id)
+                }}
+              />
+              {kandidat.naziv.hr}
+            </label>
+          ))}
+        </fieldset>
+      )}
 
       <ol className="kalendar__popis">
         {rate.map((obrok) => {
@@ -74,6 +109,16 @@ export const Kalendar = ({
           )
         })}
       </ol>
+
+      {/*
+        Річна доплата в календарі не показується сумою навмисно: у стійкому
+        стані вона нульова, а нуль у списку платежів читався б як платіж.
+        Але сам факт, що вона настає вже наступного року, сказати треба.
+      */}
+      <p className="forma__prijevod">
+        {t.kalendar.razlika(String(godina + 1))}
+        <Izvor izvor={DEADLINES[izracun.vrsteObveza.razlika].source} />
+      </p>
     </section>
   )
 }

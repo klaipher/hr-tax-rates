@@ -132,7 +132,7 @@ export const hr: Dictionary = {
     ukupno: 'Ukupno',
     ostaje: 'ostaje godišnje',
     prekoracenje: (limit: string, nadlimit: string) =>
-      `Godišnji dohodak prelazi limit 3. skupine od ${limit} ₴ za ${nadlimit} ₴. ` +
+      `Godišnji dohodak prelazi limit 3. skupine od ${limit} za ${nadlimit}. ` +
       'Iznad limita nastupa viša stopa i prelazak na opći sustav — kalkulator to namjerno ' +
       'ne računa, nego samo javlja.',
   },
@@ -162,6 +162,9 @@ export const hr: Dictionary = {
       'Godišnji iznos ne govori ništa o novčanom toku: paušalni porez ide tromjesečnim ' +
       'predujmovima, doprinosi mjesečno, a razlika po godišnjem izvješću dolazi tek iduće godine.',
     pomaknuto: 'rok je pao na neradni dan — pomaknuto',
+    razlika: (godina: string) =>
+      `Razlika po godišnjem izvješću dospijeva tek ${godina}. U stabilnom stanju je nula — ` +
+      'iznos se pojavljuje kad stvarni rezultat odstupi od predujmova.',
   },
   scenarij: {
     naslov: 'Skup pravila',

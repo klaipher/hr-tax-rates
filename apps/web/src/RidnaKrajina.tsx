@@ -70,14 +70,14 @@ export const RidnaKrajina = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: 
                         <Izvor key={izvor.article} izvor={izvor} />
                       ))}
                     </dt>
-                    <dd>{charge.annual.toFixed(2)} ₴</dd>
+                    <dd>{format.uah({ currency: 'UAH', amount: charge.annual })}</dd>
                   </div>
                 ))}
                 <div className="redak redak--zbroj">
                   <dt>
                     <span className="redak__naziv">{t.krajina.ukupno}</span>
                   </dt>
-                  <dd>{rezultat.totalCharges.toFixed(2)} ₴</dd>
+                  <dd>{format.uah({ currency: 'UAH', amount: rezultat.totalCharges })}</dd>
                 </div>
               </dl>
 

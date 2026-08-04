@@ -275,6 +275,13 @@ export const izracunajPausalniObrtZaRazdoblje = (
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
       ukupniIzdaci: eur(0),
+      // Види обов'язків підставляє usporedba.ts: там відомо, який це режим.
+      vrsteObveza: {
+        porez: 'paušalni porez',
+        razlika: 'razlika paušalnog poreza',
+        doprinosi: 'doprinosi (paušalni obrt)',
+        komorskiDoprinos: 'komorski doprinos',
+      },
       netoZaOsobu: subtract(ukupniPrimitak, obvezniPlacanja),
       efektivnaStopa: ukupniPrimitak.amount.isZero()
         ? undefined

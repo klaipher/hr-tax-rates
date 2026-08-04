@@ -1,4 +1,4 @@
-import type { LegalReference, Pretpostavke, Ruleset } from '@hr-tax/data'
+import type { LegalReference, ObligationKind, Pretpostavke, Ruleset } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
 import type { Money } from './money.ts'
 
@@ -149,6 +149,21 @@ export type ObveznoDavanje =
     }
 
 /**
+ * Які обов'язки має режим — по одному на кожну складову платежу.
+ *
+ * `razlika` наведена окремо, бо настає вже в наступному календарному році:
+ * саме вона стає несподіванкою для тих, хто планував лише поточний.
+ */
+export interface VrsteObveza {
+  /** Обов'язок, за яким сплачується податок протягом року. */
+  readonly porez: ObligationKind
+  /** Річна доплата за звітом — наступного року. */
+  readonly razlika: ObligationKind
+  readonly doprinosi: ObligationKind
+  readonly komorskiDoprinos: ObligationKind
+}
+
+/**
  * Розрахунок режиму. Структура однакова для всіх режимів — саме на ній
  * тримається зіставність, тож поле, якого режим не має, лишається присутнім
  * зі значенням `undefined`, а не зникає.
@@ -176,6 +191,14 @@ export interface Izracun {
   readonly obveznaDavanja: readonly ObveznoDavanje[]
   /** Сума нарахованих `obveznaDavanja` за рік. */
   readonly ukupnaDavanja: Money<'EUR'>
+  /**
+   * Види обов'язків цього режиму — з чого будується календар платежів.
+   *
+   * Знає режим, а не інтерфейс: те, коли й чим саме платить `obrt na dobit`,
+   * встановлює закон, і вгадувати це з ідентифікатора картки означало б
+   * тримати право в шарі показу.
+   */
+  readonly vrsteObveza: VrsteObveza
   /**
    * Витрати, враховані в `netoZaOsobu`. Нуль, коли форма їх не знає.
    *

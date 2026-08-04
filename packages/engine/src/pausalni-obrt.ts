@@ -90,6 +90,13 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
       ukupniIzdaci: eur(0),
+      // Види обов'язків підставляє usporedba.ts: там відомо, який це режим.
+      vrsteObveza: {
+        porez: 'paušalni porez',
+        razlika: 'razlika paušalnog poreza',
+        doprinosi: 'doprinosi (paušalni obrt)',
+        komorskiDoprinos: 'komorski doprinos',
+      },
       netoZaOsobu: subtract(godisnjiPrimitak, obvezniPlacanja),
       efektivnaStopa: godisnjiPrimitak.amount.isZero()
         ? undefined

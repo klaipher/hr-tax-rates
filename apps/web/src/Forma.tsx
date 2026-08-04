@@ -1,5 +1,5 @@
 import { sveJedinice } from '@hr-tax/data'
-import { eur, type IzdaciPoStavkama, type Mjesec } from '@hr-tax/engine'
+import { eur, type IzdaciPoStavkama, type Mjesec, type TipKlijenta } from '@hr-tax/engine'
 import { useI18n } from './i18n/context.tsx'
 
 /** Стан форми — рівно те, що вводить людина, без похідних величин. */
@@ -12,6 +12,10 @@ export interface StanjeForme {
   readonly uzRadniOdnos: boolean
   /** Місяць відкриття обрту; `undefined` — повний рік. */
   readonly mjesecPocetka: Mjesec | undefined
+  /** Звідки клієнти — від цього залежить `PDV` на вихідних рахунках. */
+  readonly tipKlijenta: TipKlijenta
+  /** Річна сума послуг, куплених за кордоном. */
+  readonly inozemneUsluge: number
 }
 
 /**
@@ -30,6 +34,8 @@ export const POCETNO_STANJE: StanjeForme = {
   sifraJedinice: POCETNA_JEDINICA,
   uzRadniOdnos: false,
   mjesecPocetka: undefined,
+  tipKlijenta: 'poslovni-eu',
+  inozemneUsluge: 0,
 }
 
 /**
@@ -52,6 +58,8 @@ export const izdaciIzForme = (stanje: StanjeForme): IzdaciPoStavkama => ({
 })
 
 const MJESECI: readonly Mjesec[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+const TIPOVI_KLIJENATA: readonly TipKlijenta[] = ['poslovni-eu', 'poslovni-izvan-eu', 'tuzemni']
 
 /**
  * Ставка в базисних пунктах як відсоток.
@@ -172,6 +180,36 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
           ))}
         </select>
       </p>
+
+      <h2 className="forma__podnaslov">PDV</h2>
+      <p className="forma__prijevod">{t.pdv.tipKlijentaPrijevod}</p>
+
+      <p className="polje">
+        <label htmlFor="tip-klijenta">{t.pdv.tipKlijenta}</label>
+        <select
+          id="tip-klijenta"
+          value={stanje.tipKlijenta}
+          onChange={(event) => {
+            promijeni({ tipKlijenta: event.target.value as TipKlijenta })
+          }}
+        >
+          {TIPOVI_KLIJENATA.map((tip) => (
+            <option key={tip} value={tip}>
+              {t.pdv.klijenti[tip]}
+            </option>
+          ))}
+        </select>
+      </p>
+
+      {novac(
+        'inozemne-usluge',
+        t.pdv.inozemneUsluge,
+        stanje.inozemneUsluge,
+        (inozemneUsluge) => {
+          promijeni({ inozemneUsluge })
+        },
+        t.pdv.inozemneUslugePrijevod,
+      )}
 
       <p className="polje polje--potvrda">
         <label htmlFor="uz-radni-odnos">

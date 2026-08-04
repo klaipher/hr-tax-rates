@@ -31,6 +31,7 @@ import type {
   RezimId,
   Unos,
   Usporedba,
+  VrsteObveza,
 } from './types.ts'
 import { doprinosiUzRadniOdnos } from './uz-radni-odnos.ts'
 
@@ -83,6 +84,36 @@ const NAZIVI: Readonly<Record<RezimId, Naziv>> = {
 const nedostupno = (razlog: RazlogNedostupnosti): Ishod => ({ status: 'nedostupno', razlog })
 
 /**
+ * Обов'язки кожного режиму — з чого будується календар.
+ *
+ * Це юридичні факти, а не оформлення: `doprinosi` мають три різні строки за
+ * трьома главами `Zakon o doprinosima`, і схлопнути їх в один означало б
+ * помилитися для цілого режиму.
+ */
+const VRSTE_OBVEZA: Readonly<
+  Record<'pausalni-obrt' | 'obrt-na-dohodak' | 'obrt-na-dobit', VrsteObveza>
+> = {
+  'pausalni-obrt': {
+    porez: 'paušalni porez',
+    razlika: 'razlika paušalnog poreza',
+    doprinosi: 'doprinosi (paušalni obrt)',
+    komorskiDoprinos: 'komorski doprinos',
+  },
+  'obrt-na-dohodak': {
+    porez: 'predujam poreza na dohodak',
+    razlika: 'razlika poreza na dohodak',
+    doprinosi: 'doprinosi (obrt na dohodak)',
+    komorskiDoprinos: 'komorski doprinos',
+  },
+  'obrt-na-dobit': {
+    porez: 'predujam poreza na dobit',
+    razlika: 'razlika poreza na dobit',
+    doprinosi: 'doprinosi (obrt na dobit)',
+    komorskiDoprinos: 'komorski doprinos',
+  },
+}
+
+/**
  * `rashod` для `obrt na dobit` — сума всіх статей `izdatak`.
  *
  * Форма знає одні витрати, а режими міряють їх по-різному: `obrt na dohodak`
@@ -111,7 +142,12 @@ const NAZIV_KOMORSKOG = {
  * за нарахуванням) — прирівнювання назване в JSDoc `UlazObrtNaDobit` і
  * лишається припущенням форми, а не закону.
  */
-const uskladi = (izracun: Izracun, unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Izracun => {
+const uskladi = (
+  izracun: Izracun,
+  unos: UnosUsporedbe,
+  podloga: PodlogaUsporedbe,
+  vrsteObveza: VrsteObveza,
+): Izracun => {
   const rezultat = komorskiDoprinos(
     { uPrveDvijeGodine: unos.noviObrt === true },
     podloga.komorskiDoprinos ?? KOMORSKI_DOPRINOS_U_SNAZI,
@@ -144,6 +180,7 @@ const uskladi = (izracun: Izracun, unos: UnosUsporedbe, podloga: PodlogaUsporedb
     obveznaDavanja: [davanje],
     ukupnaDavanja,
     ukupniIzdaci,
+    vrsteObveza,
     // Одна формула на всі режими: надходження без витрат і без усіх
     // обов'язкових платежів. Режими рахували це по-різному — паушал брав
     // primitak без витрат, бо витрат не знав, — і сусідні картки порівнювали
@@ -290,6 +327,13 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
       ukupniIzdaci: eur(0),
+      // Види обов'язків підставляє usporedba.ts: там відомо, який це режим.
+      vrsteObveza: {
+        porez: 'paušalni porez',
+        razlika: 'razlika paušalnog poreza',
+        doprinosi: 'doprinosi (paušalni obrt)',
+        komorskiDoprinos: 'komorski doprinos',
+      },
       netoZaOsobu: izracunDobiti.netoZaOsobu,
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
@@ -307,26 +351,26 @@ const NEMODELIRANI: readonly RezimId[] = ['zaposlenik', 'doo']
  * припущення приходять у `podloga` (ADR-0001).
  */
 export const usporediRezime = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Usporedba => {
-  const dovrsi = (ishod: Ishod): Ishod =>
+  const dovrsi = (ishod: Ishod, vrste: VrsteObveza): Ishod =>
     ishod.status === 'izracunato'
-      ? { status: 'izracunato', izracun: uskladi(ishod.izracun, unos, podloga) }
+      ? { status: 'izracunato', izracun: uskladi(ishod.izracun, unos, podloga, vrste) }
       : ishod
 
   const rezimi: readonly Rezim[] = [
     {
       id: 'pausalni-obrt',
       naziv: NAZIVI['pausalni-obrt'],
-      ishod: dovrsi(pausalniObrt(unos, podloga)),
+      ishod: dovrsi(pausalniObrt(unos, podloga), VRSTE_OBVEZA['pausalni-obrt']),
     },
     {
       id: 'obrt-na-dohodak',
       naziv: NAZIVI['obrt-na-dohodak'],
-      ishod: dovrsi(obrtNaDohodak(unos, podloga)),
+      ishod: dovrsi(obrtNaDohodak(unos, podloga), VRSTE_OBVEZA['obrt-na-dohodak']),
     },
     {
       id: 'obrt-na-dobit',
       naziv: NAZIVI['obrt-na-dobit'],
-      ishod: dovrsi(obrtNaDobit(unos, podloga)),
+      ishod: dovrsi(obrtNaDobit(unos, podloga), VRSTE_OBVEZA['obrt-na-dobit']),
     },
     ...NEMODELIRANI.map(
       (id): Rezim => ({

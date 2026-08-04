@@ -1,10 +1,8 @@
 import { pdvPravila2026 } from '@hr-tax/data'
 import { eur, type Money, type TipKlijenta, usporediSustavPdv } from '@hr-tax/engine'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
-
-const TIPOVI: readonly TipKlijenta[] = ['poslovni-eu', 'poslovni-izvan-eu', 'tuzemni']
 
 /**
  * `PDV` — і вихідна сторона, і вхідна.
@@ -15,10 +13,16 @@ const TIPOVI: readonly TipKlijenta[] = ['poslovni-eu', 'poslovni-izvan-eu', 'tuz
  * вхід у систему `PDV` цю витрату **прибирає**, і чим більше закордонних
  * послуг, тим дорожче обходиться життя під порогом.
  */
-export const Pdv = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: Money<'EUR'> }) => {
+export const Pdv = ({
+  godisnjiPrimitak,
+  tipKlijenta,
+  inozemneUsluge,
+}: {
+  readonly godisnjiPrimitak: Money<'EUR'>
+  readonly tipKlijenta: TipKlijenta
+  readonly inozemneUsluge: number
+}) => {
   const { t, format } = useI18n()
-  const [tipKlijenta, setTipKlijenta] = useState<TipKlijenta>('poslovni-eu')
-  const [inozemneUsluge, setInozemneUsluge] = useState(0)
 
   const usporedba = useMemo(
     () =>
@@ -38,43 +42,6 @@ export const Pdv = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: Money<'EU
   return (
     <section className="pdv">
       <h2>PDV</h2>
-
-      <p className="polje">
-        <label htmlFor="tip-klijenta">
-          {t.pdv.tipKlijenta}
-          <span className="prijevod">{t.pdv.tipKlijentaPrijevod}</span>
-        </label>
-        <select
-          id="tip-klijenta"
-          value={tipKlijenta}
-          onChange={(event) => {
-            setTipKlijenta(event.target.value as TipKlijenta)
-          }}
-        >
-          {TIPOVI.map((tip) => (
-            <option key={tip} value={tip}>
-              {t.pdv.klijenti[tip]}
-            </option>
-          ))}
-        </select>
-      </p>
-
-      <p className="polje">
-        <label htmlFor="inozemne-usluge">
-          {t.pdv.inozemneUsluge}
-          <span className="prijevod">{t.pdv.inozemneUslugePrijevod}</span>
-        </label>
-        <input
-          id="inozemne-usluge"
-          type="number"
-          min={0}
-          step={100}
-          value={inozemneUsluge}
-          onChange={(event) => {
-            setInozemneUsluge(Math.max(0, Number(event.target.value)))
-          }}
-        />
-      </p>
 
       <p className="pdv__status">
         {t.pdv.status(t.pdv.statusi[obvezniStatus])}

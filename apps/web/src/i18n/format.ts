@@ -31,6 +31,14 @@ const VALUTA = 'EUR'
 export interface Formatters {
   /** Сума в євро за правилами локалі: `60 000,01 €`, `€60,000.01`. */
   readonly eur: (iznos: Money<'EUR'>) => string
+  /**
+   * Сума в гривнях за правилами локалі.
+   *
+   * Окремий форматувальник, а не той самий із іншою валютою: гривня
+   * з'являється лише в порівнянні з рідною країною, і показувати її як євро
+   * означало б переплутати валюти на екрані.
+   */
+  readonly uah: (iznos: Money<'UAH'>) => string
   /** Частка як відсоток: `20,21 %`. Хвостові нулі не дописуються. */
   readonly percent: (udio: DecimalniBroj) => string
   /** Звичайне число з групуванням розрядів. */
@@ -63,6 +71,11 @@ export const createFormatters = (locale: Locale): Formatters => {
     currency: VALUTA,
     currencyDisplay: 'narrowSymbol',
   })
+  const grivnja = new Intl.NumberFormat(locale, {
+    style: 'currency',
+    currency: 'UAH',
+    currencyDisplay: 'narrowSymbol',
+  })
   const postotak = new Intl.NumberFormat(locale, {
     style: 'percent',
     maximumFractionDigits: ZNAMENKE_POSTOTKA,
@@ -71,6 +84,7 @@ export const createFormatters = (locale: Locale): Formatters => {
 
   return {
     eur: (iznos) => novac.format(zaPrikaz(iznos.amount)),
+    uah: (iznos) => grivnja.format(zaPrikaz(iznos.amount)),
     percent: (udio) => postotak.format(zaPrikaz(udio)),
     number: (vrijednost) => broj.format(vrijednost),
   }

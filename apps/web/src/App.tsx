@@ -118,62 +118,107 @@ export const App = () => {
         <LanguageSwitcher />
       </header>
 
-      <section className="unos">
-        <label htmlFor="primitak">
-          {t.unos.oznaka}
-          <span className="prijevod">{t.unos.prijevod}</span>
-        </label>
-        <output className="unos__iznos" htmlFor="primitak">
-          {format.eur(eur(godisnjiPrimitak))}
-        </output>
-        <input
-          id="primitak"
-          type="range"
-          min={0}
-          max={NAJVISI_PRIMITAK}
-          step={KORAK}
-          value={godisnjiPrimitak}
-          onChange={(event) => setGodisnjiPrimitak(Number(event.target.value))}
-        />
-        <p className="unos__skala">
-          <span>{format.eur(eur(0))}</span>
-          <span>{format.eur(eur(NAJVISI_PRIMITAK))}</span>
-        </p>
-      </section>
+      {/*
+        Два стовпці: усі входи зліва, усі результати справа. Раніше форма
+        стояла між картками й графіком, тож щоб змінити витрати, доводилося
+        гортати повз результат, який ти саме й хочеш побачити.
+      */}
+      <div className="raspored">
+        <div className="raspored__unos">
+          <section className="unos">
+            <label htmlFor="primitak">
+              {t.unos.oznaka}
+              <span className="prijevod">{t.unos.prijevod}</span>
+            </label>
 
-      <section className="scenarij">
-        <fieldset>
-          <legend>{t.scenarij.naslov}</legend>
-          {SCENARIJI.map((s) => (
-            <label key={s.id} className="scenarij__izbor">
+            {/*
+              Число можна і ввести, і потягнути. Повзунок добрий, щоб побачити
+              форму кривої, але на 200 000 € крок у 100 € робить його
+              непридатним для точного значення.
+            */}
+            <span className="unos__redak">
               <input
-                type="radio"
-                name="scenarij"
-                value={s.id}
-                checked={scenarij === s.id}
-                onChange={() => {
-                  setScenarij(s.id)
+                id="primitak"
+                className="unos__polje"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={NAJVISI_PRIMITAK}
+                step={KORAK}
+                value={godisnjiPrimitak}
+                onChange={(event) => {
+                  const uneseno = Number(event.target.value)
+                  setGodisnjiPrimitak(
+                    Number.isFinite(uneseno) ? Math.min(Math.max(0, uneseno), NAJVISI_PRIMITAK) : 0,
+                  )
                 }}
               />
-              {t.scenarij[s.id]}
-            </label>
-          ))}
-        </fieldset>
-        {scenarij === 'najava' && <p className="razlog">{t.scenarij.prognoza}</p>}
-        <p className="scenarij__delta">
-          {delta === undefined || delta.isZero()
-            ? t.scenarij.bezRazlike
-            : t.scenarij.delta(format.eur(eur(delta)))}
-        </p>
-      </section>
+              <output className="unos__iznos" htmlFor="primitak">
+                {format.eur(eur(godisnjiPrimitak))}
+              </output>
+            </span>
 
-      <Forma stanje={forma} onPromjena={setForma} />
+            <input
+              className="unos__klizac"
+              type="range"
+              aria-label={t.unos.oznaka}
+              min={0}
+              max={NAJVISI_PRIMITAK}
+              step={KORAK}
+              value={godisnjiPrimitak}
+              onChange={(event) => {
+                setGodisnjiPrimitak(Number(event.target.value))
+              }}
+            />
+            <p className="unos__skala">
+              <span>{format.eur(eur(0))}</span>
+              <span>{format.eur(eur(NAJVISI_PRIMITAK))}</span>
+            </p>
+          </section>
 
-      <section className="rezimi">
-        {usporedba.rezimi.map((rezim) => (
-          <RezimKartica key={rezim.id} rezim={rezim} />
-        ))}
-      </section>
+          <section className="scenarij">
+            <fieldset>
+              <legend>{t.scenarij.naslov}</legend>
+              {SCENARIJI.map((s) => (
+                <label key={s.id} className="scenarij__izbor">
+                  <input
+                    type="radio"
+                    name="scenarij"
+                    value={s.id}
+                    checked={scenarij === s.id}
+                    onChange={() => {
+                      setScenarij(s.id)
+                    }}
+                  />
+                  {t.scenarij[s.id]}
+                </label>
+              ))}
+            </fieldset>
+            {scenarij === 'najava' && <p className="razlog">{t.scenarij.prognoza}</p>}
+            <p className="scenarij__delta">
+              {delta === undefined || delta.isZero()
+                ? t.scenarij.bezRazlike
+                : t.scenarij.delta(format.eur(eur(delta)))}
+            </p>
+          </section>
+
+          <Forma stanje={forma} onPromjena={setForma} />
+        </div>
+
+        <div className="raspored__ishod">
+          <section className="rezimi">
+            {usporedba.rezimi.map((rezim) => (
+              <RezimKartica key={rezim.id} rezim={rezim} />
+            ))}
+          </section>
+
+          <Pdv
+            godisnjiPrimitak={eur(godisnjiPrimitak)}
+            tipKlijenta={forma.tipKlijenta}
+            inozemneUsluge={forma.inozemneUsluge}
+          />
+        </div>
+      </div>
 
       <GrafOpterecenja
         scenariji={SCENARIJI}
@@ -182,12 +227,7 @@ export const App = () => {
         onOdabir={setGodisnjiPrimitak}
       />
 
-      {/* Календар будується для паушалу — режиму, який рахується завжди. */}
-      {usporedba.rezimi[0]?.ishod.status === 'izracunato' && (
-        <Kalendar izracun={usporedba.rezimi[0].ishod.izracun} godina={usporedba.godina} />
-      )}
-
-      <Pdv godisnjiPrimitak={eur(godisnjiPrimitak)} />
+      <Kalendar rezimi={usporedba.rezimi} godina={usporedba.godina} />
 
       <RidnaKrajina godisnjiPrimitak={eur(godisnjiPrimitak)} />
 
