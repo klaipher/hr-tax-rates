@@ -110,6 +110,7 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
     <section className="forma">
       <h2>{t.unos.izdaciNaslov}</h2>
       <p className="forma__prijevod">{t.unos.izdaciPrijevod}</p>
+      <p className="forma__primjer">{t.unos.izdaciPrimjer}</p>
 
       {novac('izdatak-ostalo', t.unos.ostalo, stanje.ostalo, (ostalo) => {
         promijeni({ ostalo })

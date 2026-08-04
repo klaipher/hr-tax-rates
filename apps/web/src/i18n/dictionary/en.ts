@@ -46,7 +46,13 @@ export const en: Dictionary = {
     okolnostiNaslov: 'Your circumstances',
     okolnostiPrijevod: 'these decide the rates and reliefs that apply',
     izdaciPrijevod:
-      'expenditure on a cash basis — the book-keeping regimes cannot be computed without it',
+      'These affect obrt na dohodak and obrt na dobit: there the tax is taken from the ' +
+      'difference between receipts and expenditure, so every euro entered lowers the base. ' +
+      'They do not affect paušalni obrt at all — there the law presumes the expenditure, ' +
+      'whatever the real figure. Counted on a cash basis: in the year the money actually left.',
+    izdaciPrimjer:
+      'For example: 3 600 € of rent plus 1 200 € of hosting and subscriptions is 4 800 € under ' +
+      '“ordinary”. A 200 € client lunch goes under “entertainment”, and the law recognises 100 €.',
     ostalo: 'Ordinary expenditure',
     reprezentacija: 'Entertainment',
     osobnoVozilo: 'Personal vehicle',
@@ -176,8 +182,12 @@ export const en: Dictionary = {
       'The announced changes are not enacted yet. The 2027 prosječna plaća does not exist ' +
       'physically — it is published from January–August 2026 data — so the contribution ' +
       'figures here are a forecast, not a calculation.',
-    delta: (iznos: string) => `Difference against the law in force: ${iznos} a year.`,
-    bezRazlike: 'At this primitak the announced changes make no difference.',
+    samoPausal:
+      'The changes concern paušalni obrt only — and within it only the top two razredi, from ' +
+      '40 000 €. The other regimes do not depend on them.',
+    delta: (iznos: string) =>
+      `Paušalni obrt: ${iznos} a year of difference against the law in force.`,
+    bezRazlike: 'At this primitak the announced changes make no difference — it is below 40 000 €.',
   },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,

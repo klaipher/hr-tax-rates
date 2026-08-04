@@ -45,7 +45,14 @@ export const hr: Dictionary = {
     izdaciNaslov: 'Izdaci godišnje',
     okolnostiNaslov: 'Vaše okolnosti',
     okolnostiPrijevod: 'o njima ovise stope i olakšice',
-    izdaciPrijevod: 'izdaci po načelu blagajne — bez njih se režimi s knjigama ne računaju',
+    izdaciPrijevod:
+      'Utječu na obrt na dohodak i obrt na dobit: ondje se porez uzima iz razlike primitaka i ' +
+      'izdataka, pa svaki uneseni euro smanjuje osnovicu. Na paušalni obrt ne utječu uopće — ' +
+      'ondje izdatak pretpostavlja zakon, bez obzira na stvarni. Računaju se po načelu ' +
+      'blagajne: u godini u kojoj je novac stvarno izašao.',
+    izdaciPrimjer:
+      'Primjer: najamnina 3 600 € i hosting s pretplatama 1 200 € čine 4 800 € u „ostalo”. ' +
+      'Ručak s klijentom od 200 € ide u „reprezentaciju”, a zakon priznaje samo 100 €.',
     ostalo: 'Ostali izdaci',
     reprezentacija: 'Reprezentacija',
     osobnoVozilo: 'Osobno vozilo',
@@ -173,8 +180,11 @@ export const hr: Dictionary = {
     prognoza:
       'Najavljene izmjene još nisu donesene. Prosječna plaća za 2027. fizički ne postoji — ' +
       'objavljuje se za siječanj–kolovoz 2026. — pa su iznosi doprinosa ovdje prognoza.',
-    delta: (iznos: string) => `Razlika prema zakonu na snazi: ${iznos} godišnje.`,
-    bezRazlike: 'Na ovaj primitak najavljene izmjene ne mijenjaju ništa.',
+    samoPausal:
+      'Izmjene se tiču samo paušalnog obrta — i to samo dvaju najviših razreda, od 40 000 €. ' +
+      'Ostali režimi o njima ne ovise.',
+    delta: (iznos: string) => `Paušalni obrt: razlika prema zakonu na snazi ${iznos} godišnje.`,
+    bezRazlike: 'Na ovaj primitak najavljene izmjene ne mijenjaju ništa — niži je od 40 000 €.',
   },
   izvor: {
     provjereno: (datum: string) => `provjereno ${datum}`,

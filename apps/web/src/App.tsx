@@ -194,6 +194,8 @@ export const App = () => {
                 </label>
               ))}
             </fieldset>
+            {/* Реформа чіпає лише паушал — і в ньому лише два верхні розряди. */}
+            <p className="razlog">{t.scenarij.samoPausal}</p>
             {scenarij === 'najava' && <p className="razlog">{t.scenarij.prognoza}</p>}
             <p className="scenarij__delta">
               {delta === undefined || delta.isZero()
