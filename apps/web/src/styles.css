@@ -381,3 +381,60 @@ body {
 .pojam {
   font-weight: 600;
 }
+
+/* --- форма входів ------------------------------------------------------- */
+.forma {
+  margin-block: 2rem;
+}
+.polje {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 0.75rem;
+  max-width: 34rem;
+}
+.polje input[type="number"],
+.polje select {
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  border: 1px solid var(--rub, #b9c4cf);
+  border-radius: 3px;
+  background: var(--pozadina-polja, #fff);
+  color: inherit;
+}
+.polje--potvrda label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.polje--potvrda .prijevod {
+  grid-column: 2;
+}
+
+/* --- порівняння з рідною країною ---------------------------------------- */
+.krajina {
+  margin-block: 2rem;
+  border-top: 1px solid var(--rub, #b9c4cf);
+  padding-top: 1rem;
+}
+.krajina__prekidac {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.krajina__prekidac::before {
+  content: "▸ ";
+}
+.krajina__prekidac[aria-expanded="true"]::before {
+  content: "▾ ";
+}
+.krajina__rezidentnost {
+  border-inline-start: 3px solid var(--naglasak, #d2691a);
+  padding-inline-start: 0.75rem;
+  margin-block: 1rem;
+}

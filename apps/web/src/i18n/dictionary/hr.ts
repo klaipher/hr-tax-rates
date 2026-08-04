@@ -118,6 +118,22 @@ export const hr: Dictionary = {
       'poziva, pa stoji u sloju odvojenom od pravila i može se nadomjestiti.',
   },
 
+  krajina: {
+    naslov: 'Usporedi s ukrajinskim FOP-om 3. skupine',
+    rezidentnost:
+      'Usporedba pokazuje što bi bilo da ste ostali porezni rezident Ukrajine. Za rezidenta ' +
+      'Hrvatske tog izbora nema: više od 183 dana ili središte životnih interesa ovdje — i ' +
+      'Hrvatska oporezuje svjetski dohodak, a porez plaćen u Ukrajini hrvatsku obvezu ne gasi.',
+    tecaj: 'Tečaj grivne za euro',
+    tecajIzvor: (datum: string) => `službeni tečaj NBU, snimka od ${datum}`,
+    tecajNeispravan: 'Tečaj mora biti pozitivan broj.',
+    ukupno: 'Ukupno',
+    ostaje: 'ostaje godišnje',
+    prekoracenje: (limit: string, nadlimit: string) =>
+      `Godišnji dohodak prelazi limit 3. skupine od ${limit} ₴ za ${nadlimit} ₴. ` +
+      'Iznad limita nastupa viša stopa i prelazak na opći sustav — kalkulator to namjerno ' +
+      'ne računa, nego samo javlja.',
+  },
   izvor: {
     provjereno: (datum: string) => `provjereno ${datum}`,
   },

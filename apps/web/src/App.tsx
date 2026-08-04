@@ -15,6 +15,7 @@ import { Prijevod } from './i18n/Prijevod.tsx'
 import { Izvori } from './izvori/index.ts'
 import { PODLOGA } from './podloga.ts'
 import { RezimKartica } from './RezimKartica.tsx'
+import { RidnaKrajina } from './RidnaKrajina.tsx'
 
 /**
  * Два сценарії на графіку: чинний закон і заплановані зміни.
@@ -120,6 +121,8 @@ export const App = () => {
         najvisiPrimitak={NAJVISI_PRIMITAK}
         onOdabir={setGodisnjiPrimitak}
       />
+
+      <RidnaKrajina godisnjiPrimitak={eur(godisnjiPrimitak)} />
 
       <Izvori podloga={PODLOGA} />
 

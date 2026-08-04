@@ -119,6 +119,23 @@ export const en: Dictionary = {
       'to it, so it sits in a layer separate from the rules and can be overridden.',
   },
 
+  krajina: {
+    naslov: 'Compare with the Ukrainian FOP, group 3',
+    rezidentnost:
+      'This comparison shows what things would look like had you stayed a Ukrainian tax ' +
+      'resident. A Croatian resident does not get that choice: more than 183 days or a centre ' +
+      'of vital interests here, and Croatia taxes worldwide income — tax paid in Ukraine does ' +
+      'not discharge the Croatian liability.',
+    tecaj: 'Hryvnia per euro',
+    tecajIzvor: (datum: string) => `official NBU rate, snapshot of ${datum}`,
+    tecajNeispravan: 'The rate must be a positive number.',
+    ukupno: 'Total',
+    ostaje: 'left per year',
+    prekoracenje: (limit: string, nadlimit: string) =>
+      `Annual income exceeds the group-3 limit of ${limit} ₴ by ${nadlimit} ₴. Above the ` +
+      'limit a higher rate applies and the taxpayer moves to the general system — the ' +
+      'calculator deliberately does not compute either, it only reports.',
+  },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,
   },
