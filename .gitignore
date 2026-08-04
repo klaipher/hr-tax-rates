@@ -10,3 +10,6 @@ coverage/
 
 .vercel/
 .vite/
+
+# Ізольовані worktree агентів
+.claude/worktrees/
