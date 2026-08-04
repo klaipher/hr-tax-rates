@@ -478,3 +478,29 @@ body {
     grid-column: 1 / -1;
   }
 }
+
+/* --- перемикач сценаріїв ------------------------------------------------ */
+.scenarij {
+  margin-block: 1.5rem;
+}
+.scenarij fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.scenarij legend {
+  padding: 0;
+  font-weight: 600;
+}
+.scenarij__izbor {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.scenarij__delta {
+  margin-block-start: 0.5rem;
+  font-weight: 600;
+}

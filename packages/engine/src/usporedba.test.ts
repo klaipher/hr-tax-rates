@@ -4,7 +4,9 @@ import {
   obrtNaDohodak2026,
   PRAVILA_NEPUNE_GODINE,
   pretpostavke2026,
+  pretpostavkeNajave2027,
   ruleset2026,
+  rulesetNajave2027,
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
@@ -418,5 +420,46 @@ describe('усі три обртні режими в одному порівня
     ).toBe(true)
     // Закон другої діяльності місячної osnovica не знає — база річна.
     expect(uzRad.doprinosi.mjesecnaOsnovica).toBeUndefined()
+  })
+})
+
+describe('дельта між сценаріями — перевірка ADR-0001', () => {
+  // Припущення тримаються НЕЗМІННИМИ навмисно. Правила й припущення — різні
+  // шари (ADR-0001), і зміна закону видно лише тоді, коли статистика не
+  // ворушиться. Проєкт несе прогнозну prosječna plaća, тож із нею числа
+  // розходяться всюди — але з правової причини, а зі статистичної.
+  const podlogaZa = (primitak: string, najava: boolean): PodlogaUsporedbe =>
+    najava ? { ...podloga2026, ruleset: rulesetNajave2027(eur(primitak).amount) } : podloga2026
+
+  const netoZa = (primitak: string, najava: boolean) => {
+    const ishod = usporediRezime({ godisnjiPrimitak: eur(primitak) }, podlogaZa(primitak, najava))
+      .rezimi[0]?.ishod
+    if (ishod?.status !== 'izracunato') throw new Error(`паушал недоступний за ${primitak}`)
+    return ishod.izracun.netoZaOsobu
+  }
+
+  it.each(['1000', '11300', '19900', '30600', '39999.99', '40000'])(
+    'на %s € дельта дорівнює нулю — реформа чіпає лише два верхні розряди',
+    (primitak) => {
+      expect(toCentString(netoZa(primitak, false))).toBe(toCentString(netoZa(primitak, true)))
+    },
+  )
+
+  it.each(['40000.01', '50000', '60000'])('на %s € дельта таки з’являється', (primitak) => {
+    expect(toCentString(netoZa(primitak, false))).not.toBe(toCentString(netoZa(primitak, true)))
+  })
+
+  it('сама лише зміна припущення рухає число там, де закон не змінився', () => {
+    // Це друга половина ADR-0001: розходження двох офіційних таблиць на 2027
+    // рік пояснюється не різними правилами, а різною prosječna plaća.
+    const zPrognozom = usporediRezime(
+      { godisnjiPrimitak: eur('20000') },
+      { ...podloga2026, pretpostavke: pretpostavkeNajave2027 },
+    ).rezimi[0]?.ishod
+    if (zPrognozom?.status !== 'izracunato') throw new Error('паушал недоступний')
+
+    expect(toCentString(zPrognozom.izracun.netoZaOsobu)).not.toBe(
+      toCentString(netoZa('20000', false)),
+    )
   })
 })

@@ -163,6 +163,17 @@ export const en: Dictionary = {
       'advances, doprinosi monthly, and the year-end settlement only falls due the next year.',
     pomaknuto: 'the deadline fell on a non-working day — moved',
   },
+  scenarij: {
+    naslov: 'Rule set',
+    'na-snazi': 'law in force',
+    najava: 'announced changes',
+    prognoza:
+      'The announced changes are not enacted yet. The 2027 prosječna plaća does not exist ' +
+      'physically — it is published from January–August 2026 data — so the contribution ' +
+      'figures here are a forecast, not a calculation.',
+    delta: (iznos: string) => `Difference against the law in force: ${iznos} a year.`,
+    bezRazlike: 'At this primitak the announced changes make no difference.',
+  },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,
   },

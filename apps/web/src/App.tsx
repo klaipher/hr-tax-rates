@@ -53,10 +53,18 @@ const POCETNI_PRIMITAK = 20_000
 /** Термін, що стоїть власним елементом, канонічно хорватський у кожній локалі. */
 const PROSJECNA_PLACA = 'prosječna plaća'
 
+type IdScenarija = (typeof SCENARIJI)[number]['id']
+
 export const App = () => {
   const { t, format } = useI18n()
   const [godisnjiPrimitak, setGodisnjiPrimitak] = useState(POCETNI_PRIMITAK)
   const [forma, setForma] = useState(POCETNO_STANJE)
+  const [scenarij, setScenarij] = useState<IdScenarija>('na-snazi')
+
+  const podlogaScenarija = useMemo(() => {
+    const odabrani = SCENARIJI.find((s) => s.id === scenarij) ?? SCENARIJI[0]
+    return { ...PODLOGA, ...odabrani.podlogaZa(eur(godisnjiPrimitak)) }
+  }, [scenarij, godisnjiPrimitak])
 
   const usporedba = useMemo(() => {
     const jedinica = jedinicaBySifra(forma.sifraJedinice)
@@ -70,9 +78,30 @@ export const App = () => {
         ...(forma.mjesecPocetka === undefined ? {} : { pocetak: { mjesec: forma.mjesecPocetka } }),
         uzRadniOdnos: forma.uzRadniOdnos,
       },
-      PODLOGA,
+      podlogaScenarija,
     )
-  }, [godisnjiPrimitak, forma])
+  }, [godisnjiPrimitak, forma, podlogaScenarija])
+
+  // Дельта рахується тим самим рушієм на тому самому вході — різниця лише в
+  // наборі правил. Це і є перевірка ADR-0001: нижче 40 000 € вона нульова,
+  // бо реформа чіпає лише два верхні розряди.
+  const delta = useMemo(() => {
+    const zaPodlogu = (podloga: typeof PODLOGA) => {
+      const ishod = usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, podloga).rezimi[0]
+        ?.ishod
+      return ishod?.status === 'izracunato' ? ishod.izracun.netoZaOsobu.amount : undefined
+    }
+
+    const naSnazi = zaPodlogu(PODLOGA)
+    // Припущення лишаються ті самі: інакше в дельту потрапила б ще й
+    // прогнозна prosječna plaća, і «різниця проти чинного закону» показувала б
+    // зміну статистики як зміну закону (ADR-0001).
+    const najava = zaPodlogu({
+      ...PODLOGA,
+      ruleset: SCENARIJI[1].podlogaZa(eur(godisnjiPrimitak)).ruleset,
+    })
+    return naSnazi === undefined || najava === undefined ? undefined : najava.minus(naSnazi)
+  }, [godisnjiPrimitak])
 
   const { prosjecnaPlaca } = PODLOGA.pretpostavke
 
@@ -106,6 +135,32 @@ export const App = () => {
         <p className="unos__skala">
           <span>{format.eur(eur(0))}</span>
           <span>{format.eur(eur(NAJVISI_PRIMITAK))}</span>
+        </p>
+      </section>
+
+      <section className="scenarij">
+        <fieldset>
+          <legend>{t.scenarij.naslov}</legend>
+          {SCENARIJI.map((s) => (
+            <label key={s.id} className="scenarij__izbor">
+              <input
+                type="radio"
+                name="scenarij"
+                value={s.id}
+                checked={scenarij === s.id}
+                onChange={() => {
+                  setScenarij(s.id)
+                }}
+              />
+              {t.scenarij[s.id]}
+            </label>
+          ))}
+        </fieldset>
+        {scenarij === 'najava' && <p className="razlog">{t.scenarij.prognoza}</p>}
+        <p className="scenarij__delta">
+          {delta === undefined || delta.isZero()
+            ? t.scenarij.bezRazlike
+            : t.scenarij.delta(format.eur(eur(delta)))}
         </p>
       </section>
 

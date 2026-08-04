@@ -161,6 +161,16 @@ export const hr: Dictionary = {
       'predujmovima, doprinosi mjesečno, a razlika po godišnjem izvješću dolazi tek iduće godine.',
     pomaknuto: 'rok je pao na neradni dan — pomaknuto',
   },
+  scenarij: {
+    naslov: 'Skup pravila',
+    'na-snazi': 'zakon na snazi',
+    najava: 'najavljene izmjene',
+    prognoza:
+      'Najavljene izmjene još nisu donesene. Prosječna plaća za 2027. fizički ne postoji — ' +
+      'objavljuje se za siječanj–kolovoz 2026. — pa su iznosi doprinosa ovdje prognoza.',
+    delta: (iznos: string) => `Razlika prema zakonu na snazi: ${iznos} godišnje.`,
+    bezRazlike: 'Na ovaj primitak najavljene izmjene ne mijenjaju ništa.',
+  },
   izvor: {
     provjereno: (datum: string) => `provjereno ${datum}`,
   },
