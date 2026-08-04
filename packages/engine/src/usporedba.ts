@@ -26,6 +26,7 @@ import type {
   Naziv,
   ObveznoDavanje,
   Podloga,
+  RazlogNedostupnosti,
   Rezim,
   RezimId,
   Unos,
@@ -79,7 +80,7 @@ const NAZIVI: Readonly<Record<RezimId, Naziv>> = {
   doo: { hr: 'd.o.o.', uk: 'товариство з обмеженою відповідальністю' },
 }
 
-const nedostupno = (razlog: string): Ishod => ({ status: 'nedostupno', razlog })
+const nedostupno = (razlog: RazlogNedostupnosti): Ishod => ({ status: 'nedostupno', razlog })
 
 /**
  * `rashod` для `obrt na dobit` — сума всіх статей `izdatak`.
@@ -189,10 +190,7 @@ const pausalniObrt = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => 
     pocetak === undefined
       ? izracunajPausalniObrt(unos.godisnjiPrimitak, podloga)
       : nepunaGodina === undefined
-        ? nedostupno(
-            'Задано місяць відкриття, але правила неповного року не підключені: ' +
-              'межі розрядів масштабувати немає за чим.',
-          )
+        ? nedostupno({ kod: 'nema-pravila', pravila: 'nepuna godina' })
         : izracunajPausalniObrtZaRazdoblje(
             unos.godisnjiPrimitak,
             razdobljeZa(nepunaGodina, pocetak),
@@ -211,19 +209,13 @@ const obrtNaDohodak = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod =>
   const pravila = podloga.obrtNaDohodak
 
   if (pravila === undefined) {
-    return nedostupno('Правила porez na dohodak не підключені до цього набору.')
+    return nedostupno({ kod: 'nema-pravila', pravila: 'porez na dohodak' })
   }
   if (godisnjiIzdaci === undefined) {
-    return nedostupno(
-      'Режим оподатковує dohodak — різницю фактичних primitak і izdatak. Поки izdatak ' +
-        'не введено, будь-яке число тут було б вигаданим.',
-    )
+    return nedostupno({ kod: 'nema-izdataka' })
   }
   if (stope === undefined) {
-    return nedostupno(
-      'Ставки porez na dohodak установлює jedinica lokalne samouprave, і вони різні. ' +
-        'Оберіть місто або общину — без цього ставка невідома.',
-    )
+    return nedostupno({ kod: 'nema-jedinice' })
   }
 
   const ishod = izracunajObrtNaDohodak(
@@ -248,13 +240,10 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
   const pravila = podloga.obrtNaDobit
 
   if (pravila === undefined) {
-    return nedostupno('Правила porez na dobit не підключені до цього набору.')
+    return nedostupno({ kod: 'nema-pravila', pravila: 'porez na dobit' })
   }
   if (godisnjiIzdaci === undefined || stope === undefined) {
-    return nedostupno(
-      'Режим визначає dobit як різницю prihod і rashod за методом нарахування й дозволяє ' +
-        'власнику poduzetnička plaća. Без витрат і без ставок обраного міста рахувати немає з чого.',
-    )
+    return nedostupno({ kod: 'nema-izdataka-ni-jedinice' })
   }
 
   // Форма знає касовий primitak, а dobit визначається за методом нарахування.
@@ -288,22 +277,7 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
   }
 }
 
-const NEMODELIRANI: readonly { readonly id: RezimId; readonly razlog: string }[] = [
-  {
-    id: 'zaposlenik',
-    razlog:
-      'Найманий працівник режиму не обирає — його plaća оподатковується роботодавцем. Входом ' +
-      'тут була б домовлена брутто-зарплата, а не річний primitak, тож картка чекає на інший ' +
-      'вхід, а не на дорахування.',
-  },
-  {
-    id: 'doo',
-    razlog:
-      'Власник d.o.o. дістає гроші двома різними шляхами — poduzetnička plaća і дивіденди, — ' +
-      'і кожен оподатковується за своїми правилами. Поки форма не знає, як саме поділено ' +
-      'виплату, будь-яка сума на руки була б довільною.',
-  },
-]
+const NEMODELIRANI: readonly RezimId[] = ['zaposlenik', 'doo']
 
 /**
  * Єдина публічна функція рушія: чиста, синхронна, повертає всі режими одразу.
@@ -336,7 +310,11 @@ export const usporediRezime = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): 
       ishod: sDavanjima(obrtNaDobit(unos, podloga)),
     },
     ...NEMODELIRANI.map(
-      ({ id, razlog }): Rezim => ({ id, naziv: NAZIVI[id], ishod: nedostupno(razlog) }),
+      (id): Rezim => ({
+        id,
+        naziv: NAZIVI[id],
+        ishod: nedostupno({ kod: 'nije-modeliran', rezim: id }),
+      }),
     ),
   ]
 

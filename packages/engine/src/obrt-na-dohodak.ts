@@ -285,12 +285,12 @@ export const izracunajObrtNaDohodak = (
   if (djeca > koeficijentiDjece.length) {
     return {
       status: 'nedostupno',
-      razlog:
-        `Закон друкує коефіцієнти osobni odbitak лише до ${koeficijentiDjece.length}-ї дитини ` +
-        `(${osobniOdbitak.koeficijentiDjece.source.article}), а правило для кожної наступної ` +
-        'подано з пропуском — «progresivno se uvećava se za 1,1 … više u odnosu prema ' +
-        `koeficijentu za prethodno dijete». Коефіцієнта для ${djeca}-ї дитини в тексті акта ` +
-        'немає, а вигадати його означало б вигадати податок.',
+      razlog: {
+        kod: 'koeficijent-djeteta-nije-propisan',
+        dostupnoDjece: koeficijentiDjece.length,
+        trazenoDjece: djeca,
+        izvor: osobniOdbitak.koeficijentiDjece.source,
+      },
     }
   }
 

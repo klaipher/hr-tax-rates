@@ -1,6 +1,5 @@
 import type { PausalniObrtPravila, Razred, Sourced } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
-import { formatEur } from './format.ts'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum } from './money.ts'
 import type { Doprinos, Doprinosi, Ishod, Naziv, Podloga, Porez } from './types.ts'
 
@@ -105,10 +104,12 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
   if (isGreaterThan(godisnjiPrimitak, prag)) {
     return {
       status: 'nedostupno',
-      razlog:
-        `Річний primitak ${formatEur(godisnjiPrimitak)} перевищує поріг ${formatEur(prag)}, ` +
-        'до якого закон дозволяє паушальне оподаткування. Понад цей поріг обрт веде книги ' +
-        'і входить у систему PDV.',
+      razlog: {
+        kod: 'iznad-praga-pausala',
+        primitak: godisnjiPrimitak,
+        prag,
+        izvor: podloga.ruleset.pausalniObrt.pragPrimitka.source,
+      },
     }
   }
 
@@ -116,10 +117,11 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
   if (razred === undefined) {
     return {
       status: 'nedostupno',
-      razlog:
-        `Таблиця розрядів не покриває primitak ${formatEur(godisnjiPrimitak)}: найвищий розряд ` +
-        `закінчується нижче за поріг ${formatEur(prag)}. Набір правил суперечливий, ` +
-        'і рахувати за ним не можна.',
+      razlog: {
+        kod: 'nedosljedna-tablica-razreda',
+        primitak: godisnjiPrimitak,
+        prag,
+      },
     }
   }
 

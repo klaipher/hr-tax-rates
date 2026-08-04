@@ -101,22 +101,26 @@ describe('покриття того, що повертає рушій', () => {
     }
   })
 
-  it('пояснює недоступність кожного режиму, який рушій уміє віддати недоступним', () => {
-    const nedostupni = new Set<string>()
+  it('пояснює кожну причину недоступності, яку рушій уміє віддати', () => {
+    // Ключем є код причини, а не режим: рушій віддає причину структурою, і
+    // саме коди мають бути покриті всіма локалями. Раніше словник ключувався
+    // за RezimId і мовчки не помічав нових причин.
+    const kodovi = new Set<string>()
 
     for (const usporedba of usporedbe()) {
       for (const rezim of usporedba.rezimi) {
         if (rezim.ishod.status === 'nedostupno') {
-          nedostupni.add(rezim.id)
+          const { razlog } = rezim.ishod
+          kodovi.add(razlog.kod === 'nije-modeliran' ? razlog.rezim : razlog.kod)
         }
       }
     }
 
-    expect(nedostupni.size).toBeGreaterThan(0)
+    expect(kodovi.size).toBeGreaterThan(0)
     for (const locale of LOCALES) {
       const razlozi = DICTIONARIES[locale].razlozi as unknown as Record<string, Leaf | undefined>
-      for (const id of nedostupni) {
-        expect(razlozi[id], `${locale}: ${id}`).toBeDefined()
+      for (const kod of kodovi) {
+        expect(razlozi[kod], `${locale}: ${kod}`).toBeDefined()
       }
     }
   })

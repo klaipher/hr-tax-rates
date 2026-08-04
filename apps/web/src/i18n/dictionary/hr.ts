@@ -75,25 +75,39 @@ export const hr: Dictionary = {
   pojmovi,
 
   razlozi: {
-    'pausalni-obrt': (prag: string) =>
-      `Godišnji primitak prelazi prag od ${prag} do kojega zakon dopušta paušalno ` +
-      'oporezivanje. Iznad tog praga obrt vodi poslovne knjige i ulazi u sustav PDV-a.',
-    'obrt-na-dohodak':
-      'Režim utvrđuje dohodak kao razliku stvarnih primitaka i izdataka, a porez na dohodak ' +
-      'obračunava po nižoj i višoj stopi koje propisuje jedinica lokalne samouprave. Ni ' +
-      'izdatak ni jedinica još nisu ulazi ovog obrasca, pa bi svaki broj ovdje bio izmišljen.',
-    'obrt-na-dobit':
-      'Režim utvrđuje dobit po načelu nastanka poslovnog događaja, a ne po naplati, i ' +
-      'dopušta vlasniku poduzetničku plaću, koja se i sama oporezuje kao plaća. Ni obračunsko ' +
-      'računovodstvo ni poduzetnička plaća još nisu dio ovog presjeka.',
+    'iznad-praga-pausala': (primitak: string, prag: string) =>
+      `Godišnji primitak ${primitak} prelazi prag ${prag} do kojega zakon dopušta paušalno ` +
+      'oporezivanje. Iznad toga obrt vodi poslovne knjige i ulazi u sustav PDV-a.',
+    'nedosljedna-tablica-razreda': (primitak: string, prag: string) =>
+      `Tablica razreda ne pokriva primitak ${primitak}: najviši razred završava ispod praga ` +
+      `${prag}. Skup pravila je proturječan i po njemu se ne može računati.`,
+    'svedeni-primitak-izvan-tablice': (primitak: string, svedeni: string, mjeseci: string) =>
+      `Uz ${mjeseci} mj. djelatnosti primitak ${primitak} odgovara godišnjem ${svedeni}: ` +
+      'razmjerno svođenje množi prosječni mjesečni primitak s punom godinom. Takav godišnji ' +
+      'primitak tablica razreda ne pokriva.',
+    'koeficijent-djeteta-nije-propisan': (dostupno: string, trazeno: string) =>
+      `Zakon propisuje koeficijente osobnog odbitka samo do ${dostupno}. djeteta, a pravilo ` +
+      `za svako sljedeće navodi s izostavljanjem. Koeficijenta za ${trazeno}. dijete u tekstu ` +
+      'akta nema, a izmisliti ga značilo bi izmisliti porez.',
+    'nema-izdataka':
+      'Režim oporezuje dohodak — razliku stvarnih primitaka i izdataka. Dok izdatak nije ' +
+      'unesen, svaki bi broj ovdje bio izmišljen.',
+    'nema-jedinice':
+      'Stope poreza na dohodak propisuje jedinica lokalne samouprave i različite su. ' +
+      'Odaberite grad ili općinu — bez toga stopa nije poznata.',
+    'nema-izdataka-ni-jedinice':
+      'Režim utvrđuje dobit kao razliku prihoda i rashoda po načelu nastanka događaja i ' +
+      'dopušta vlasniku poduzetničku plaću. Bez izdataka i bez stopa odabrane jedinice ' +
+      'nema se iz čega računati.',
+    'nema-pravila': (pravila: string) => `Pravila „${pravila}” nisu uključena u ovaj skup.`,
     zaposlenik:
-      'Radnik ne bira režim — njegovu plaću oporezuje poslodavac. Ulaz bi ovdje bila ' +
+      'Zaposlenik ne bira režim — njegovu plaću oporezuje poslodavac. Ulaz bi ovdje bila ' +
       'ugovorena bruto plaća, a ne godišnji primitak, pa kartica čeka drugi ulaz, a ne ' +
       'dodatni izračun.',
     doo:
-      'Vlasnik d.o.o.-a novac uzima na dva različita načina — poduzetničkom plaćom i ' +
+      'Vlasnik d.o.o.-a novac dobiva dvama različitim putovima — poduzetničkom plaćom i ' +
       'dividendom — i svaki se oporezuje po svojim pravilima. Dok obrazac ne zna kako je ' +
-      'isplata podijeljena, svaki iznos na ruke bio bi proizvoljan.',
+      'isplata podijeljena, svaki bi neto iznos bio proizvoljan.',
   },
 
   pretpostavke: {

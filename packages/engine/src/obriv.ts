@@ -1,6 +1,6 @@
 import { add, eur, isGreaterThan, type Money, subtract } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
-import type { Izracun, Podloga } from './types.ts'
+import type { Izracun, Podloga, RazlogNedostupnosti } from './types.ts'
 
 /**
  * Обриви розрядів: скільки лишилося до межі і чого коштує її перетнути.
@@ -77,7 +77,7 @@ export interface KrajRezima {
   readonly granica: Money<'EUR'>
   readonly doGranice: Money<'EUR'>
   /** Чому за межею режиму немає — словами рушія, а не переказом. */
-  readonly razlog: string
+  readonly razlog: RazlogNedostupnosti
 }
 
 export type Obriv = ObrivRazreda | KrajRezima

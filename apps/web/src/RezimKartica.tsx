@@ -149,7 +149,7 @@ export const RezimKartica = ({ rezim }: { readonly rezim: Rezim }) => {
       {rezim.ishod.status === 'nedostupno' ? (
         <>
           <p className="oznaka-nedostupno">{t.kartica.nedostupno}</p>
-          <RazlogNedostupnosti id={rezim.id} />
+          <RazlogNedostupnosti razlog={rezim.ishod.razlog} />
         </>
       ) : (
         <Izracunato izracun={rezim.ishod.izracun} />

@@ -14,7 +14,7 @@ import {
   razmjernoRazdoblju,
 } from './nepuna-godina.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
-import type { Izracun, Podloga } from './types.ts'
+import type { Izracun, Podloga, RazlogNedostupnosti } from './types.ts'
 import { jediniPorez } from './types.ts'
 
 /**
@@ -75,12 +75,15 @@ const pausal = (
 ): Izracun => {
   const ishod = ishodZa(primitak, pocetak, podloga)
   if (ishod.status !== 'izracunato') {
-    throw new Error(`Паушал недоступний за primitak ${primitak}: ${ishod.razlog}`)
+    throw new Error(`Паушал недоступний за primitak ${primitak}: ${ishod.razlog.kod}`)
   }
   return ishod.izracun
 }
 
-const razlogNedostupnosti = (primitak: string, pocetak: PocetakDjelatnosti): string => {
+const razlogNedostupnosti = (
+  primitak: string,
+  pocetak: PocetakDjelatnosti,
+): RazlogNedostupnosti => {
   const ishod = ishodZa(primitak, pocetak)
   if (ishod.status !== 'nedostupno')
     throw new Error(`Паушал за ${primitak} несподівано порахований`)
@@ -393,10 +396,16 @@ describe('неповний податковий період', () => {
       // таблиця не має. Мовчки взяти верхній розряд означало б занизити
       // податок, не сказавши про це.
       const razlog = razlogNedostupnosti('30000', { mjesec: 8 })
+      if (razlog.kod !== 'svedeni-primitak-izvan-tablice') {
+        throw new Error(`Очікувалася розмірність, а причина — ${razlog.kod}`)
+      }
 
-      expect(razlog).toContain('72 000,00 €')
-      expect(razlog).toContain('30 000,00 €')
-      expect(razlog).toContain(CLANAK_RAZMJERNOSTI)
+      // Числа лишаються числами, а не тонуть у реченні: інтерфейс складе з
+      // них власну фразу будь-якою локаллю, а стаття лишається клікабельною.
+      expect(toCentString(razlog.svedeniPrimitak)).toBe('72000.00')
+      expect(toCentString(razlog.primitak)).toBe('30000.00')
+      expect(razlog.brojMjeseci).toBe(5)
+      expect(razlog.izvor.article).toBe(CLANAK_RAZMJERNOSTI)
     })
   })
 

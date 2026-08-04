@@ -102,17 +102,31 @@ export const uk = {
    * поріг паушалу підставляється з `ruleset`, а не вписується словами.
    */
   razlozi: {
-    'pausalni-obrt': (prag: string) =>
-      `Річний primitak перевищує поріг ${prag}, до якого закон дозволяє паушальне ` +
+    'iznad-praga-pausala': (primitak: string, prag: string) =>
+      `Річний primitak ${primitak} перевищує поріг ${prag}, до якого закон дозволяє паушальне ` +
       'оподаткування. Понад цей поріг обрт веде книги і входить у систему PDV.',
-    'obrt-na-dohodak':
-      'Режим рахує dohodak як різницю фактичних primitak і izdatak, а porez na dohodak бере ' +
-      'за нижчою і вищою ставками, які встановлює jedinica lokalne samouprave. Ані izdatak, ' +
-      'ані jedinica ще не є входами цієї форми, тож будь-яке число тут було б вигаданим.',
-    'obrt-na-dobit':
-      'Режим визначає dobit за методом нарахування, а не за касовим, і дозволяє власнику ' +
-      'poduzetnička plaća, яка сама оподатковується як зарплата. Ні обліку нарахувань, ні ' +
-      'poduzetnička plaća цей зріз ще не знає.',
+    'nedosljedna-tablica-razreda': (primitak: string, prag: string) =>
+      `Таблиця розрядів не покриває primitak ${primitak}: найвищий розряд закінчується нижче ` +
+      `за поріг ${prag}. Набір правил суперечливий, і рахувати за ним не можна.`,
+    'svedeni-primitak-izvan-tablice': (primitak: string, svedeni: string, mjeseci: string) =>
+      `За ${mjeseci} міс. діяльності primitak ${primitak} відповідає річному ${svedeni}: ` +
+      'розмірне зведення множить середній місячний primitak на повний рік. Такого річного ' +
+      'primitak таблиця розрядів не покриває.',
+    'koeficijent-djeteta-nije-propisan': (dostupno: string, trazeno: string) =>
+      `Закон друкує коефіцієнти osobni odbitak лише до ${dostupno}-ї дитини, а правило для ` +
+      'кожної наступної подано з пропуском. Коефіцієнта для ' +
+      `${trazeno}-ї дитини в тексті акта немає, а вигадати його означало б вигадати податок.`,
+    'nema-izdataka':
+      'Режим оподатковує dohodak — різницю фактичних primitak і izdatak. Поки izdatak не ' +
+      'введено, будь-яке число тут було б вигаданим.',
+    'nema-jedinice':
+      'Ставки porez na dohodak установлює jedinica lokalne samouprave, і вони різні. ' +
+      'Оберіть місто або общину — без цього ставка невідома.',
+    'nema-izdataka-ni-jedinice':
+      'Режим визначає dobit як різницю prihod і rashod за методом нарахування й дозволяє ' +
+      'власнику poduzetnička plaća. Без витрат і без ставок обраної jedinica рахувати ' +
+      'немає з чого.',
+    'nema-pravila': (pravila: string) => `Правила «${pravila}» не підключені до цього набору.`,
     zaposlenik:
       'Найманий працівник режиму не обирає — його plaća оподатковується роботодавцем. Входом ' +
       'тут була б домовлена брутто-зарплата, а не річний primitak, тож картка чекає на інший ' +

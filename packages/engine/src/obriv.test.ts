@@ -233,7 +233,7 @@ describe('обрив розряду', () => {
       expect([toCentString(obriv.granica), toCentString(obriv.doGranice), obriv.redniBroj]).toEqual(
         ['60000.00', '5000.00', 7],
       )
-      expect(obriv.razlog).toContain('PDV')
+      expect(obriv.razlog.kod).toBe('iznad-praga-pausala')
     })
 
     it('за порогом обриву вже немає — режиму теж', () => {

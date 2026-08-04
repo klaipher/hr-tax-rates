@@ -1,6 +1,5 @@
 import type { LegalReference, PausalniObrtPravila, Razred, Sourced } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
-import { formatEur } from './format.ts'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
 import type { Doprinos, Doprinosi, Ishod, Naziv, Podloga, Porez } from './types.ts'
@@ -294,16 +293,15 @@ export const izracunajPausalniObrtZaRazdoblje = (
   const pravila = podloga.ruleset.pausalniObrt
   const razred = razredZa(pravila.razredi.value, ukupniPrimitak, razdoblje)
   if (razred === undefined) {
-    const { act, article } = razdoblje.pravila.mjeseciUPunomRazdoblju.source
-
     return {
       status: 'nedostupno',
-      razlog:
-        `За ${razdoblje.brojMjeseci} міс. діяльності primitak ${formatEur(ukupniPrimitak)} ` +
-        `відповідає річному ${formatEur(godisnjiPrimitakZaRazred(ukupniPrimitak, razdoblje))}: ` +
-        `розмірне зведення (${act}, ${article}) множить середній місячний primitak на повний ` +
-        'рік. Такого річного primitak таблиця розрядів не покриває, тож паушальне ' +
-        'оподаткування до нього не застосовується.',
+      razlog: {
+        kod: 'svedeni-primitak-izvan-tablice',
+        primitak: ukupniPrimitak,
+        svedeniPrimitak: godisnjiPrimitakZaRazred(ukupniPrimitak, razdoblje),
+        brojMjeseci: razdoblje.brojMjeseci,
+        izvor: razdoblje.pravila.mjeseciUPunomRazdoblju.source,
+      },
     }
   }
 

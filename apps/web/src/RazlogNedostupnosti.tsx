@@ -1,35 +1,67 @@
-import { eur, type RezimId } from '@hr-tax/engine'
+import type { RazlogNedostupnosti as Razlog } from '@hr-tax/engine'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
-import { PODLOGA } from './podloga.ts'
-
-/**
- * Поріг паушалу — єдине юридичне число, яке картка бере не з рушія.
- *
- * Воно приходить із `ruleset` разом зі своїм джерелом (ADR-0002): якби число
- * стояло словами в перекладі, від нього не було б дороги до статті, а після
- * зміни закону три переклади розійшлися б із правилами мовчки.
- */
-const PRAG_PAUSALA = PODLOGA.ruleset.pausalniObrt.pragPrimitka
 
 /**
  * Чому режим недоступний.
  *
- * Рушій повертає причину готовою прозою українською — його контракт склався
- * до появи локалей. Тому текст береться зі словника за `RezimId`, а не з
- * `Ishod.razlog`: перекласти чужий рядок на льоту неможливо.
+ * Рушій віддає причину структурою — кодом і параметрами, — а не готовим
+ * реченням. Тому текст складається тут, мовою читача, з тих самих чисел, які
+ * порахував рушій. Числа лишаються числами, тож ті з них, що несуть джерело,
+ * ведуть до статті (ADR-0002), а не тонуть у чужому рядку.
  */
-export const RazlogNedostupnosti = ({ id }: { readonly id: RezimId }) => {
+export const RazlogNedostupnosti = ({ razlog }: { readonly razlog: Razlog }) => {
   const { t, format } = useI18n()
 
-  if (id === 'pausalni-obrt') {
-    return (
-      <p className="razlog">
-        {t.razlozi['pausalni-obrt'](format.eur(eur(PRAG_PAUSALA.value)))}
-        <Izvor izvor={PRAG_PAUSALA.source} />
-      </p>
-    )
-  }
+  switch (razlog.kod) {
+    case 'iznad-praga-pausala':
+      return (
+        <p className="razlog">
+          {t.razlozi['iznad-praga-pausala'](format.eur(razlog.primitak), format.eur(razlog.prag))}
+          <Izvor izvor={razlog.izvor} />
+        </p>
+      )
 
-  return <p className="razlog">{t.razlozi[id]}</p>
+    case 'nedosljedna-tablica-razreda':
+      return (
+        <p className="razlog">
+          {t.razlozi['nedosljedna-tablica-razreda'](
+            format.eur(razlog.primitak),
+            format.eur(razlog.prag),
+          )}
+        </p>
+      )
+
+    case 'svedeni-primitak-izvan-tablice':
+      return (
+        <p className="razlog">
+          {t.razlozi['svedeni-primitak-izvan-tablice'](
+            format.eur(razlog.primitak),
+            format.eur(razlog.svedeniPrimitak),
+            format.number(razlog.brojMjeseci),
+          )}
+          <Izvor izvor={razlog.izvor} />
+        </p>
+      )
+
+    case 'koeficijent-djeteta-nije-propisan':
+      return (
+        <p className="razlog">
+          {t.razlozi['koeficijent-djeteta-nije-propisan'](
+            format.number(razlog.dostupnoDjece),
+            format.number(razlog.trazenoDjece),
+          )}
+          <Izvor izvor={razlog.izvor} />
+        </p>
+      )
+
+    case 'nema-pravila':
+      return <p className="razlog">{t.razlozi['nema-pravila'](razlog.pravila)}</p>
+
+    case 'nije-modeliran':
+      return <p className="razlog">{t.razlozi[razlog.rezim === 'doo' ? 'doo' : 'zaposlenik']}</p>
+
+    default:
+      return <p className="razlog">{t.razlozi[razlog.kod]}</p>
+  }
 }

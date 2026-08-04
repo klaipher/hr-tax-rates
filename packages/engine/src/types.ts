@@ -193,13 +193,55 @@ export interface Izracun {
 }
 
 /**
+ * Чому режим недоступний — структурою, а не готовим реченням.
+ *
+ * Проза не перекладається: рушій не знає мови читача, а склеєний ним рядок
+ * інтерфейс може хіба що показати як є. Код плюс параметри дає кожній локалі
+ * скласти власне речення з тих самих чисел, і числа лишаються числами —
+ * зокрема `Sourced`, тож від них є дорога до статті (ADR-0002).
+ */
+export type RazlogNedostupnosti =
+  | {
+      readonly kod: 'iznad-praga-pausala'
+      readonly primitak: Money<'EUR'>
+      readonly prag: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /** Межі розрядів не доходять до порогу — набір правил суперечливий. */
+      readonly kod: 'nedosljedna-tablica-razreda'
+      readonly primitak: Money<'EUR'>
+      readonly prag: Money<'EUR'>
+    }
+  | {
+      /** Неповний рік звів `primitak` до річного вище за найвищий розряд. */
+      readonly kod: 'svedeni-primitak-izvan-tablice'
+      readonly primitak: Money<'EUR'>
+      readonly svedeniPrimitak: Money<'EUR'>
+      readonly brojMjeseci: number
+      readonly izvor: LegalReference
+    }
+  | {
+      /** Закон друкує коефіцієнти лише до певної дитини. */
+      readonly kod: 'koeficijent-djeteta-nije-propisan'
+      readonly dostupnoDjece: number
+      readonly trazenoDjece: number
+      readonly izvor: LegalReference
+    }
+  | { readonly kod: 'nema-izdataka' }
+  | { readonly kod: 'nema-jedinice' }
+  | { readonly kod: 'nema-izdataka-ni-jedinice' }
+  | { readonly kod: 'nema-pravila'; readonly pravila: string }
+  | { readonly kod: 'nije-modeliran'; readonly rezim: RezimId }
+
+/**
  * Підсумок режиму: або розрахунок, або причина недоступності. Третього немає,
  * і порожнього розрахунку з нулями теж — нуль на картці не відрізнити від
  * порахованого нуля.
  */
 export type Ishod =
   | { readonly status: 'izracunato'; readonly izracun: Izracun }
-  | { readonly status: 'nedostupno'; readonly razlog: string }
+  | { readonly status: 'nedostupno'; readonly razlog: RazlogNedostupnosti }
 
 /** Один `režim` (режим / regime) у порівнянні. */
 export interface Rezim {

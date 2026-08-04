@@ -216,7 +216,7 @@ describe('obrt na dohodak', () => {
 
       expect(ishod.status).toBe('nedostupno')
       if (ishod.status !== 'nedostupno') return
-      expect(ishod.razlog).toContain('čl. 14. st. 3.')
+      expect(ishod.razlog.kod).toBe('koeficijent-djeteta-nije-propisan')
     })
 
     it("дев'ятеро дітей ще рахуються", () => {

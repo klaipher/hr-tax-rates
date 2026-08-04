@@ -10,7 +10,7 @@ import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
 import type { Money } from './money.ts'
 import { add, eur, sum, toCentString } from './money.ts'
-import type { Izracun, Podloga, Rezim, RezimId, Usporedba } from './types.ts'
+import type { Izracun, Podloga, RazlogNedostupnosti, Rezim, RezimId, Usporedba } from './types.ts'
 import { jediniPorez } from './types.ts'
 import type { PodlogaUsporedbe, UnosUsporedbe } from './usporedba.ts'
 import { usporediRezime } from './usporedba.ts'
@@ -30,7 +30,7 @@ const mjesecnaOsnovicaIliPad = (doprinosi: {
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
 
 /** Режими, які цей зріз не рахує з принципу, а не через завеликий `primitak`. */
-const NEMODELIRANI = ['obrt-na-dohodak', 'obrt-na-dobit', 'zaposlenik', 'doo'] as const
+const NEMODELIRANI = ['zaposlenik', 'doo'] as const
 
 const usporedi = (godisnjiPrimitak: string, podloga: Podloga = podloga2026): Usporedba =>
   usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, podloga)
@@ -54,7 +54,7 @@ const razlogNedostupnosti = (
   id: RezimId,
   godisnjiPrimitak = '20000',
   podloga: Podloga = podloga2026,
-): string => {
+): RazlogNedostupnosti => {
   const { ishod } = rezim(usporedi(godisnjiPrimitak, podloga), id)
   if (ishod.status !== 'nedostupno') throw new Error(`Режим ${id} несподівано розрахований`)
   return ishod.razlog
@@ -110,7 +110,9 @@ describe('usporediRezime', () => {
       // Крім статусу й причини, у недоступному режимі немає нічого: ні нулів,
       // ні порожніх сум, які на картці не відрізнити від розрахунку.
       expect(Object.keys(ishod).sort()).toEqual(['razlog', 'status'])
-      expect(ishod.razlog.length).toBeGreaterThan(0)
+      // Причина — структура, а не проза: код плюс параметри, які кожна
+      // локаль складає у власне речення.
+      expect(ishod.razlog.kod.length).toBeGreaterThan(0)
 
       // @ts-expect-error — розрахунку в недоступного режиму немає і в типі.
       expect(ishod.izracun).toBeUndefined()
@@ -119,14 +121,23 @@ describe('usporediRezime', () => {
     it('режими, яких зріз ще не рахує, пояснюють саме себе, а не відбуваються спільною фразою', () => {
       const razlozi = NEMODELIRANI.map((id) => razlogNedostupnosti(id))
 
-      expect(new Set(razlozi).size).toBe(razlozi.length)
-      for (const razlog of razlozi) expect(razlog.length).toBeGreaterThan(40)
+      // Причина несе `rezim`, тож кожен режим пояснює саме себе, а не
+      // відбувається спільним кодом без параметрів.
+      const kljucevi = razlozi.map((razlog) =>
+        razlog.kod === 'nije-modeliran' ? `${razlog.kod}:${razlog.rezim}` : razlog.kod,
+      )
+      expect(new Set(kljucevi).size).toBe(kljucevi.length)
     })
 
-    it('у режимів, яких зріз не рахує, немає числа навіть у тексті причини', () => {
-      // Цифра в поясненні читалася б як порахована сума — а рахувати ці режими
-      // ще немає з чого. Найманий працівник і d.o.o. серед них.
-      for (const id of NEMODELIRANI) expect(razlogNedostupnosti(id)).not.toMatch(/\d/)
+    it('у режимів, яких зріз не рахує, причина не несе жодного числа', () => {
+      // Число в причині читалося б як порахована сума — а рахувати ці режими
+      // ще немає з чого. Структура це унеможливлює: `nije-modeliran` не має
+      // жодного числового поля, і тип цього не дозволить.
+      for (const id of NEMODELIRANI) {
+        const razlog = razlogNedostupnosti(id)
+        expect(razlog.kod).toBe('nije-modeliran')
+        expect(Object.values(razlog).every((v) => typeof v === 'string')).toBe(true)
+      }
     })
   })
 
@@ -149,9 +160,14 @@ describe('usporediRezime', () => {
 
     it('понад поріг паушал недоступний, і причина називає і поріг, і сам primitak', () => {
       const razlog = razlogNedostupnosti('pausalni-obrt', '60000.01')
+      if (razlog.kod !== 'iznad-praga-pausala') {
+        throw new Error(`Очікувався поріг, а причина — ${razlog.kod}`)
+      }
 
-      expect(razlog).toContain('60 000')
-      expect(razlog).toContain('60 000,01')
+      expect(toCentString(razlog.prag)).toBe('60000.00')
+      expect(toCentString(razlog.primitak)).toBe('60000.01')
+      // Поріг несе своє джерело — від числа на екрані є дорога до статті.
+      expect(razlog.izvor.article.length).toBeGreaterThan(0)
     })
 
     it('рівно на порозі паушал ще доступний', () => {
@@ -162,7 +178,9 @@ describe('usporediRezime', () => {
       // Поріг лишився на 60 000 €, а таблиця обривається на 50 000 €. Мовчки
       // взяти верхній наявний розряд означало б занизити податок і не сказати
       // про це — гірше, ніж відмовитися.
-      expect(razlogNedostupnosti('pausalni-obrt', '55000', bezVrhaTablice)).toContain('не покриває')
+      expect(razlogNedostupnosti('pausalni-obrt', '55000', bezVrhaTablice).kod).toBe(
+        'nedosljedna-tablica-razreda',
+      )
     })
   })
 
@@ -372,7 +390,7 @@ describe('усі три обртні режими в одному порівня
 
     expect(rezim?.ishod.status).toBe('nedostupno')
     if (rezim?.ishod.status === 'nedostupno') {
-      expect(rezim.ishod.razlog).toContain('izdatak')
+      expect(rezim.ishod.razlog.kod).toBe('nema-izdataka')
     }
   })
 
@@ -385,7 +403,7 @@ describe('усі три обртні режими в одному порівня
 
     expect(rezim?.ishod.status).toBe('nedostupno')
     if (rezim?.ishod.status === 'nedostupno') {
-      expect(rezim.ishod.razlog).toContain('jedinica lokalne samouprave')
+      expect(rezim.ishod.razlog.kod).toBe('nema-jedinice')
     }
   })
 
