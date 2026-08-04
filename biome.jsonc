@@ -18,6 +18,12 @@
     "enabled": true,
     "rules": {
       "preset": "recommended",
+      "complexity": {
+        // Biome радить `obj.key` замість `obj['key']`, але TypeScript із
+        // noPropertyAccessFromIndexSignature вимагає рівно протилежного для
+        // типів з індексною сигнатурою. Виграє строгіший.
+        "useLiteralKeys": "off"
+      },
       "nursery": {
         "preset": "recommended"
       }

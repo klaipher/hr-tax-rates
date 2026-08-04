@@ -14,6 +14,7 @@
     "build": "pnpm -r build",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run test",
     "dev": "pnpm --filter @hr-tax/web dev",
+    "fixtures:extract": "node scripts/extract-hok-fixtures.ts",
     "format": "biome format --write .",
     "lint": "pnpm run lint:biome && pnpm run lint:knip",
     "lint:biome": "biome check .",
@@ -26,6 +27,8 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@types/node": "catalog:",
+    "fast-xml-parser": "catalog:",
+    "fflate": "catalog:",
     "knip": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"

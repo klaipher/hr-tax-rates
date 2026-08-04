@@ -6,5 +6,8 @@
   "description": "Набори правил (ruleset), припущення (pretpostavke), довідники міст і NKD.",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "decimal.js": "catalog:"
   }
 }

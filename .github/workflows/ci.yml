@@ -29,4 +29,12 @@ jobs:
       # Та сама команда, що й локально: типи, лінт, тести.
       - run: pnpm run check
 
+      # Фікстури HOK згенеровані зі збережених .xlsx і закомічені. Якщо
+      # перегенерація дає інший результат, вони розійшлися з джерелом —
+      # і голден-тести перевіряють уже не те, що лежить у файлах палати.
+      - name: Фікстури HOK відтворюються з джерела
+        run: |
+          pnpm run fixtures:extract
+          git diff --exit-code -- packages/data/src/hok/workbooks.generated.ts
+
       - run: pnpm run build
