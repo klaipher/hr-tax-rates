@@ -44,6 +44,14 @@ body {
   padding: 2.5rem 1.25rem 4rem;
 }
 
+.zaglavlje {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
 .zaglavlje h1 {
   margin: 0;
   font-size: clamp(1.6rem, 1.1rem + 2vw, 2.4rem);
@@ -54,6 +62,50 @@ body {
   margin: 0.4rem 0 0;
   color: var(--tekst-prigušen);
   max-width: 46rem;
+}
+
+/* Перемикач мови */
+
+.jezik {
+  flex: 0 0 auto;
+}
+
+.jezik__oznaka {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+
+.jezik__izbor {
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--tekst);
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.6rem;
+}
+
+.jezik__izbor:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 2px;
+}
+
+/* Видиме лише читалці екрана */
+
+.vizualno-skriveno {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* Ввід */
@@ -311,4 +363,21 @@ body {
 
 .pretpostavke strong {
   font-variant-numeric: tabular-nums;
+}
+
+/* Хорватський термін, величина і пояснення поруч */
+
+.pretpostavke__velicina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+}
+
+.pretpostavke__velicina .prijevod {
+  display: inline;
+}
+
+.pojam {
+  font-weight: 600;
 }
