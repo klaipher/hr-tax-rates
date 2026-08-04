@@ -8,8 +8,9 @@ import type {
   Sourced,
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
+import { doprinosiOdMjesecneOsnovice, godisnje, MJESECI_U_GODINI } from './doprinosi.ts'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
-import type { Doprinos, Doprinosi, Naziv, Podloga, Porez } from './types.ts'
+import type { Doprinosi, Podloga, Porez } from './types.ts'
 
 /**
  * `obrt na dobit` (обрт у системі porez na dobit).
@@ -29,12 +30,8 @@ import type { Doprinos, Doprinosi, Naziv, Podloga, Porez } from './types.ts'
  * залишку після другого.
  */
 
-const MJESECI_U_GODINI = 12
-
 /** Ставка міста зберігається в базисних пунктах — сотих частках відсотка. */
 const BAZNIH_BODOVA_U_JEDINICI = 10000
-
-const godisnje = (mjesecni: Money<'EUR'>): Money<'EUR'> => scale(mjesecni, MJESECI_U_GODINI)
 
 /**
  * Місячна частка річної суми. Річні суми тут — завжди дванадцять однакових
@@ -135,24 +132,6 @@ export interface IzracunObrtNaDobit {
   readonly efektivnaStopa: Decimal | undefined
 }
 
-const doprinos = ({
-  naziv,
-  stopa,
-  mjesecnaOsnovica,
-  osobnaStednja,
-}: {
-  readonly naziv: Naziv
-  readonly stopa: Sourced<Decimal>
-  readonly mjesecnaOsnovica: Money<'EUR'>
-  readonly osobnaStednja: boolean
-}): Doprinos => ({
-  naziv,
-  stopa: stopa.value,
-  godisnjiIznos: godisnje(scale(mjesecnaOsnovica, stopa.value)),
-  osobnaStednja,
-  izvor: stopa.source,
-})
-
 /**
  * Внески з `poduzetnička plaća`.
  *
@@ -160,38 +139,8 @@ const doprinos = ({
  * дорівнює самій плаћі (`čl. 82. st. 1.`), а не добутку `prosječna plaća`
  * і коефіцієнта розряду.
  */
-const doprinosiZa = (mjesecnaOsnovica: Money<'EUR'>, { ruleset }: Podloga): Doprinosi => {
-  const moPrviStup = doprinos({
-    naziv: { hr: 'MO — I. stup', uk: 'пенсійне, генераційна солідарність' },
-    stopa: ruleset.doprinosi.stopaMoPrviStup,
-    mjesecnaOsnovica,
-    osobnaStednja: false,
-  })
-  const moDrugiStup = doprinos({
-    naziv: { hr: 'MO — II. stup', uk: 'пенсійне, індивідуальна капіталізована ощадність' },
-    stopa: ruleset.doprinosi.stopaMoDrugiStup,
-    mjesecnaOsnovica,
-    osobnaStednja: true,
-  })
-  const zo = doprinos({
-    naziv: { hr: 'ZO', uk: 'медичне страхування' },
-    stopa: ruleset.doprinosi.stopaZo,
-    mjesecnaOsnovica,
-    osobnaStednja: false,
-  })
-
-  return {
-    mjesecnaOsnovica,
-    moPrviStup,
-    moDrugiStup,
-    zo,
-    ukupnoGodisnje: sum('EUR', [
-      moPrviStup.godisnjiIznos,
-      moDrugiStup.godisnjiIznos,
-      zo.godisnjiIznos,
-    ]),
-  }
-}
+const doprinosiZa = (mjesecnaOsnovica: Money<'EUR'>, { ruleset }: Podloga): Doprinosi =>
+  doprinosiOdMjesecneOsnovice(mjesecnaOsnovica, ruleset)
 
 /**
  * `porez na dohodak` із `poduzetnička plaća`.

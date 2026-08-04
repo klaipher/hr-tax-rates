@@ -21,15 +21,12 @@ import type {
   Sourced,
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
+import { doprinosiOdMjesecneOsnovice, godisnje } from './doprinosi.ts'
 import { add, eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
-import type { Doprinos, Doprinosi, Ishod, Naziv, Podloga, Porez, Unos } from './types.ts'
-
-const MJESECI_U_GODINI = 12
+import type { Doprinosi, Ishod, Podloga, Porez, Unos } from './types.ts'
 
 /** Ставки одиниць зберігаються в базисних пунктах: 2300 — це 23 %. */
 const BAZNIH_BODOVA_U_JEDINICI = 10000
-
-const godisnje = (mjesecni: Money<'EUR'>): Money<'EUR'> => scale(mjesecni, MJESECI_U_GODINI)
 
 const udio = (bazniBodovi: number): Decimal =>
   new Decimal(bazniBodovi).div(BAZNIH_BODOVA_U_JEDINICI)
@@ -112,24 +109,6 @@ export interface PodlogaObrtaNaDohodak extends Podloga {
  * поки немає, бо `pausalni-obrt.ts` належить іншому тікету; під час злиття
  * гілок обидві копії мають з'їхатися в один модуль.
  */
-const doprinos = ({
-  naziv,
-  stopa,
-  mjesecnaOsnovica,
-  osobnaStednja,
-}: {
-  readonly naziv: Naziv
-  readonly stopa: Sourced<Decimal>
-  readonly mjesecnaOsnovica: Money<'EUR'>
-  readonly osobnaStednja: boolean
-}): Doprinos => ({
-  naziv,
-  stopa: stopa.value,
-  godisnjiIznos: godisnje(scale(mjesecnaOsnovica, stopa.value)),
-  osobnaStednja,
-  izvor: stopa.source,
-})
-
 /**
  * `doprinosi` цього режиму.
  *
@@ -138,47 +117,11 @@ const doprinos = ({
  * фактичного `primitak` і від `izdatak` вона не залежить: закон в'яже її до
  * способу визначати `dohodak`, а не до розміру доходу.
  */
-const doprinosiZa = ({
-  ruleset,
-  pretpostavke,
-  obrtNaDohodak,
-}: PodlogaObrtaNaDohodak): Doprinosi => {
-  const mjesecnaOsnovica = scale(
-    eur(pretpostavke.prosjecnaPlaca.value),
-    obrtNaDohodak.doprinosi.koeficijent.value,
+const doprinosiZa = ({ ruleset, pretpostavke, obrtNaDohodak }: PodlogaObrtaNaDohodak): Doprinosi =>
+  doprinosiOdMjesecneOsnovice(
+    scale(eur(pretpostavke.prosjecnaPlaca.value), obrtNaDohodak.doprinosi.koeficijent.value),
+    ruleset,
   )
-
-  const moPrviStup = doprinos({
-    naziv: { hr: 'MO — I. stup', uk: 'пенсійне, генераційна солідарність' },
-    stopa: ruleset.doprinosi.stopaMoPrviStup,
-    mjesecnaOsnovica,
-    osobnaStednja: false,
-  })
-  const moDrugiStup = doprinos({
-    naziv: { hr: 'MO — II. stup', uk: 'пенсійне, індивідуальна капіталізована ощадність' },
-    stopa: ruleset.doprinosi.stopaMoDrugiStup,
-    mjesecnaOsnovica,
-    osobnaStednja: true,
-  })
-  const zo = doprinos({
-    naziv: { hr: 'ZO', uk: 'медичне страхування' },
-    stopa: ruleset.doprinosi.stopaZo,
-    mjesecnaOsnovica,
-    osobnaStednja: false,
-  })
-
-  return {
-    mjesecnaOsnovica,
-    moPrviStup,
-    moDrugiStup,
-    zo,
-    ukupnoGodisnje: sum('EUR', [
-      moPrviStup.godisnjiIznos,
-      moDrugiStup.godisnjiIznos,
-      zo.godisnjiIznos,
-    ]),
-  }
-}
 
 /**
  * Частка статті, яка лишається визнаною після відрізаної законом.
@@ -327,6 +270,7 @@ export const izracunajObrtNaDohodak = (
       // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
+      ukupniIzdaci: eur(0),
       // `doprinosi` вже відняті всередині `dohodak` як визнаний `izdatak`, тож
       // удруге їх віднімати не можна. У паушальній картці те саме число
       // рахується від `primitak`, бо той зріз фактичного `izdatak` не знає.

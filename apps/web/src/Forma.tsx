@@ -14,11 +14,20 @@ export interface StanjeForme {
   readonly mjesecPocetka: Mjesec | undefined
 }
 
+/**
+ * Загреб як початковий вибір.
+ *
+ * Без обраної одиниці два з трьох режимів мовчать одразу після відкриття, і
+ * порожній калькулятор читається як зламаний. Загреб — найбільша одиниця й
+ * найчастіший випадок; вибір видно у полі й будь-коли змінюється.
+ */
+const POCETNA_JEDINICA = '1333'
+
 export const POCETNO_STANJE: StanjeForme = {
   ostalo: 0,
   reprezentacija: 0,
   osobnoVozilo: 0,
-  sifraJedinice: '',
+  sifraJedinice: POCETNA_JEDINICA,
   uzRadniOdnos: false,
   mjesecPocetka: undefined,
 }
@@ -115,6 +124,9 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
         },
         t.unos.polovicno,
       )}
+
+      <h2 className="forma__podnaslov">{t.unos.okolnostiNaslov}</h2>
+      <p className="forma__prijevod">{t.unos.okolnostiPrijevod}</p>
 
       <p className="polje">
         <label htmlFor="jedinica">

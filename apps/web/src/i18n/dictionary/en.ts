@@ -42,7 +42,9 @@ export const en: Dictionary = {
   unos: {
     oznaka: 'Annual primitak',
     prijevod: 'receipts from the activity, on a cash basis',
-    izdaciNaslov: 'Annual izdatak',
+    izdaciNaslov: 'Expenses per year',
+    okolnostiNaslov: 'Your circumstances',
+    okolnostiPrijevod: 'these decide the rates and reliefs that apply',
     izdaciPrijevod:
       'expenditure on a cash basis — the book-keeping regimes cannot be computed without it',
     ostalo: 'Ordinary expenditure',

@@ -393,13 +393,21 @@ body {
   max-width: 34rem;
 }
 .polje input[type="number"],
+.polje input[type="text"],
 .polje select {
-  padding: 0.4rem 0.5rem;
+  padding: 0.45rem 0.6rem;
   font: inherit;
-  border: 1px solid var(--rub, #b9c4cf);
-  border-radius: 3px;
-  background: var(--pozadina-polja, #fff);
-  color: inherit;
+  border: 1px solid var(--rub);
+  border-radius: 4px;
+  /* Тло картки, а не білий: у темній темі біле поле випалює очі. */
+  background: var(--tlo-kartica);
+  color: var(--tekst);
+}
+
+.polje input:focus-visible,
+.polje select:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
 }
 .polje--potvrda label {
   display: grid;
@@ -414,7 +422,7 @@ body {
 /* --- порівняння з рідною країною ---------------------------------------- */
 .krajina {
   margin-block: 2rem;
-  border-top: 1px solid var(--rub, #b9c4cf);
+  border-top: 1px solid var(--rub);
   padding-top: 1rem;
 }
 .krajina__prekidac {
@@ -434,7 +442,7 @@ body {
   content: "▾ ";
 }
 .krajina__rezidentnost {
-  border-inline-start: 3px solid var(--naglasak, #d2691a);
+  border-inline-start: 3px solid var(--naglasak);
   padding-inline-start: 0.75rem;
   margin-block: 1rem;
 }
@@ -445,7 +453,7 @@ body {
   margin-block: 2rem;
 }
 .pdv__inverzija {
-  border-inline-start: 3px solid var(--naglasak, #d2691a);
+  border-inline-start: 3px solid var(--naglasak);
   padding-inline-start: 0.75rem;
 }
 .kalendar__popis {
@@ -458,7 +466,7 @@ body {
   grid-template-columns: 6.5rem 1fr auto;
   gap: 0.5rem 1rem;
   padding-block: 0.4rem;
-  border-bottom: 1px solid var(--rub, #b9c4cf);
+  border-bottom: 1px solid var(--rub);
 }
 .kalendar__datum {
   font-variant-numeric: tabular-nums;
@@ -503,4 +511,52 @@ body {
 .scenarij__delta {
   margin-block-start: 0.5rem;
   font-weight: 600;
+}
+
+.forma__podnaslov {
+  margin-block: 2rem 0;
+  font-size: 1.05rem;
+}
+.forma__prijevod {
+  color: var(--tekst-prigušen);
+  margin-block: 0.25rem 1rem;
+}
+.polje label {
+  font-weight: 600;
+}
+.polje .prijevod {
+  display: block;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+  font-size: 0.9rem;
+}
+
+.unos__redak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.75rem 1rem;
+  margin-block: 0.35rem 0.75rem;
+}
+.unos__polje {
+  width: 9rem;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--rub);
+  border-radius: 4px;
+  background: var(--tlo-kartica);
+  color: var(--tekst);
+}
+.unos__polje:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
+}
+.unos__redak .unos__iznos {
+  margin: 0;
+}
+.unos__klizac {
+  display: block;
+  width: 100%;
+  accent-color: var(--naglasak);
 }

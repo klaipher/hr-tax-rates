@@ -463,3 +463,77 @@ describe('дельта між сценаріями — перевірка ADR-00
     )
   })
 })
+
+describe('«на руки» означене однаково в усіх режимах', () => {
+  const IZDACI_ZA_USPOREDBU = {
+    najamnina: eur(2000),
+    nabavkaRobe: eur(0),
+    nabavkaUsluga: eur(1000),
+    placeRadnika: eur(0),
+    troskoviBanke: eur(200),
+    reprezentacija: eur(0),
+    osobnoVozilo: eur(0),
+    ostalo: eur(800),
+  }
+  const UKUPNI_IZDACI = '4000.00'
+
+  const puna: PodlogaUsporedbe = {
+    ...podloga2026,
+    obrtNaDohodak: obrtNaDohodak2026,
+    obrtNaDobit: obrtNaDobit2026,
+    drugaDjelatnost: drugaDjelatnost2026,
+    nepunaGodina: PRAVILA_NEPUNE_GODINE,
+  }
+
+  const usporedba = usporediRezime(
+    {
+      godisnjiPrimitak: eur(35000),
+      godisnjiIzdaci: IZDACI_ZA_USPOREDBU,
+      stope: { niza: 2300, visa: 3300 },
+    },
+    puna,
+  )
+
+  const izracuni = usporedba.rezimi
+    .map((r) =>
+      r.ishod.status === 'izracunato' ? { id: r.id, izracun: r.ishod.izracun } : undefined,
+    )
+    .filter((x) => x !== undefined)
+
+  it('усі три режими рахують «на руки» за однією формулою', () => {
+    expect(izracuni.length).toBe(3)
+
+    for (const { id, izracun } of izracuni) {
+      // primitak − izdaci − податки − внески − обов'язкові платежі.
+      const ocekivano = sum('EUR', [
+        eur(35000),
+        eur(izracun.ukupniIzdaci.amount.negated()),
+        eur(izracun.ukupanPorez.amount.negated()),
+        eur(izracun.doprinosi.ukupnoGodisnje.amount.negated()),
+        eur(izracun.ukupnaDavanja.amount.negated()),
+      ])
+
+      expect(toCentString(izracun.netoZaOsobu), id).toBe(toCentString(ocekivano))
+    }
+  })
+
+  it('усі три враховують ті самі витрати — інакше порівнювали б різне', () => {
+    for (const { id, izracun } of izracuni) {
+      expect(toCentString(izracun.ukupniIzdaci), id).toBe(UKUPNI_IZDACI)
+    }
+  })
+
+  it('різниця між режимами йде лише з податків, внесків і платежів', () => {
+    const [prvi, drugi] = izracuni
+    if (prvi === undefined || drugi === undefined) throw new Error('замало режимів')
+
+    const obveze = ({ izracun }: (typeof izracuni)[number]) =>
+      sum('EUR', [izracun.ukupanPorez, izracun.doprinosi.ukupnoGodisnje, izracun.ukupnaDavanja])
+        .amount
+
+    // Якщо зобов'язання різні, а «на руки» однакове — формула десь розійшлася.
+    expect(obveze(prvi).equals(obveze(drugi))).toBe(
+      prvi.izracun.netoZaOsobu.amount.equals(drugi.izracun.netoZaOsobu.amount),
+    )
+  })
+})

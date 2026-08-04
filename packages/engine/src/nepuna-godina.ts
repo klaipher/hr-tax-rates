@@ -1,8 +1,9 @@
 import type { LegalReference, PausalniObrtPravila, Razred, Sourced } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
-import { add, eur, isGreaterThan, type Money, scale, subtract, sum } from './money.ts'
+import { doprinosiOdMjesecneOsnovice } from './doprinosi.ts'
+import { add, eur, isGreaterThan, type Money, scale, subtract } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
-import type { Doprinos, Doprinosi, Ishod, Naziv, Podloga, Porez } from './types.ts'
+import type { Doprinosi, Ishod, Podloga, Porez } from './types.ts'
 
 /**
  * Паушальний обрт за неповний податковий період.
@@ -168,26 +169,6 @@ const razredZa = (
 ): Razred | undefined =>
   razredi.find((razred) => !isGreaterThan(ukupniPrimitak, razmjernaGranica(razred, razdoblje)))
 
-const doprinos = ({
-  naziv,
-  stopa,
-  mjesecnaOsnovica,
-  razdoblje,
-  osobnaStednja,
-}: {
-  readonly naziv: Naziv
-  readonly stopa: Sourced<Decimal>
-  readonly mjesecnaOsnovica: Money<'EUR'>
-  readonly razdoblje: RazdobljeDjelatnosti
-  readonly osobnaStednja: boolean
-}): Doprinos => ({
-  naziv,
-  stopa: stopa.value,
-  godisnjiIznos: scale(scale(mjesecnaOsnovica, stopa.value), razdoblje.brojMjeseci),
-  osobnaStednja,
-  izvor: stopa.source,
-})
-
 /**
  * `doprinosi` за фактичний період.
  *
@@ -199,46 +180,12 @@ const doprinos = ({
 const doprinosiZa = (
   { ruleset, pretpostavke }: Podloga,
   razdoblje: RazdobljeDjelatnosti,
-): Doprinosi => {
-  const mjesecnaOsnovica = scale(
-    eur(pretpostavke.prosjecnaPlaca.value),
-    ruleset.pausalniObrt.koeficijent.value,
+): Doprinosi =>
+  doprinosiOdMjesecneOsnovice(
+    scale(eur(pretpostavke.prosjecnaPlaca.value), ruleset.pausalniObrt.koeficijent.value),
+    ruleset,
+    razdoblje.brojMjeseci,
   )
-
-  const moPrviStup = doprinos({
-    naziv: { hr: 'MO — I. stup', uk: 'пенсійне, генераційна солідарність' },
-    stopa: ruleset.doprinosi.stopaMoPrviStup,
-    mjesecnaOsnovica,
-    razdoblje,
-    osobnaStednja: false,
-  })
-  const moDrugiStup = doprinos({
-    naziv: { hr: 'MO — II. stup', uk: 'пенсійне, індивідуальна капіталізована ощадність' },
-    stopa: ruleset.doprinosi.stopaMoDrugiStup,
-    mjesecnaOsnovica,
-    razdoblje,
-    osobnaStednja: true,
-  })
-  const zo = doprinos({
-    naziv: { hr: 'ZO', uk: 'медичне страхування' },
-    stopa: ruleset.doprinosi.stopaZo,
-    mjesecnaOsnovica,
-    razdoblje,
-    osobnaStednja: false,
-  })
-
-  return {
-    mjesecnaOsnovica,
-    moPrviStup,
-    moDrugiStup,
-    zo,
-    ukupnoGodisnje: sum('EUR', [
-      moPrviStup.godisnjiIznos,
-      moDrugiStup.godisnjiIznos,
-      zo.godisnjiIznos,
-    ]),
-  }
-}
 
 /**
  * `paušalni porez` за період: `paušalni dohodak` розряду, зведений до місяців
@@ -327,6 +274,7 @@ export const izracunajPausalniObrtZaRazdoblje = (
       // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
+      ukupniIzdaci: eur(0),
       netoZaOsobu: subtract(ukupniPrimitak, obvezniPlacanja),
       efektivnaStopa: ukupniPrimitak.amount.isZero()
         ? undefined

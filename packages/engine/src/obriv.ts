@@ -1,3 +1,4 @@
+import { MJESECI_U_GODINI } from './doprinosi.ts'
 import { add, eur, isGreaterThan, type Money, subtract } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
 import type { Izracun, Podloga, RazlogNedostupnosti } from './types.ts'
@@ -11,8 +12,6 @@ import type { Izracun, Podloga, RazlogNedostupnosti } from './types.ts'
 
 /** Найменший крок, яким закон розводить розряди: межі задані до цента. */
 const CENT = eur('0.01')
-
-const MJESECI_U_GODINI = 12
 
 /**
  * Підкладка розрахунку, взята під конкретний `primitak`.

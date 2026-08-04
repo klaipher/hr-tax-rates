@@ -62,7 +62,9 @@ export const uk = {
   unos: {
     oznaka: 'Річний primitak',
     prijevod: 'надходження від діяльності за касовим методом',
-    izdaciNaslov: 'Річний izdatak',
+    izdaciNaslov: 'Витрати за рік',
+    okolnostiNaslov: 'Ваші обставини',
+    okolnostiPrijevod: 'від цього залежать ставки й пільги',
     izdaciPrijevod: 'видатки за касовим методом — без них режими з обліком не рахуються',
     ostalo: 'Звичайні видатки',
     reprezentacija: 'Репрезентація',

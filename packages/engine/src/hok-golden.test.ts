@@ -8,11 +8,10 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
+import { MJESECI_U_GODINI } from './doprinosi.ts'
 import { add, eur, toCentString } from './money.ts'
 import type { Izracun, Podloga } from './types.ts'
 import { usporediRezime } from './usporedba.ts'
-
-const MJESECI_U_GODINI = 12
 
 /**
  * Голден-тести проти калькулятора HOK на чинний 2026 рік.

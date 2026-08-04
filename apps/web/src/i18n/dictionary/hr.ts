@@ -42,7 +42,9 @@ export const hr: Dictionary = {
   unos: {
     oznaka: 'Godišnji primitak',
     prijevod: 'primici od djelatnosti po načelu blagajne',
-    izdaciNaslov: 'Godišnji izdatak',
+    izdaciNaslov: 'Izdaci godišnje',
+    okolnostiNaslov: 'Vaše okolnosti',
+    okolnostiPrijevod: 'o njima ovise stope i olakšice',
     izdaciPrijevod: 'izdaci po načelu blagajne — bez njih se režimi s knjigama ne računaju',
     ostalo: 'Ostali izdaci',
     reprezentacija: 'Reprezentacija',

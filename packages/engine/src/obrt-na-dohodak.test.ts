@@ -14,6 +14,7 @@ import {
 } from '@hr-tax/data'
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
+import { MJESECI_U_GODINI } from './doprinosi.ts'
 import { eur, type Money, toCentString } from './money.ts'
 import {
   type IzdaciPoStavkama,
@@ -35,8 +36,6 @@ const mjesecnaOsnovicaIliPad = (doprinosi: {
   if (mjesecnaOsnovica === undefined) throw new Error('Цей режим не має місячної osnovica')
   return mjesecnaOsnovica
 }
-
-const MJESECI_U_GODINI = 12
 
 const podloga: PodlogaObrtaNaDohodak = {
   ruleset: ruleset2026,

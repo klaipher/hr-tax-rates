@@ -2,8 +2,9 @@
 // гілок. Після нього імпорт стане пакетним, шлях — зникне.
 import type { DrugaDjelatnostPravila, LegalReference, Pretpostavke, Sourced } from '@hr-tax/data'
 import type Decimal from 'decimal.js'
+import { doprinos, MJESECI_U_GODINI } from './doprinosi.ts'
 import { eur, isGreaterThan, type Money, scale, subtract, sum, zero } from './money.ts'
-import type { Doprinos, Doprinosi, Naziv } from './types.ts'
+import type { Doprinos, Doprinosi } from './types.ts'
 
 /**
  * Модифікатор «поряд із роботою за наймом» — прапорець, а не режим.
@@ -19,8 +20,6 @@ import type { Doprinos, Doprinosi, Naziv } from './types.ts'
  * повертає з неї внески. Один і той самий модифікатор працює і для
  * `paušalni obrt`, і для `obrt na dohodak`.
  */
-
-const MJESECI_U_GODINI = 12
 
 /**
  * Річна `osnovica` другої діяльності — те, з чого закон велить рахувати
@@ -75,24 +74,6 @@ export interface DoprinosiUzRadniOdnos {
   /** Стаття, з якої взята сама база. */
   readonly izvorOsnovice: LegalReference
 }
-
-const doprinos = ({
-  naziv,
-  stopa,
-  godisnjaOsnovica,
-  osobnaStednja,
-}: {
-  readonly naziv: Naziv
-  readonly stopa: Sourced<Decimal>
-  readonly godisnjaOsnovica: Money<'EUR'>
-  readonly osobnaStednja: boolean
-}): Doprinos => ({
-  naziv,
-  stopa: stopa.value,
-  godisnjiIznos: scale(godisnjaOsnovica, stopa.value),
-  osobnaStednja,
-  izvor: stopa.source,
-})
 
 /**
  * Стеля річної `osnovica` для бази з `dohodak`.

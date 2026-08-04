@@ -6,7 +6,7 @@ import type {
   ParStopa,
 } from '@hr-tax/data'
 import { KOMORSKI_DOPRINOS_U_SNAZI, komorskiDoprinos } from '@hr-tax/data'
-import { eur, type Money, subtract, sum } from './money.ts'
+import { eur, type Money, scale, subtract, sum } from './money.ts'
 import {
   izracunajPausalniObrtZaRazdoblje,
   type PocetakDjelatnosti,
@@ -97,17 +97,21 @@ const NAZIV_KOMORSKOG = {
 } as const
 
 /**
- * Додає обов'язкові платежі й перераховує «на руки».
+ * Додає обов'язкові платежі й зводить «на руки» до спільного означення.
  *
- * Робиться в одному місці на всі режими навмисно: платежі однакові для
- * кожного `obrt`, і рознесення їх по трьох модулях дало б три копії того
- * самого закону.
+ * Робиться в одному місці на всі режими навмисно, і не лише через платежі.
+ * Режими рахували «на руки» по-різному: паушал брав `primitak` без витрат, бо
+ * витрат не знав, а `obrt na dobit` — `prihod` за вирахуванням `rashod`. Два
+ * різні означення на сусідніх картках роблять їх незіставними, а зіставність —
+ * це те, заради чого калькулятор існує.
+ *
+ * Спільне означення одне: скільки грошей лишається людині за рік, тобто
+ * надходження без витрат і без усіх обов'язкових платежів. Форма знає одні
+ * витрати, а режими міряють їх по-різному (`izdatak` касовий проти `rashod`
+ * за нарахуванням) — прирівнювання назване в JSDoc `UlazObrtNaDobit` і
+ * лишається припущенням форми, а не закону.
  */
-const sObveznimDavanjima = (
-  izracun: Izracun,
-  unos: UnosUsporedbe,
-  podloga: PodlogaUsporedbe,
-): Izracun => {
+const uskladi = (izracun: Izracun, unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Izracun => {
   const rezultat = komorskiDoprinos(
     { uPrveDvijeGodine: unos.noviObrt === true },
     podloga.komorskiDoprinos ?? KOMORSKI_DOPRINOS_U_SNAZI,
@@ -132,11 +136,25 @@ const sObveznimDavanjima = (
 
   const ukupnaDavanja = davanje.status === 'obračunato' ? davanje.godisnjiIznos : eur(0)
 
+  const ukupniIzdaci =
+    unos.godisnjiIzdaci === undefined ? eur(0) : zbrojIzdataka(unos.godisnjiIzdaci)
+
   return {
     ...izracun,
     obveznaDavanja: [davanje],
     ukupnaDavanja,
-    netoZaOsobu: subtract(izracun.netoZaOsobu, ukupnaDavanja),
+    ukupniIzdaci,
+    // Одна формула на всі режими: надходження без витрат і без усіх
+    // обов'язкових платежів. Режими рахували це по-різному — паушал брав
+    // primitak без витрат, бо витрат не знав, — і сусідні картки порівнювали
+    // різні речі.
+    netoZaOsobu: sum('EUR', [
+      unos.godisnjiPrimitak,
+      scale(ukupniIzdaci, -1),
+      scale(izracun.ukupanPorez, -1),
+      scale(izracun.doprinosi.ukupnoGodisnje, -1),
+      scale(ukupnaDavanja, -1),
+    ]),
   }
 }
 
@@ -271,6 +289,7 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       doprinosi: izracunDobiti.doprinosi,
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
+      ukupniIzdaci: eur(0),
       netoZaOsobu: izracunDobiti.netoZaOsobu,
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
@@ -288,26 +307,26 @@ const NEMODELIRANI: readonly RezimId[] = ['zaposlenik', 'doo']
  * припущення приходять у `podloga` (ADR-0001).
  */
 export const usporediRezime = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Usporedba => {
-  const sDavanjima = (ishod: Ishod): Ishod =>
+  const dovrsi = (ishod: Ishod): Ishod =>
     ishod.status === 'izracunato'
-      ? { status: 'izracunato', izracun: sObveznimDavanjima(ishod.izracun, unos, podloga) }
+      ? { status: 'izracunato', izracun: uskladi(ishod.izracun, unos, podloga) }
       : ishod
 
   const rezimi: readonly Rezim[] = [
     {
       id: 'pausalni-obrt',
       naziv: NAZIVI['pausalni-obrt'],
-      ishod: sDavanjima(pausalniObrt(unos, podloga)),
+      ishod: dovrsi(pausalniObrt(unos, podloga)),
     },
     {
       id: 'obrt-na-dohodak',
       naziv: NAZIVI['obrt-na-dohodak'],
-      ishod: sDavanjima(obrtNaDohodak(unos, podloga)),
+      ishod: dovrsi(obrtNaDohodak(unos, podloga)),
     },
     {
       id: 'obrt-na-dobit',
       naziv: NAZIVI['obrt-na-dobit'],
-      ishod: sDavanjima(obrtNaDobit(unos, podloga)),
+      ishod: dovrsi(obrtNaDobit(unos, podloga)),
     },
     ...NEMODELIRANI.map(
       (id): Rezim => ({
