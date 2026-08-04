@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hr-tax/data": "workspace:*",
     "@hr-tax/engine": "workspace:*",
     "react": "catalog:",
     "react-dom": "catalog:"

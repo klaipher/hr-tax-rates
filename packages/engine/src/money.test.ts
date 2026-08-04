@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { add, eur, roundToCents, scale, sum, toCentString, uah } from './money.ts'
+import {
+  add,
+  eur,
+  isGreaterThan,
+  roundToCents,
+  scale,
+  subtract,
+  sum,
+  toCentString,
+  uah,
+} from './money.ts'
 
 describe('money', () => {
   // Твердження навмисно порівнюють НЕокруглене значення. Порівняння через
@@ -23,6 +33,17 @@ describe('money', () => {
     )
     expect(annual.amount.toString()).toBe('3491.736')
     expect(toCentString(roundToCents(annual))).toBe('3491.74')
+  })
+
+  it('віднімає без дрейфу float', () => {
+    // 0.3 - 0.1 у number дає 0.19999999999999998.
+    expect(subtract(eur('0.3'), eur('0.1')).amount.toString()).toBe('0.2')
+  })
+
+  it('порівнює суми строго: рівність більшістю не є', () => {
+    expect(isGreaterThan(eur('60000.01'), eur('60000'))).toBe(true)
+    expect(isGreaterThan(eur('60000'), eur('60000'))).toBe(false)
+    expect(isGreaterThan(eur('59999.99'), eur('60000'))).toBe(false)
   })
 
   it('округлює до цента за правилом half-up', () => {

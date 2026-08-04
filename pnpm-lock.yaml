@@ -77,6 +77,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@hr-tax/data':
+        specifier: workspace:*
+        version: link:../../packages/data
       '@hr-tax/engine':
         specifier: workspace:*
         version: link:../../packages/engine
@@ -108,6 +111,9 @@ importers:
 
   packages/engine:
     dependencies:
+      '@hr-tax/data':
+        specifier: workspace:*
+        version: link:../data
       decimal.js:
         specifier: 'catalog:'
         version: 10.6.0
