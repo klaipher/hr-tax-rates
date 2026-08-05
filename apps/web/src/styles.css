@@ -660,6 +660,11 @@ body {
   background: var(--naglasak-tlo);
   border-radius: 0.6rem;
 }
+/* Пояснення під самим полем: тримається його ширини й тулиться до нього. */
+.forma__primjer--polje {
+  max-width: 34rem;
+  margin-block-start: -0.35rem;
+}
 
 .pdv__tablica {
   width: 100%;

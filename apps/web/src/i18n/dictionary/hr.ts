@@ -57,6 +57,13 @@ export const hr: Dictionary = {
     reprezentacija: 'Reprezentacija',
     osobnoVozilo: 'Osobno vozilo',
     polovicno: 'priznaje se 50 %',
+    osobnoVoziloObjasnjenje:
+      'Ovdje idu godišnji izdaci za vlastito ili unajmljeno vozilo kojim vozite i poslovno i ' +
+      'privatno: gorivo, leasing ili najam, servis, gume, parkiranje. Zakon ne pita koliko je ' +
+      'kilometara poslovno — polovicu odbija unaprijed (čl. 33. st. 1. t. 5.), a cijeli iznos ' +
+      'priznaje samo ako se po osnovi korištenja utvrđuje plaća. Primjer: 3 000 € godišnje ' +
+      'smanjuje osnovicu za 1 500 €. Osiguranje ne upisujte ovdje — čl. 33. st. 2. priznaje ga ' +
+      'u cijelosti, pa ide u „ostalo”.',
     grad: 'Grad ili općina',
     gradPrijevod: 'jedinica lokalne samouprave — njezina odluka propisuje stope poreza na dohodak',
     gradNijeOdabran: 'nije odabrano',

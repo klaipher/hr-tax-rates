@@ -57,6 +57,13 @@ export const en: Dictionary = {
     reprezentacija: 'Entertainment',
     osobnoVozilo: 'Personal vehicle',
     polovicno: 'recognised at 50%',
+    osobnoVoziloObjasnjenje:
+      'This is the yearly cost of a car you own or rent and drive both for work and privately: ' +
+      'fuel, leasing or rent, servicing, tyres, parking. The law does not ask how many of those ' +
+      'kilometres were business — it cuts half up front (čl. 33. st. 1. t. 5.) and recognises ' +
+      'the cost in full only when the use is charged as plaća (salary). For example: 3 000 € a ' +
+      'year lowers the base by 1 500 €. Do not enter insurance here — čl. 33. st. 2. recognises ' +
+      'it in full, so it belongs under “ordinary”.',
     grad: 'City or municipality',
     gradPrijevod: 'jedinica lokalne samouprave — its odluka sets the porez na dohodak rates',
     gradNijeOdabran: 'not selected',

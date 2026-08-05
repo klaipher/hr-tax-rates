@@ -45,6 +45,11 @@ export const POCETNO_STANJE: StanjeForme = {
  * `osobno vozilo` винесені окремо, бо закон визнає їх лише наполовину
  * (`čl. 33. st. 1.`), і це та різниця, яку людина має бачити. Решта статей
  * лягає в `ostalo` — для порівняння режимів важлива сума, а не її розклад.
+ *
+ * Половина ріжеться від усього, що потрапило в поле авто, і це вірно рівно
+ * доти, доки туди не пишуть страховку: її `čl. 33. st. 2.` виводить з-під
+ * винятку й визнає повністю. Тому поле саме каже писати страховку в `ostalo` —
+ * дешевше пояснити межу, ніж заводити дев'яту статтю заради одного рядка.
  */
 export const izdaciIzForme = (stanje: StanjeForme): IzdaciPoStavkama => ({
   najamnina: eur(0),
@@ -87,23 +92,34 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
     vrijednost: number,
     postavi: (n: number) => void,
     napomena?: string,
+    objasnjenje?: string,
   ) => (
-    <p className="polje">
-      <label htmlFor={id}>
-        {oznaka}
-        {napomena !== undefined && <span className="prijevod">{napomena}</span>}
-      </label>
-      <input
-        id={id}
-        type="number"
-        min={0}
-        step={100}
-        value={vrijednost}
-        onChange={(event) => {
-          postavi(Math.max(0, Number(event.target.value)))
-        }}
-      />
-    </p>
+    <>
+      <p className="polje">
+        <label htmlFor={id}>
+          {oznaka}
+          {napomena !== undefined && <span className="prijevod">{napomena}</span>}
+        </label>
+        <input
+          id={id}
+          type="number"
+          min={0}
+          step={100}
+          value={vrijednost}
+          // Пояснення прив'язане до поля, а не просто лежить поруч: інакше той,
+          // хто йде формою з екранним читачем, чує саму лише мітку.
+          {...(objasnjenje === undefined ? {} : { 'aria-describedby': `${id}-opis` })}
+          onChange={(event) => {
+            postavi(Math.max(0, Number(event.target.value)))
+          }}
+        />
+      </p>
+      {objasnjenje !== undefined && (
+        <p className="forma__primjer forma__primjer--polje" id={`${id}-opis`}>
+          {objasnjenje}
+        </p>
+      )}
+    </>
   )
 
   return (
@@ -132,6 +148,7 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
           promijeni({ osobnoVozilo })
         },
         t.unos.polovicno,
+        t.unos.osobnoVoziloObjasnjenje,
       )}
 
       <h2 className="forma__podnaslov">{t.unos.okolnostiNaslov}</h2>
