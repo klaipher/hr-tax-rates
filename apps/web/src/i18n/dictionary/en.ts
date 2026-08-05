@@ -12,9 +12,13 @@ const pojmovi: Record<string, string> = {
   'obrt na dohodak': 'books-based sole trader',
   'obrt na dobit': 'profit-taxed sole trader',
   zaposlenik: 'employee',
-  'd.o.o.': 'limited liability company',
+  'd.o.o. — vlasnik u radnom odnosu':
+    'limited liability company whose owner is employed by their own company',
+  'd.o.o. — vlasnik član uprave':
+    'limited liability company whose owner runs it without an employment contract',
   'paušalni porez': 'lump-sum tax',
   'porez na dohodak': 'progressive tax on actual taxable income',
+  'porez na dohodak iz plaće': 'income tax withheld from a salary',
   'porez na dohodak iz poduzetničke plaće': 'tax on the salary the owner pays themselves',
   'porez na dobit': 'profit tax, on an accrual basis',
   'porez na dohodak od kapitala pri isplati dobiti':
@@ -24,6 +28,7 @@ const pojmovi: Record<string, string> = {
   ZO: 'health insurance',
   'prosječna plaća': 'average gross salary',
   'komorski doprinos': 'chamber levy, payable by every obrt',
+  'članarina HGK': 'Croatian Chamber of Economy membership fee',
   'turistička članarina': 'tourist board levy',
   'spomenička renta': 'monument levy on floor area in a cultural monument',
   'indirektna spomenička renta': 'monument levy on total revenue, for listed NKD codes',
@@ -85,6 +90,10 @@ export const en: Dictionary = {
       '15 August gives five months, not four.',
     uzRadniOdnos: 'I run the obrt alongside employment',
     uzRadniOdnosPrijevod: 'druga djelatnost — a different contribution rate and an annual base',
+    dob: 'Age you reach this year',
+    dobPrijevod: 'empty — the young-worker relief is not applied',
+    placaVlasnika: 'Your own monthly salary in your own d.o.o., €',
+    placaVlasnikaPrijevod: 'empty — the statutory floor is used',
     pocetak: 'Month the obrt opened',
     pocetakPrijevod: 'in the opening year the razred boundaries scale proportionally',
     punaGodina: 'full year',
@@ -162,6 +171,9 @@ export const en: Dictionary = {
     doprinosiUkupno: 'doprinosi in total',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} per month`,
     ustedaUzRadniOdnos: (usteda: string) => `${usteda} less than without employment`,
+    naTeretOsobe: (svoje: string, tude: string) =>
+      `${svoje} out of your own money; the remaining ${tude} the employer pays on top of the ` +
+      'salary, so it is not deducted from what you keep',
     osobnaStednja: 'personal savings, not a tax',
     nedostupno: 'unavailable',
 
@@ -182,6 +194,23 @@ export const en: Dictionary = {
       'djelatnost-nije-zadana':
         'The NKD and the place of activity decide whether this applies, and the form does not ' +
         'know them yet. Fill them in and you will see whether the levy arises.',
+      'nije-obrt':
+        'The komorski doprinos is paid by an obrt. A company is not a member of that chamber — ' +
+        'this is not an exemption but a different legal form.',
+      'nije-trgovacko-drustvo':
+        'Membership of the Croatian Chamber of Economy applies to companies. An obrt belongs ' +
+        'to the crafts chamber and pays its levy there.',
+      'nema-samostalne-djelatnosti':
+        'An employee carries out no self-employed activity, so levies tied to an NKD and a ' +
+        'place never reach them at all.',
+      'prva-skupina-nije-obveznik': (iznos: string) =>
+        `The first group is not liable: by size the company falls into it, and membership ` +
+        `there is voluntary — €${iznos} a month on a declaration. This is exactly where a ` +
+        'd.o.o. and an obrt part ways: an obrt always pays its own chamber.',
+      'velicina-nije-odrediva':
+        'Revenue has crossed the first group’s threshold, and the form does not know the other ' +
+        'criteria — total assets and headcount. Without them the group cannot be determined, ' +
+        'and guessing the fee is not an option.',
     },
 
     davanjaNapomene: {
@@ -194,6 +223,36 @@ export const en: Dictionary = {
       'stopu-utvrduje-jedinica':
         'The amount per m² is set by the odluka of the city, the municipality or the City of ' +
         'Zagreb — the law fixes only the range, so the sum depends on the exact place.',
+    },
+
+    napomeneRezima: {
+      'bruto-placa-nije-primitak': (trosak: string) =>
+        `Here the figure you entered is read as a gross salary, not as a primitak. The ` +
+        `difference is not cosmetic: an obrt’s client pays exactly that sum, whereas an ` +
+        `employee costs their employer ${trosak} a year — for contributions paid on top of ` +
+        'the salary.',
+      'neoporezivi-primici-nisu-uracunati':
+        'Christmas bonuses, meal and travel allowances and other tax-free payments are not ' +
+        'included: they come from an employer’s discretion, not from the law. In practice they ' +
+        'reach a few thousand euro a year, so real employment can be more generous than this card.',
+      'umanjena-osnovica-prvog-stupa': (umanjenje: string) =>
+        `The law reduced the MO I. stup contribution base by ${umanjenje} a month — and only ` +
+        'that one: II. stup and ZO are computed from the full base. That is why the 15% rate on ' +
+        'the MO — I. stup row does not match its amount: the law cut the base, not the rate.',
+      'ispod-minimalne-place': (minimalna: string) =>
+        `This is below the minimalna plaća of ${minimalna} a month. Nothing is being broken: ` +
+        'the minimum is set for full-time work, so such a figure means part-time.',
+      'placa-podignuta-na-najnizu-osnovicu': (trazena: string, primijenjena: string) =>
+        `You set ${trazena} a month, but contributions were computed from ${primijenjena}: the ` +
+        'law does not allow a lower osnovica. That is why “pay myself the minimum wage and take ' +
+        'the rest as dividends” works far less well than it sounds.',
+      'ispod-praga-plave-karte': (prag: string) =>
+        `An EU Blue Card requires a gross salary from ${prag} a month. That is a condition for ` +
+        'issuing the permit, not a tax rule: it changes none of the figures on this card.',
+      'olaksica-za-mlade-kao-povrat': (iznos: string) =>
+        `${iznos} of this tax comes back to you as the young-worker relief — but not in your ` +
+        'payslip. The advance is withheld in full during the year, and the tax authority grants ' +
+        'the relief in the annual assessment, paying it out the following calendar year.',
     },
   },
 
@@ -262,14 +321,12 @@ export const en: Dictionary = {
       'owner take a poduzetnička plaća. Without expenses and without the chosen unit’s rates ' +
       'there is nothing to compute from.',
     'nema-pravila': (pravila: string) => `The “${pravila}” rules are not part of this set.`,
-    zaposlenik:
-      'An employee does not choose a regime — their plaća is taxed by the employer. The input ' +
-      'here would be an agreed gross salary rather than an annual primitak, so the card is ' +
-      'waiting for a different input, not for more arithmetic.',
-    doo:
-      'A d.o.o. owner takes money out along two different routes — poduzetnička plaća and ' +
-      'dividends — each taxed by its own rules. Until the form knows how the payout is split, ' +
-      'any net figure would be arbitrary.',
+    'vec-u-radnom-odnosu':
+      'You marked that you already work as an employee, and the obrt regimes were computed ' +
+      'with that in mind. This card asks a different question — what if employment alone, with ' +
+      'no activity. Both answers at once would mean the same figure reads as plaća plus ' +
+      'primitak on the left and as plaća alone on the right. Clear the checkbox to see ' +
+      'employment on its own.',
   },
 
   pretpostavke: {

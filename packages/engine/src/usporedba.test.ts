@@ -1,8 +1,11 @@
 import {
+  clanUprave2026,
   drugaDjelatnost2026,
   obrtNaDobit2026,
   obrtNaDohodak2026,
   PRAVILA_NEPUNE_GODINE,
+  placa2026,
+  plavaKarta2026,
   pretpostavke2026,
   pretpostavkeNajave2027,
   ruleset2026,
@@ -11,7 +14,7 @@ import {
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
 import type { Money } from './money.ts'
-import { add, eur, sum, toCentString } from './money.ts'
+import { add, eur, subtract, sum, toCentString } from './money.ts'
 import type { Izracun, Podloga, RazlogNedostupnosti, Rezim, RezimId, Usporedba } from './types.ts'
 import { jediniPorez } from './types.ts'
 import type { PodlogaUsporedbe, UnosUsporedbe } from './usporedba.ts'
@@ -30,9 +33,6 @@ const mjesecnaOsnovicaIliPad = (doprinosi: {
 }
 
 const podloga2026: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
-
-/** Режими, які цей зріз не рахує з принципу, а не через завеликий `primitak`. */
-const NEMODELIRANI = ['zaposlenik', 'doo'] as const
 
 const usporedi = (godisnjiPrimitak: string, podloga: Podloga = podloga2026): Usporedba =>
   usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, podloga)
@@ -84,8 +84,9 @@ describe('usporediRezime', () => {
         'pausalni-obrt',
         'obrt-na-dohodak',
         'obrt-na-dobit',
+        'doo-placa',
+        'doo-clan-uprave',
         'zaposlenik',
-        'doo',
       ])
     })
 
@@ -120,26 +121,14 @@ describe('usporediRezime', () => {
       expect(ishod.izracun).toBeUndefined()
     })
 
-    it('режими, яких зріз ще не рахує, пояснюють саме себе, а не відбуваються спільною фразою', () => {
-      const razlozi = NEMODELIRANI.map((id) => razlogNedostupnosti(id))
-
-      // Причина несе `rezim`, тож кожен режим пояснює саме себе, а не
-      // відбувається спільним кодом без параметрів.
-      const kljucevi = razlozi.map((razlog) =>
-        razlog.kod === 'nije-modeliran' ? `${razlog.kod}:${razlog.rezim}` : razlog.kod,
-      )
-      expect(new Set(kljucevi).size).toBe(kljucevi.length)
-    })
-
-    it('у режимів, яких зріз не рахує, причина не несе жодного числа', () => {
-      // Число в причині читалося б як порахована сума — а рахувати ці режими
-      // ще немає з чого. Структура це унеможливлює: `nije-modeliran` не має
-      // жодного числового поля, і тип цього не дозволить.
-      for (const id of NEMODELIRANI) {
-        const razlog = razlogNedostupnosti(id)
-        expect(razlog.kod).toBe('nije-modeliran')
-        expect(Object.values(razlog).every((v) => typeof v === 'string')).toBe(true)
-      }
+    it('режим без своїх правил називає саме ті правила, яких бракує', () => {
+      // Три нові режими стоять на трьох різних наборах, і «немає правил» без
+      // назви набору не сказало б, чого саме бракує.
+      expect(razlogNedostupnosti('zaposlenik')).toEqual({ kod: 'nema-pravila', pravila: 'plaća' })
+      expect(razlogNedostupnosti('doo-clan-uprave')).toEqual({
+        kod: 'nema-pravila',
+        pravila: 'porez na dobit',
+      })
     })
   })
 
@@ -292,6 +281,7 @@ describe('usporediRezime', () => {
       const prognoza: Podloga = {
         ruleset: ruleset2026,
         pretpostavke: {
+          ...pretpostavke2026,
           prosjecnaPlaca: { ...pretpostavke2026.prosjecnaPlaca, value: new Decimal('2180') },
         },
       }
@@ -332,6 +322,9 @@ describe('усі три обртні режими в одному порівня
     obrtNaDobit: obrtNaDobit2026,
     drugaDjelatnost: drugaDjelatnost2026,
     nepunaGodina: PRAVILA_NEPUNE_GODINE,
+    placa: placa2026,
+    clanUprave: clanUprave2026,
+    plavaKarta: plavaKarta2026,
   }
 
   const usporedi = (unos: Partial<UnosUsporedbe> = {}) =>
@@ -339,6 +332,83 @@ describe('усі три обртні режими в одному порівня
       { godisnjiPrimitak: eur(30000), godisnjiIzdaci: IZDACI, stope: ZAGREB, ...unos },
       PUNA_PODLOGA,
     )
+
+  describe('zaposlenik і d.o.o. у спільному порівнянні', () => {
+    const izracun = (id: RezimId, unos: Partial<UnosUsporedbe> = {}) => {
+      const nadeno = usporedi(unos).rezimi.find((r) => r.id === id)
+      if (nadeno?.ishod.status !== 'izracunato') throw new Error(`${id} недоступний`)
+      return nadeno.ishod.izracun
+    }
+
+    it('«на руки» найманого не з’їдає внесок, якого він не платив', () => {
+      const zaposlenik = izracun('zaposlenik')
+      const { doprinosi, netoZaOsobu, ukupanPorez } = zaposlenik
+
+      // Підсумок внесків більший за той, що віднімається: ZO платить
+      // роботодавець понад плаћу.
+      expect(
+        doprinosi.ukupnoGodisnje.amount.greaterThan(doprinosi.ukupnoGodisnjeNaTeretOsobe.amount),
+      ).toBe(true)
+
+      // 30 000 брутто без утриманих внесків і без податку. Якби спільна
+      // формула віднімала ще й ZO, тут бракувало б 4 950 € — і жоден тест
+      // цього не помітив би, бо число лишилося б правдоподібним.
+      const ocekivano = subtract(
+        subtract(eur(30000), doprinosi.ukupnoGodisnjeNaTeretOsobe),
+        ukupanPorez,
+      )
+      expect(toCentString(netoZaOsobu)).toBe(toCentString(ocekivano))
+
+      // 30 000 × 16,5 % — рівно та сума, якої тут не має бути.
+      expect(
+        toCentString(subtract(doprinosi.ukupnoGodisnje, doprinosi.ukupnoGodisnjeNaTeretOsobe)),
+      ).toBe('4950.00')
+    })
+
+    it('витрати форми не віднімаються від плаће: у найманого їх немає', () => {
+      // Обртні режими віднімають витрати форми, найм — ні: це витрати
+      // діяльності, а не людини. Найманий працівник не орендує офісу.
+      expect(toCentString(izracun('zaposlenik').ukupniIzdaci)).toBe('0.00')
+      expect(toCentString(izracun('pausalni-obrt').ukupniIzdaci)).toBe('5000.00')
+    })
+
+    it('найманий не платить жодного обов’язкового платежу поза податком і внесками', () => {
+      const { obveznaDavanja, ukupnaDavanja } = izracun('zaposlenik')
+
+      expect(toCentString(ukupnaDavanja)).toBe('0.00')
+      expect(obveznaDavanja.every((d) => d.status === 'ne-primjenjuje-se')).toBe(true)
+    })
+
+    it('позначений найм ховає картку найму, а не рахує його двічі', () => {
+      const nadeno = usporedi({ uzRadniOdnos: true }).rezimi.find((r) => r.id === 'zaposlenik')
+      if (nadeno?.ishod.status !== 'nedostupno') throw new Error('картка мала б замовкнути')
+
+      expect(nadeno.ishod.razlog.kod).toBe('vec-u-radnom-odnosu')
+    })
+
+    it('обидва d.o.o. рахуються і платять HOK нічого, а HGK — теж нічого', () => {
+      for (const id of ['doo-placa', 'doo-clan-uprave'] as const) {
+        const { obveznaDavanja } = izracun(id)
+        const komorski = obveznaDavanja.find((d) => d.naziv.hr === 'komorski doprinos')
+        const hgk = obveznaDavanja.find((d) => d.naziv.hr === 'članarina HGK')
+
+        expect(komorski?.status).toBe('ne-primjenjuje-se')
+        expect(hgk?.status).toBe('ne-primjenjuje-se')
+      }
+    })
+
+    it('найм зі своєю віссю несе назване припущення, а не мовчить про нього', () => {
+      const kodovi = izracun('zaposlenik').napomene.map((n) => n.kod)
+
+      expect(kodovi).toContain('bruto-placa-nije-primitak')
+    })
+
+    it('лідер обирається серед усіх шести режимів, а не серед трьох обртних', () => {
+      const svi = usporedi().rezimi.filter((r) => r.ishod.status === 'izracunato')
+
+      expect(svi.length).toBe(6)
+    })
+  })
 
   const izracunZa = (id: string) => {
     const rezim = usporedi().rezimi.find((r) => r.id === id)

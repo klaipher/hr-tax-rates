@@ -129,4 +129,15 @@ export const pretpostavke2026: Pretpostavke = {
       checkedOn: CHECKED_ON,
     },
   },
+  prosjecnaPlacaPrethodneGodine: {
+    value: new Decimal('2016.00'),
+    source: {
+      publisher: 'Državni zavod za statistiku',
+      period: 'siječanj – prosinac 2025.',
+      publication: 'RAD-2025-1-1, Prosječne mjesečne neto i bruto plaće zaposlenih',
+      url: 'https://podaci.dzs.hr/2025/hr/97037',
+      status: 'published',
+      checkedOn: '2026-08-05',
+    },
+  },
 }

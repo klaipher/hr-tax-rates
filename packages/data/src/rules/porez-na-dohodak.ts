@@ -14,6 +14,7 @@
 import Decimal from 'decimal.js'
 import { ZAKON_O_DOPRINOSIMA, ZAKON_O_POREZU_NA_DOHODAK } from '../legal.ts'
 import { type Sourced, sourced } from '../sourced.ts'
+import { OSNOVNI_OSOBNI_ODBITAK } from './zajednicke-velicine.ts'
 
 const CHECKED_ON = '2026-08-04' as const
 
@@ -141,11 +142,9 @@ export interface ObrtNaDohodakPravila {
 export const obrtNaDohodak2026: ObrtNaDohodakPravila = {
   porez: {
     osobniOdbitak: {
-      osnovni: sourced(new Decimal('600'), {
-        ...ZAKON_O_POREZU_NA_DOHODAK,
-        article: 'čl. 14. st. 1.',
-        checkedOn: CHECKED_ON,
-      }),
+      // Спільна величина: плаћа й `obrt na dobit` беруть її з того самого
+      // місця, бо закон не розводить `osobni odbitak` за джерелом доходу.
+      osnovni: OSNOVNI_OSOBNI_ODBITAK,
       koeficijentUzdrzavanogClana: sourced(new Decimal('0.5'), TABLICA_KOEFICIJENATA),
       koeficijentiDjece: sourced(
         [

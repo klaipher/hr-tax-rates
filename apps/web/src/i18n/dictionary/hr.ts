@@ -12,9 +12,13 @@ const pojmovi: Record<string, string> = {
   'obrt na dohodak': 'obrt koji vodi poslovne knjige',
   'obrt na dobit': 'obrt u sustavu poreza na dobit',
   zaposlenik: 'radnik u radnom odnosu',
-  'd.o.o.': 'društvo s ograničenom odgovornošću',
+  'd.o.o. — vlasnik u radnom odnosu':
+    'društvo s ograničenom odgovornošću u kojem je vlasnik u radnom odnosu s vlastitom tvrtkom',
+  'd.o.o. — vlasnik član uprave':
+    'društvo s ograničenom odgovornošću u kojem vlasnik upravlja bez ugovora o radu',
   'paušalni porez': 'porez na paušalni dohodak',
   'porez na dohodak': 'progresivni porez na stvarni dohodak',
+  'porez na dohodak iz plaće': 'porez na dohodak koji se ustegne iz plaće',
   'porez na dohodak iz poduzetničke plaće': 'porez na plaću koju vlasnik isplaćuje sam sebi',
   'porez na dobit': 'porez na dobit po načelu nastanka događaja',
   'porez na dohodak od kapitala pri isplati dobiti':
@@ -24,6 +28,7 @@ const pojmovi: Record<string, string> = {
   ZO: 'zdravstveno osiguranje',
   'prosječna plaća': 'prosječna mjesečna bruto plaća',
   'komorski doprinos': 'obvezni doprinos Hrvatskoj obrtničkoj komori',
+  'članarina HGK': 'članarina Hrvatskoj gospodarskoj komori',
   'turistička članarina': 'članarina turističkoj zajednici',
   'spomenička renta': 'renta po korisnoj površini u kulturnom dobru',
   'indirektna spomenička renta': 'renta po ukupnom prihodu za propisane NKD',
@@ -85,6 +90,10 @@ export const hr: Dictionary = {
       '15. kolovoza daje pet mjeseci, a ne četiri.',
     uzRadniOdnos: 'Obrt vodim uz radni odnos',
     uzRadniOdnosPrijevod: 'druga djelatnost — druga stopa doprinosa i godišnja osnovica',
+    dob: 'Koliko godina navršavate ove godine',
+    dobPrijevod: 'prazno — olakšica za mlade se ne računa',
+    placaVlasnika: 'Vlastita mjesečna plaća u vlastitom d.o.o.-u, €',
+    placaVlasnikaPrijevod: 'prazno — uzima se zakonska najniža osnovica',
     pocetak: 'Mjesec otvaranja obrta',
     pocetakPrijevod: 'u godini otvaranja granice razreda razmjerno se umanjuju',
     punaGodina: 'puna godina',
@@ -161,6 +170,9 @@ export const hr: Dictionary = {
     doprinosiUkupno: 'doprinosi ukupno',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} mjesečno`,
     ustedaUzRadniOdnos: (usteda: string) => `${usteda} manje nego bez radnog odnosa`,
+    naTeretOsobe: (svoje: string, tude: string) =>
+      `iz vašeg novca — ${svoje}; preostalih ${tude} poslodavac plaća povrh plaće, pa se od ` +
+      'neta ne odbija',
     osobnaStednja: 'osobna ušteđevina, a ne porez',
     nedostupno: 'nedostupno',
 
@@ -180,6 +192,22 @@ export const hr: Dictionary = {
       'djelatnost-nije-zadana':
         'Primjenu određuju NKD i mjesto djelatnosti, a obrazac ih još ne zna. Ispunite ih i ' +
         'vidjet ćete nastaje li davanje ili ne.',
+      'nije-obrt':
+        'Komorski doprinos plaća obrt. Trgovačko društvo nije član te komore — to nije ' +
+        'oslobođenje, nego drugi pravni oblik.',
+      'nije-trgovacko-drustvo':
+        'Članstvo u Hrvatskoj gospodarskoj komori odnosi se na trgovačka društva. Obrt ' +
+        'pripada obrtničkoj komori i doprinos plaća njoj.',
+      'nema-samostalne-djelatnosti':
+        'Radnik u radnom odnosu ne obavlja samostalnu djelatnost, pa davanja vezana uz NKD i ' +
+        'mjesto do njega uopće ne dolaze.',
+      'prva-skupina-nije-obveznik': (iznos: string) =>
+        `Prva skupina nije obveznik plaćanja: po veličini tvrtka u nju spada, a članstvo je ` +
+        `dobrovoljno — ${iznos} € mjesečno na temelju Izjave. Upravo se tu d.o.o. i obrt ` +
+        'razilaze: obrt svojoj komori plaća uvijek.',
+      'velicina-nije-odrediva':
+        'Prihodi su prešli granicu prve skupine, a ostale kriterije — aktivu i broj zaposlenih ' +
+        '— obrazac ne zna. Bez njih se skupina ne može odrediti, a nagađati članarinu ne ide.',
     },
 
     davanjaNapomene: {
@@ -192,6 +220,35 @@ export const hr: Dictionary = {
       'stopu-utvrduje-jedinica':
         'Iznos po m² propisuje odluka grada, općine ili Grada Zagreba — zakon zadaje samo ' +
         'raspon, pa iznos ovisi o konkretnom mjestu.',
+    },
+
+    napomeneRezima: {
+      'bruto-placa-nije-primitak': (trosak: string) =>
+        `Ovdje je uneseni iznos pročitan kao bruto plaća, a ne kao primitak. Razlika nije ` +
+        `kozmetička: klijent obrta plaća točno taj iznos, a poslodavca radnika košta ${trosak} ` +
+        'godišnje — za doprinose koje plaća povrh plaće.',
+      'neoporezivi-primici-nisu-uracunati':
+        'Božićnica, prehrana, prijevoz i ostali neoporezivi primici nisu uračunati: njih daje ' +
+        'volja poslodavca, a ne zakon. U praksi dosežu nekoliko tisuća eura godišnje, pa ' +
+        'stvarni radni odnos može biti izdašniji od ove kartice.',
+      'umanjena-osnovica-prvog-stupa': (umanjenje: string) =>
+        `Osnovicu doprinosa za MO I. stup zakon je umanjio za ${umanjenje} mjesečno — i samo ` +
+        'nju: II. stup i ZO računaju se od pune. Zato se u retku MO — I. stup stopa od 15 % ne ' +
+        'poklapa s iznosom: zakon je umanjio osnovicu, a ne stopu.',
+      'ispod-minimalne-place': (minimalna: string) =>
+        `To je ispod minimalne plaće od ${minimalna} mjesečno. Prekršaja nema: minimalna je ` +
+        'propisana za puno radno vrijeme, pa takav iznos znači nepuno.',
+      'placa-podignuta-na-najnizu-osnovicu': (trazena: string, primijenjena: string) =>
+        `Zadali ste ${trazena} mjesečno, ali doprinosi su obračunati od ${primijenjena}: ispod ` +
+        'te osnovice zakon ne dopušta obračun. Zato „stavit ću si minimalac, ostalo izvući ' +
+        'dividendom” radi slabije nego što se čini.',
+      'ispod-praga-plave-karte': (prag: string) =>
+        `Za EU plavu kartu potrebna je bruto plaća od ${prag} mjesečno. To je uvjet izdavanja ` +
+        'dozvole, a ne porezno pravilo: na iznose u ovoj kartici ne utječe nikako.',
+      'olaksica-za-mlade-kao-povrat': (iznos: string) =>
+        `${iznos} tog poreza vratit će vam se kao olakšica za mlade — ali ne u platnoj listi. ` +
+        'Tijekom godine predujam se ustegne u cijelosti, a olakšicu Porezna uprava utvrđuje ' +
+        'godišnjim obračunom i vraća tek iduće kalendarske godine.',
     },
   },
 
@@ -258,14 +315,11 @@ export const hr: Dictionary = {
       'dopušta vlasniku poduzetničku plaću. Bez izdataka i bez stopa odabrane jedinice ' +
       'nema se iz čega računati.',
     'nema-pravila': (pravila: string) => `Pravila „${pravila}” nisu uključena u ovaj skup.`,
-    zaposlenik:
-      'Zaposlenik ne bira režim — njegovu plaću oporezuje poslodavac. Ulaz bi ovdje bila ' +
-      'ugovorena bruto plaća, a ne godišnji primitak, pa kartica čeka drugi ulaz, a ne ' +
-      'dodatni izračun.',
-    doo:
-      'Vlasnik d.o.o.-a novac dobiva dvama različitim putovima — poduzetničkom plaćom i ' +
-      'dividendom — i svaki se oporezuje po svojim pravilima. Dok obrazac ne zna kako je ' +
-      'isplata podijeljena, svaki bi neto iznos bio proizvoljan.',
+    'vec-u-radnom-odnosu':
+      'Označili ste da već radite u radnom odnosu, i obrtni su režimi izračunati s tim. Ova ' +
+      'kartica postavlja drugo pitanje — što ako samo radni odnos, bez djelatnosti. Oba ' +
+      'odgovora odjednom značila bi da se isti broj lijevo čita kao plaća plus primitak, a ' +
+      'desno kao sama plaća. Maknite oznaku da vidite radni odnos zasebno.',
   },
 
   pretpostavke: {

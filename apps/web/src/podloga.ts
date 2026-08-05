@@ -1,8 +1,11 @@
 import {
+  clanUprave2026,
   drugaDjelatnost2026,
   obrtNaDobit2026,
   obrtNaDohodak2026,
   PRAVILA_NEPUNE_GODINE,
+  placa2026,
+  plavaKarta2026,
   pretpostavke2026,
   ruleset2026,
 } from '@hr-tax/data'
@@ -22,4 +25,7 @@ export const PODLOGA: PodlogaUsporedbe = {
   obrtNaDobit: obrtNaDobit2026,
   drugaDjelatnost: drugaDjelatnost2026,
   nepunaGodina: PRAVILA_NEPUNE_GODINE,
+  placa: placa2026,
+  clanUprave: clanUprave2026,
+  plavaKarta: plavaKarta2026,
 }

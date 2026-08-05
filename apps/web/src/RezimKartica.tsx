@@ -1,5 +1,6 @@
 import type { Doprinos, Izracun, ObveznoDavanje, Porez, Rezim } from '@hr-tax/engine'
-import { NapomenaDavanja, RazlogNeprimjeneDavanja } from './Davanje.tsx'
+import { subtract } from '@hr-tax/engine'
+import { NapomenaDavanja, NapomenaIzracuna, RazlogNeprimjeneDavanja } from './Davanje.tsx'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 import { Prijevod } from './i18n/Prijevod.tsx'
@@ -170,10 +171,36 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
                 {t.kartica.ustedaUzRadniOdnos(format.eur(izracun.doprinosi.ustedaUzRadniOdnos))}
               </span>
             )}
+            {/*
+              Коли частину внесків несе роботодавець, підсумок і те, що
+              відняли з «на руки», — різні числа. Без цього рядка різниця
+              читалася б як помилка в арифметиці картки.
+            */}
+            {!izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe.amount.equals(
+              izracun.doprinosi.ukupnoGodisnje.amount,
+            ) && (
+              <span className="prijevod">
+                {t.kartica.naTeretOsobe(
+                  format.eur(izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe),
+                  format.eur(
+                    subtract(
+                      izracun.doprinosi.ukupnoGodisnje,
+                      izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe,
+                    ),
+                  ),
+                )}
+              </span>
+            )}
           </dt>
           <dd>{format.eur(izracun.doprinosi.ukupnoGodisnje)}</dd>
         </div>
       </dl>
+
+      {/* Застереження до розрахунку — після сум, а не перед ними: вони
+          пояснюють уже показані числа, а не заміняють їх. */}
+      {izracun.napomene.map((napomena) => (
+        <NapomenaIzracuna key={napomena.kod} napomena={napomena} />
+      ))}
 
       {skriveno > 0 && (
         <details className="neprimjenjivo">

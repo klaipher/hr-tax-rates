@@ -49,8 +49,9 @@ export const Kalendar = ({
     ]
 
     // Незастосовний платіж у календар не потрапляє: рядок на нуль євро
-    // читався б як платіж, якого насправді немає.
-    if (izracun.ukupnaDavanja.amount.greaterThan(0)) {
+    // читався б як платіж, якого насправді немає. Так само й режим, який
+    // палаті не платить узагалі, — у нього цього обов'язку немає в типі.
+    if (vrsteObveza.komorskiDoprinos !== undefined && izracun.ukupnaDavanja.amount.greaterThan(0)) {
       obveze.push({
         obligation: vrsteObveza.komorskiDoprinos,
         annualAmount: izracun.ukupnaDavanja.amount,

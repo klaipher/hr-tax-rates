@@ -47,7 +47,26 @@ export interface Podloga {
 }
 
 /** `režim` (режим / regime), який калькулятор уміє показати. */
-export type RezimId = 'pausalni-obrt' | 'obrt-na-dohodak' | 'obrt-na-dobit' | 'zaposlenik' | 'doo'
+export type RezimId =
+  | 'pausalni-obrt'
+  | 'obrt-na-dohodak'
+  | 'obrt-na-dobit'
+  | 'zaposlenik'
+  | 'doo-placa'
+  | 'doo-clan-uprave'
+
+/**
+ * Правова форма, у якій ведеться діяльність.
+ *
+ * Не косметика й не синонім `RezimId`: від неї залежать обов'язкові платежі
+ * поза податками. `komorski doprinos` платить кожен `obrt` і тільки `obrt`,
+ * `članarina HGK` стосується товариств, а найманий працівник не платить
+ * жодного з них — і не має `izdatak`, які можна було б відняти.
+ *
+ * Три форми, а не п'ять режимів: обидва d.o.o. мають ту саму форму, і
+ * платежі не розрізняють, чи власник у трудовому договорі.
+ */
+export type PravniOblik = 'obrt' | 'trgovačko društvo' | 'nesamostalni rad'
 
 /** `razred` (розряд / bracket), що застосувався до цього `primitak`. */
 export interface PrimijenjeniRazred {
@@ -102,6 +121,21 @@ export interface Doprinos {
    * показувати нарівні з податком.
    */
   readonly osobnaStednja: boolean
+  /**
+   * Чи внесок виходить із грошей самої людини.
+   *
+   * Не те саме, що поділ закону на внески «iz osnovice» і «na osnovicu»
+   * (`čl. 81.` ZoD): той поділ каже, як внесок нараховують, а це поле —
+   * чия кишеня порожніє. Різниця видно рівно там, де сторін дві. У
+   * найманого працівника ZO платить роботодавець понад плаћу, і ці гроші
+   * людині не належали ніколи. В `obrt na dobit` ZO теж нараховується
+   * «na osnovicu», але платить його той самий обрт тієї самої людини —
+   * тож там воно `true`.
+   *
+   * Поле існує, бо без нього спільна формула «на руки» відняла б у
+   * найманого працівника 16,5% бруто, яких він і не отримував.
+   */
+  readonly teretiOsobu: boolean
   /** Стаття, з якої взята ставка. */
   readonly izvor: LegalReference
 }
@@ -128,6 +162,16 @@ export interface Doprinosi {
   readonly zo: Doprinos
   /** Усі складові разом за рік. */
   readonly ukupnoGodisnje: Money<'EUR'>
+  /**
+   * Ті складові, що виходять із грошей самої людини — саме їх віднімає
+   * спільна формула «на руки».
+   *
+   * Другий підсумок, а не заміна першому: картка показує всі внески, бо
+   * медичне страхування найманого працівника оплачується й тоді, коли
+   * платить його роботодавець. Приховати ZO означало б написати, що
+   * страхування нема. У всіх обртних режимів обидва підсумки збігаються.
+   */
+  readonly ukupnoGodisnjeNaTeretOsobe: Money<'EUR'>
   /**
    * Наскільки менші внески виходять із наймом, ніж без нього. `undefined`,
    * коли найму немає — там немає з чим порівнювати.
@@ -170,6 +214,82 @@ export type ObveznoDavanje =
     }
 
 /**
+ * Застереження до самого розрахунку — кодом із параметрами, а не реченням.
+ *
+ * Пара до `Napomena` в шарі платежів, але про інше: та каже, чому сума
+ * платежу може виявитися іншою, а ця — за яких обставин прочитано вхід і що
+ * закон зробив із введеним числом. Речення складає інтерфейс мовою читача, а
+ * числа лишаються числами й ведуть до статті (ADR-0002, ADR-0004).
+ */
+export type NapomenaRezima =
+  | {
+      /**
+       * Бруто нижче за `minimalna plaća`. Не порушення: мінімальна
+       * встановлена на повний робочий час, тож нижча сума означає неповний.
+       */
+      readonly kod: 'ispod-minimalne-place'
+      readonly minimalna: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /** Закон не дав опустити базу внесків нижче за приписану `osnovica`. */
+      readonly kod: 'placa-podignuta-na-najnizu-osnovicu'
+      readonly trazena: Money<'EUR'>
+      readonly primijenjena: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /**
+       * Бруто нижче за поріг, за якого видають `EU plava karta`. Не
+       * податкове правило, а умова видачі дозволу — тому застереження, а не
+       * недоступність режиму.
+       */
+      readonly kod: 'ispod-praga-plave-karte'
+      readonly prag: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /**
+       * `olakšica za mlade` приходить не в платіжці, а наступного року.
+       * Протягом року `predujam` утримують повний (`čl. 46. st. 3.`), тож
+       * сума в цьому рядку вже врахована в «на руки», але надійде вона
+       * поверненням у наступному календарному році.
+       */
+      readonly kod: 'olaksica-za-mlade-kao-povrat'
+      readonly iznos: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /**
+       * Слайдер прочитано як брутто-плаћу, а не як `primitak`. Клієнт обрту
+       * платить рівно введену суму; роботодавець найманого — більше на
+       * внески «na osnovicu».
+       */
+      readonly kod: 'bruto-placa-nije-primitak'
+      readonly trosakZaPoslodavca: Money<'EUR'>
+    }
+  | {
+      /**
+       * `čl. 20.a` знизив базу для MO I. stup — і тільки для нього.
+       *
+       * Застереження потрібне, бо саме тут ламається рівність «база × ставка
+       * = сума» в рядку картки: ставка лишається законними 15%, а сума
+       * порахована з меншої бази. Без пояснення це читається як помилка.
+       */
+      readonly kod: 'umanjena-osnovica-prvog-stupa'
+      readonly umanjenje: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /**
+       * `neoporezivi primici` — božićnica, харчування, транспорт — не
+       * враховані: їх дає воля роботодавця, а не закон, і вигадати їх суму
+       * означало б показати чужу щедрість як норму.
+       */
+      readonly kod: 'neoporezivi-primici-nisu-uracunati'
+    }
+
+/**
  * Які обов'язки має режим — по одному на кожну складову платежу.
  *
  * `razlika` наведена окремо, бо настає вже в наступному календарному році:
@@ -181,7 +301,12 @@ export interface VrsteObveza {
   /** Річна доплата за звітом — наступного року. */
   readonly razlika: ObligationKind
   readonly doprinosi: ObligationKind
-  readonly komorskiDoprinos: ObligationKind
+  /**
+   * `undefined` у режимів поза обртом: внесок до обртницької палати платить
+   * `obrt`, і тільки він. Порожній рядок у календарі був би не «нуль», а
+   * зобов'язанням, якого немає.
+   */
+  readonly komorskiDoprinos: ObligationKind | undefined
 }
 
 /**
@@ -203,6 +328,18 @@ export interface Izracun {
   readonly porezi: readonly Porez[]
   /** Сума всіх податків режиму — щоб картка не складала їх сама. */
   readonly ukupanPorez: Money<'EUR'>
+  /**
+   * Скільки з уже сплаченого податку повертається річним звітом. Нуль у
+   * режимів, які повернень не знають.
+   *
+   * Окремим полем, а не відніманням від `ukupanPorez`: податок справді
+   * нарахували й справді утримали, і сховати це означало б показати меншу
+   * ставку, ніж застосував закон. Гроші повертаються — ставка ні.
+   *
+   * Надходять вони вже в наступному календарному році, тому в «на руки» за
+   * цей рік входять, а в жодну платіжку цього року — ні.
+   */
+  readonly povratPoreza: Money<'EUR'>
   /** `doprinosi` (внески / social contributions), розбиті на складові. */
   readonly doprinosi: Doprinosi
   /**
@@ -220,6 +357,14 @@ export interface Izracun {
    * тримати право в шарі показу.
    */
   readonly vrsteObveza: VrsteObveza
+  /**
+   * Застереження до цього розрахунку. Порожній масив — застережень немає.
+   *
+   * Живуть у розрахунку, а не в картці: чи спрацювала законна підлога бази
+   * й чи перейдено поріг — це наслідки застосування норми, і вирішує їх
+   * закон, а не верстка.
+   */
+  readonly napomene: readonly NapomenaRezima[]
   /**
    * Витрати, враховані в `netoZaOsobu`. Нуль, коли форма їх не знає.
    *
@@ -284,7 +429,19 @@ export type RazlogNedostupnosti =
   | { readonly kod: 'nema-jedinice' }
   | { readonly kod: 'nema-izdataka-ni-jedinice' }
   | { readonly kod: 'nema-pravila'; readonly pravila: string }
-  | { readonly kod: 'nije-modeliran'; readonly rezim: RezimId }
+  | {
+      /**
+       * Людина вже позначила, що має роботу за наймом, — і тоді картка найму
+       * порівнювала б із обртом не альтернативу, а той самий найм удруге.
+       *
+       * Модифікатор `uz radni odnos` описує становище платника: обрт поряд
+       * із наявною роботою. Картка `zaposlenik` ставить інше питання — а
+       * якщо **тільки** найм. Обидва разом на одному екрані означали б, що
+       * той самий слайдер читається як «плаћа плюс primitak» ліворуч і як
+       * «сама плаћа» праворуч.
+       */
+      readonly kod: 'vec-u-radnom-odnosu'
+    }
 
 /**
  * Підсумок режиму: або розрахунок, або причина недоступності. Третього немає,

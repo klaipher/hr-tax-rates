@@ -58,9 +58,6 @@ export const RazlogNedostupnosti = ({ razlog }: { readonly razlog: Razlog }) => 
     case 'nema-pravila':
       return <p className="razlog">{t.razlozi['nema-pravila'](razlog.pravila)}</p>
 
-    case 'nije-modeliran':
-      return <p className="razlog">{t.razlozi[razlog.rezim === 'doo' ? 'doo' : 'zaposlenik']}</p>
-
     default:
       return <p className="razlog">{t.razlozi[razlog.kod]}</p>
   }

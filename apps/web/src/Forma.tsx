@@ -61,6 +61,19 @@ export interface StanjeForme {
   readonly noviObrt: boolean
   /** Кого платник утримує — від цього залежить `osobni odbitak`. */
   readonly uzdrzavani: UzdrzavaniClanovi
+  /**
+   * Вік, якого людина досягає цього року. `undefined` — не введено.
+   *
+   * Саме `undefined`, а не нуль чи типове число: вік вирішує `olakšica za
+   * mlade`, і підставити «понад тридцять» за замовчуванням означало б тихо
+   * забрати пільгу в того, кому вона належить.
+   */
+  readonly dob: number | undefined
+  /**
+   * Місячна брутто-плаћа, яку власник d.o.o. призначив собі сам.
+   * `undefined` — береться законна підлога.
+   */
+  readonly mjesecnaPlacaVlasnika: number | undefined
   /** `NKD` (вид діяльності); порожньо — не введено. */
   readonly nkd: string
   readonly imaLokalnuTuristickuZajednicu: boolean
@@ -92,6 +105,8 @@ export const POCETNO_STANJE: StanjeForme = {
   mjesecPocetka: undefined,
   noviObrt: false,
   uzdrzavani: { clanoviUzeObitelji: 0, djeca: 0 },
+  dob: undefined,
+  mjesecnaPlacaVlasnika: undefined,
   nkd: '',
   // Обов'язок за `čl. 4. st. 1.` виникає на території місцевої `turistička
   // zajednica`, і такі зайняли майже всю країну. Типове «ні» ховало б платіж
@@ -243,6 +258,40 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
         value={vrijednost}
         onChange={(event) => {
           postavi(Math.max(0, Math.trunc(Number(event.target.value))))
+        }}
+      />
+    </p>
+  )
+
+  /**
+   * Необов'язкове число: порожньо означає «не введено», а не нуль.
+   *
+   * Окремо від `brojOsoba` навмисно. Там нуль — повноцінна відповідь: нуль
+   * дітей є нулем дітей. Тут порожнє поле й нуль — різні речі, і зводити їх
+   * до одного значення означало б відповісти за людину.
+   */
+  const neobvezniBroj = (
+    id: string,
+    oznaka: string,
+    napomena: string,
+    vrijednost: number | undefined,
+    postavi: (n: number | undefined) => void,
+    korak = 1,
+  ) => (
+    <p className="polje">
+      <label htmlFor={id}>
+        {oznaka}
+        <span className="prijevod">{napomena}</span>
+      </label>
+      <input
+        id={id}
+        type="number"
+        min={0}
+        step={korak}
+        value={vrijednost ?? ''}
+        onChange={(event) => {
+          const uneseno = event.target.value.trim()
+          postavi(uneseno === '' ? undefined : Math.max(0, Number(uneseno)))
         }}
       />
     </p>
@@ -510,6 +559,21 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
           promijeni({ uzRadniOdnos })
         },
         t.unos.uzRadniOdnosPrijevod,
+      )}
+
+      {neobvezniBroj('dob', t.unos.dob, t.unos.dobPrijevod, stanje.dob, (dob) => {
+        promijeni({ dob })
+      })}
+
+      {neobvezniBroj(
+        'placa-vlasnika',
+        t.unos.placaVlasnika,
+        t.unos.placaVlasnikaPrijevod,
+        stanje.mjesecnaPlacaVlasnika,
+        (mjesecnaPlacaVlasnika) => {
+          promijeni({ mjesecnaPlacaVlasnika })
+        },
+        100,
       )}
 
       <h2 className="forma__podnaslov">{t.unos.djelatnostNaslov}</h2>

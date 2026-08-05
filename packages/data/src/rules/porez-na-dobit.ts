@@ -1,6 +1,7 @@
 import Decimal from 'decimal.js'
 import { type LegalReference, ZAKON_O_DOPRINOSIMA, ZAKON_O_POREZU_NA_DOHODAK } from '../legal.ts'
 import { type Sourced, sourced } from '../sourced.ts'
+import { MJESECNI_PRAG_VISE_STOPE, OSNOVNI_OSOBNI_ODBITAK } from './zajednicke-velicine.ts'
 
 /**
  * Правила режиму `obrt na dobit` (обрт у системі porez na dobit).
@@ -146,16 +147,10 @@ export const obrtNaDobit2026: ObrtNaDobitPravila = {
       article: 'čl. 82.',
       checkedOn: CHECKED_ON,
     },
-    osnovniOsobniOdbitak: sourced(new Decimal('600.00'), {
-      ...ZAKON_O_POREZU_NA_DOHODAK,
-      article: 'čl. 14. st. 1.',
-      checkedOn: CHECKED_ON,
-    }),
-    mjesecniPragViseStope: sourced(new Decimal('5000'), {
-      ...ZAKON_O_POREZU_NA_DOHODAK,
-      article: 'čl. 24. st. 3.',
-      checkedOn: CHECKED_ON,
-    }),
+    // Обидві величини спільні з плаћою: `poduzetnička plaća` оподатковується
+    // як плаћа, тож і відрахунок, і місячний поріг у неї ті самі.
+    osnovniOsobniOdbitak: OSNOVNI_OSOBNI_ODBITAK,
+    mjesecniPragViseStope: MJESECNI_PRAG_VISE_STOPE,
   },
   // Виплата власнику — це `primitak od udjela u dobiti` за `čl. 69. st. 1.`
   // («drugi istovjetni primici koji se smatraju raspodjelom dobiti»), а

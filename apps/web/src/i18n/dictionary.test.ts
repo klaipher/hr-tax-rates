@@ -223,8 +223,7 @@ describe('покриття того, що повертає рушій', () => {
     for (const usporedba of usporedbe()) {
       for (const rezim of usporedba.rezimi) {
         if (rezim.ishod.status === 'nedostupno') {
-          const { razlog } = rezim.ishod
-          kodovi.add(razlog.kod === 'nije-modeliran' ? razlog.rezim : razlog.kod)
+          kodovi.add(rezim.ishod.razlog.kod)
         }
       }
     }

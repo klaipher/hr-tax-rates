@@ -82,6 +82,35 @@ export type RazlogNeprimjene =
   | { readonly kod: 'izvan-kulturnog-dobra' }
   /** Переважна діяльність — переробна або виробнича: закон її звільняє. */
   | { readonly kod: 'pretezito-proizvodna-djelatnost' }
+  /**
+   * `komorski doprinos` платить `obrt`, і тільки він. Товариство до
+   * обртницької палати не належить — не звільнене, а не є її членом.
+   */
+  | { readonly kod: 'nije-obrt' }
+  /** `članarina HGK` стосується товариств; `obrt` до цієї палати не належить. */
+  | { readonly kod: 'nije-trgovacko-drustvo' }
+  /**
+   * Найманий працівник самостійної діяльності не веде взагалі, тож жоден із
+   * цих платежів до нього не доходить.
+   *
+   * Відрізняється від `djelatnost-nije-zadana` тим, що там питання ще не
+   * поставлене, а тут його не існує.
+   */
+  | { readonly kod: 'nema-samostalne-djelatnosti' }
+  /**
+   * `članarina HGK`: перша скупина не є обов'язковим платником — членство в
+   * ній добровільне, за заявою.
+   */
+  | {
+      readonly kod: 'prva-skupina-nije-obveznik'
+      /** Добровільний місячний внесок за заявою, у євро. */
+      readonly dobrovoljniMjesecniIznos: string
+    }
+  /**
+   * Скупину не визначити: `prihodi` переступили межу першої, а решти
+   * критеріїв — активи й кількість працівників — форма не знає.
+   */
+  | { readonly kod: 'velicina-nije-odrediva' }
 
 /** Платіж не застосовується — і ось чому саме. */
 export interface LevyNotApplicable {

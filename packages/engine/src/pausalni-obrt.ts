@@ -87,6 +87,10 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
       ukupanPorez: porez.godisnjiIznos,
       doprinosi,
       // Обов\'язкові платежі додає usporedba.ts — вони однакові для всіх режимів.
+      // Повернень цей режим не знає: усе, що нараховано, лишається сплаченим.
+      povratPoreza: eur(0),
+      // Застережень немає: жодне введене число закон дорогою не підмінив.
+      napomene: [],
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
       ukupniIzdaci: eur(0),

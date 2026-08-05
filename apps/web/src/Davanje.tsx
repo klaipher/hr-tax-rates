@@ -1,4 +1,6 @@
 import type { Napomena, RazlogNeprimjene } from '@hr-tax/data'
+import type { NapomenaRezima } from '@hr-tax/engine'
+import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 
 /**
@@ -27,6 +29,15 @@ export const RazlogNeprimjeneDavanja = ({ razlog }: { readonly razlog: RazlogNep
     case 'djelatnost-izvan-popisa':
       return <p className="razlog">{tekst['djelatnost-izvan-popisa'](razlog.nkd)}</p>
 
+    case 'prva-skupina-nije-obveznik':
+      // Число тут — не сума до сплати, а розмір добровільного внеску за
+      // заявою. Саме тому воно стоїть у причині, а не в сумі платежу.
+      return (
+        <p className="razlog">
+          {tekst['prva-skupina-nije-obveznik'](razlog.dobrovoljniMjesecniIznos)}
+        </p>
+      )
+
     default:
       return <p className="razlog">{tekst[razlog.kod]}</p>
   }
@@ -47,6 +58,74 @@ export const NapomenaDavanja = ({ napomena }: { readonly napomena: Napomena }) =
 
     case 'stopa-je-gornja-granica':
       return <p className="razlog">{tekst['stopa-je-gornja-granica'](napomena.stopa)}</p>
+
+    default:
+      return <p className="razlog">{tekst[napomena.kod]}</p>
+  }
+}
+
+/**
+ * Застереження до самого розрахунку.
+ *
+ * Пара до `NapomenaDavanja`, але про інше: та каже, чому сума платежу може
+ * виявитися іншою, а ця — як прочитано вхід і що закон зробив із введеним
+ * числом. Числа приходять `Money` й `Sourced`, тож ведуть до статті замість
+ * того, щоб потонути в чужому рядку (ADR-0002, ADR-0004).
+ */
+export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezima }) => {
+  const { t, format } = useI18n()
+  const tekst = t.kartica.napomeneRezima
+
+  switch (napomena.kod) {
+    case 'bruto-placa-nije-primitak':
+      return (
+        <p className="razlog">
+          {tekst['bruto-placa-nije-primitak'](format.eur(napomena.trosakZaPoslodavca))}
+        </p>
+      )
+
+    case 'umanjena-osnovica-prvog-stupa':
+      return (
+        <p className="razlog">
+          {tekst['umanjena-osnovica-prvog-stupa'](format.eur(napomena.umanjenje))}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
+
+    case 'ispod-minimalne-place':
+      return (
+        <p className="razlog">
+          {tekst['ispod-minimalne-place'](format.eur(napomena.minimalna))}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
+
+    case 'placa-podignuta-na-najnizu-osnovicu':
+      return (
+        <p className="razlog">
+          {tekst['placa-podignuta-na-najnizu-osnovicu'](
+            format.eur(napomena.trazena),
+            format.eur(napomena.primijenjena),
+          )}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
+
+    case 'ispod-praga-plave-karte':
+      return (
+        <p className="razlog">
+          {tekst['ispod-praga-plave-karte'](format.eur(napomena.prag))}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
+
+    case 'olaksica-za-mlade-kao-povrat':
+      return (
+        <p className="razlog">
+          {tekst['olaksica-za-mlade-kao-povrat'](format.eur(napomena.iznos))}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
 
     default:
       return <p className="razlog">{tekst[napomena.kod]}</p>

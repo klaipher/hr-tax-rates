@@ -14,7 +14,7 @@ const UGOSTITELJSTVO: Djelatnost = {
 }
 
 const davanja = (djelatnost: Djelatnost | undefined, noviObrt = false) =>
-  obveznaDavanjaZa({ godisnjiPrimitak: eur(40_000), noviObrt, djelatnost })
+  obveznaDavanjaZa({ godisnjiPrimitak: eur(40_000), noviObrt, djelatnost, pravniOblik: 'obrt' })
 
 const poNazivu = (popis: readonly ObveznoDavanje[], hr: string): ObveznoDavanje => {
   const davanje = popis.find((kandidat) => kandidat.naziv.hr === hr)
@@ -26,14 +26,61 @@ const iznos = (davanje: ObveznoDavanje): string =>
   davanje.status === 'obračunato' ? toCentString(davanje.godisnjiIznos) : 'не застосовується'
 
 describe('обов’язкові платежі поза податками й внесками', () => {
-  it('перелічує всі чотири платежі завжди й у тому самому порядку', () => {
+  it('перелічує всі п’ять платежів завжди й у тому самому порядку', () => {
     // Незастосовний платіж лишається в переліку: людина мусить відрізнити
     // «не забули» від «нічого не винен».
     expect(davanja(UGOSTITELJSTVO).map((davanje) => davanje.naziv.hr)).toEqual([
       'komorski doprinos',
+      'članarina HGK',
       'turistička članarina',
       'spomenička renta',
       'indirektna spomenička renta',
+    ])
+  })
+
+  it('дві палати виключають одна одну: обрт платить HOK, товариство — жодної', () => {
+    // Асиметрія, а не симетрія: обртницька палата бере внесок із кожного
+    // обрту, а Господарська перша скупина обов'язковим платником не є.
+    const zaObrt = davanja(UGOSTITELJSTVO)
+    expect(iznos(poNazivu(zaObrt, 'komorski doprinos'))).toBe('136.80')
+    expect(poNazivu(zaObrt, 'članarina HGK').status).toBe('ne-primjenjuje-se')
+
+    const zaDrustvo = obveznaDavanjaZa({
+      godisnjiPrimitak: eur(40_000),
+      noviObrt: false,
+      djelatnost: UGOSTITELJSTVO,
+      pravniOblik: 'trgovačko društvo',
+    })
+    const komorski = poNazivu(zaDrustvo, 'komorski doprinos')
+    if (komorski.status !== 'ne-primjenjuje-se') throw new Error('товариство HOK не платить')
+    expect(komorski.razlog.kod).toBe('nije-obrt')
+
+    const hgk = poNazivu(zaDrustvo, 'članarina HGK')
+    if (hgk.status !== 'ne-primjenjuje-se')
+      throw new Error('перша скупина не є обов’язковим платником')
+    expect(hgk.razlog.kod).toBe('prva-skupina-nije-obveznik')
+  })
+
+  it('найманий працівник не платить жодного з п’яти, і причина в кожного та сама', () => {
+    // Не «не спитали» і не нуль: самостійної діяльності немає взагалі, тож
+    // питання про `NKD` і місце просто не виникає.
+    const zaNajam = obveznaDavanjaZa({
+      godisnjiPrimitak: eur(40_000),
+      noviObrt: false,
+      djelatnost: UGOSTITELJSTVO,
+      pravniOblik: 'nesamostalni rad',
+    })
+
+    expect(zaNajam.every((davanje) => davanje.status === 'ne-primjenjuje-se')).toBe(true)
+    expect(
+      zaNajam
+        .filter((davanje) => davanje.naziv.hr !== 'komorski doprinos')
+        .filter((davanje) => davanje.naziv.hr !== 'članarina HGK')
+        .map((davanje) => (davanje.status === 'ne-primjenjuje-se' ? davanje.razlog.kod : '')),
+    ).toEqual([
+      'nema-samostalne-djelatnosti',
+      'nema-samostalne-djelatnosti',
+      'nema-samostalne-djelatnosti',
     ])
   })
 
@@ -121,7 +168,12 @@ describe('обов’язкові платежі поза податками й 
 
   it('бере ті правила komorskog doprinosa, які їй дали, а не завжди чинні', () => {
     const zaPrijedlog = obveznaDavanjaZa(
-      { godisnjiPrimitak: eur(40_000), noviObrt: false, djelatnost: undefined },
+      {
+        godisnjiPrimitak: eur(40_000),
+        noviObrt: false,
+        djelatnost: undefined,
+        pravniOblik: 'obrt',
+      },
       KOMORSKI_DOPRINOS_PRIJEDLOG,
     )
 
@@ -132,7 +184,12 @@ describe('обов’язкові платежі поза податками й 
 
   it('сума з проєктної стелі несе застереження, що це стеля, а не ставка', () => {
     const zaPrijedlog = obveznaDavanjaZa(
-      { godisnjiPrimitak: eur(40_000), noviObrt: false, djelatnost: undefined },
+      {
+        godisnjiPrimitak: eur(40_000),
+        noviObrt: false,
+        djelatnost: undefined,
+        pravniOblik: 'obrt',
+      },
       KOMORSKI_DOPRINOS_PRIJEDLOG,
     )
     const davanje = poNazivu(zaPrijedlog, 'komorski doprinos')

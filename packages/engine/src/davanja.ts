@@ -11,18 +11,25 @@
  * для всіх режимів і не залежить від жодного з них: платежі не знають ні
  * `razred`, ні способу визначати `dohodak`.
  */
-import type { KomorskiDoprinosPravila, LevyResult, PolozajUKulturnomDobru } from '@hr-tax/data'
+import type {
+  KomorskiDoprinosPravila,
+  LevyResult,
+  PolozajUKulturnomDobru,
+  RazlogNeprimjene,
+} from '@hr-tax/data'
 import {
+  clanarinaHgk,
   INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI,
   IZVOR_RENTE_PO_POVRSINI,
   KOMORSKI_DOPRINOS_U_SNAZI,
   komorskiDoprinos,
+  OBVEZNO_CLANSTVO_U_HGK,
   spomenickaRenta,
   TURISTICKA_CLANARINA_DJELATNOSTI,
   turistickaClanarina,
 } from '@hr-tax/data'
 import { eur, type Money, sum } from './money.ts'
-import type { Naziv, ObveznoDavanje } from './types.ts'
+import type { Naziv, ObveznoDavanje, PravniOblik } from './types.ts'
 
 /**
  * Діяльність і місце — усе, від чого залежать `turistička članarina` і
@@ -64,10 +71,21 @@ export interface UlazDavanja {
   readonly noviObrt: boolean
   /** `undefined` — форма ще не знає `NKD`, і застосовність невизначена. */
   readonly djelatnost: Djelatnost | undefined
+  /**
+   * Правова форма платника — те, чого цей перелік раніше не знав і чого йому
+   * вистачало, поки всі режими були обртами.
+   *
+   * Тепер не вистачає: `komorski doprinos` платить `obrt`, `članarina HGK`
+   * стосується товариств, а найманий працівник не платить жодного з них.
+   * Прибрати незастосовні рядки не можна — тоді зникла б і різниця між «не
+   * забули» і «нічого не винен», заради якої цей модуль і написаний.
+   */
+  readonly pravniOblik: PravniOblik
 }
 
 const NAZIVI = {
   komorski: { hr: 'komorski doprinos', uk: 'внесок до обртницької палати' },
+  clanarinaHgk: { hr: 'članarina HGK', uk: 'членський внесок Господарської палати' },
   clanarina: { hr: 'turistička članarina', uk: 'туристичний членський внесок' },
   renta: { hr: 'spomenička renta', uk: 'пам’яткова рента' },
   indirektnaRenta: { hr: 'indirektna spomenička renta', uk: 'непряма пам’яткова рента' },
@@ -116,20 +134,74 @@ const bezDjelatnosti = (naziv: Naziv, izvorNorme: ObveznoDavanje['izvor']): Obve
  * Усі обов'язкові платежі за рік — завжди всі чотири й завжди в тому самому
  * порядку, як і режими в порівнянні.
  */
+/**
+ * Платіж, якого ця правова форма не знає взагалі.
+ *
+ * Не звільнення й не нуль: обртницька палата не «пробачила» товариству
+ * внесок — товариство просто не є її членом. Стаття тут та, що окреслює коло
+ * платників, бо саме вона робить відповідь відомою.
+ */
+const zbogPravnogOblika = (
+  naziv: Naziv,
+  razlog: RazlogNeprimjene,
+  izvorNorme: ObveznoDavanje['izvor'],
+): ObveznoDavanje => ({ status: 'ne-primjenjuje-se', naziv, razlog, izvor: izvorNorme })
+
 export const obveznaDavanjaZa = (
   ulaz: UlazDavanja,
   pravilaKomorskog: KomorskiDoprinosPravila = KOMORSKI_DOPRINOS_U_SNAZI,
 ): readonly ObveznoDavanje[] => {
-  const { godisnjiPrimitak, djelatnost } = ulaz
+  const { godisnjiPrimitak, djelatnost, pravniOblik } = ulaz
 
-  const komorski = kaoDavanje(
-    NAZIVI.komorski,
-    komorskiDoprinos({ uPrveDvijeGodine: ulaz.noviObrt }, pravilaKomorskog),
-  )
+  const komorski =
+    pravniOblik === 'obrt'
+      ? kaoDavanje(
+          NAZIVI.komorski,
+          komorskiDoprinos({ uPrveDvijeGodine: ulaz.noviObrt }, pravilaKomorskog),
+        )
+      : zbogPravnogOblika(
+          NAZIVI.komorski,
+          { kod: 'nije-obrt' },
+          pravilaKomorskog.mjesecnaStopa.source,
+        )
+
+  const clanarinaHgkRedak =
+    pravniOblik === 'trgovačko društvo'
+      ? kaoDavanje(
+          NAZIVI.clanarinaHgk,
+          clanarinaHgk({
+            godisnjiPrihod: godisnjiPrimitak.amount,
+            // Калькулятор моделює діяльність однієї людини. Число лишається
+            // входом, бо воно є одним із трьох критеріїв закону.
+            brojZaposlenih: 1,
+          }),
+        )
+      : zbogPravnogOblika(
+          NAZIVI.clanarinaHgk,
+          { kod: 'nije-trgovacko-drustvo' },
+          OBVEZNO_CLANSTVO_U_HGK,
+        )
+
+  // Найманий працівник самостійної діяльності не веде: три платежі, що
+  // залежать від `NKD` і місця, до нього не доходять не тому, що форма не
+  // спитала, а тому, що питання не існує.
+  if (pravniOblik === 'nesamostalni rad') {
+    const nemaDjelatnosti = (naziv: Naziv, izvorNorme: ObveznoDavanje['izvor']): ObveznoDavanje =>
+      zbogPravnogOblika(naziv, { kod: 'nema-samostalne-djelatnosti' }, izvorNorme)
+
+    return [
+      komorski,
+      clanarinaHgkRedak,
+      nemaDjelatnosti(NAZIVI.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
+      nemaDjelatnosti(NAZIVI.renta, IZVOR_RENTE_PO_POVRSINI),
+      nemaDjelatnosti(NAZIVI.indirektnaRenta, INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source),
+    ]
+  }
 
   if (djelatnost === undefined) {
     return [
       komorski,
+      clanarinaHgkRedak,
       bezDjelatnosti(NAZIVI.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
       // Рента за площею від `NKD` не залежить узагалі — її вирішує саме
       // місце, тож і норма тут інша, ніж у двох сусідів.
@@ -150,6 +222,7 @@ export const obveznaDavanjaZa = (
 
   return [
     komorski,
+    clanarinaHgkRedak,
     kaoDavanje(
       NAZIVI.clanarina,
       turistickaClanarina({

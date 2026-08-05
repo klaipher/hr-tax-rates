@@ -44,18 +44,42 @@ export const doprinos = ({
   stopa,
   godisnjaOsnovica,
   osobnaStednja,
+  teretiOsobu = true,
 }: {
   readonly naziv: Naziv
   readonly stopa: Sourced<Decimal>
   readonly godisnjaOsnovica: Money<'EUR'>
   readonly osobnaStednja: boolean
+  /**
+   * Чи внесок виходить із грошей самої людини. За замовчуванням так — і це
+   * правда для кожного, хто веде діяльність сам: обртник платить обидві
+   * сторони внеску зі своєї кишені, хоч би як закон їх називав.
+   *
+   * `false` ставить лише розрахунок плаће, і лише для тих внесків, які
+   * роботодавець платить понад плаћу.
+   */
+  readonly teretiOsobu?: boolean
 }): Doprinos => ({
   naziv,
   stopa: stopa.value,
   godisnjiIznos: scale(godisnjaOsnovica, stopa.value),
   osobnaStednja,
+  teretiOsobu,
   izvor: stopa.source,
 })
+
+/**
+ * Річна сума тих складових, що виходять із грошей самої людини.
+ *
+ * Одна функція на всі режими: складати цей підсумок у кожному місці, де
+ * будуються `Doprinosi`, означало б чотири місця, де можна забути про
+ * `teretiOsobu` — і забути тихо, бо число лишиться правдоподібним.
+ */
+export const naTeretOsobe = (stavke: readonly Doprinos[]): Money<'EUR'> =>
+  sum(
+    'EUR',
+    stavke.filter(({ teretiOsobu }) => teretiOsobu).map(({ godisnjiIznos }) => godisnjiIznos),
+  )
 
 /**
  * Усі три складові внесків від річної бази.
@@ -102,6 +126,9 @@ export const doprinosiOdGodisnjeOsnovice = (
       moDrugiStup.godisnjiIznos,
       zo.godisnjiIznos,
     ]),
+    // Той, хто веде діяльність сам, платить усі три внески зі своєї кишені,
+    // тож тут обидва підсумки збігаються. Розходяться вони лише в плаћі.
+    ukupnoGodisnjeNaTeretOsobe: naTeretOsobe([moPrviStup, moDrugiStup, zo]),
   }
 }
 

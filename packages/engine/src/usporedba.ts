@@ -1,12 +1,17 @@
 import type {
+  ClanUpravePravila,
   DrugaDjelatnostPravila,
   KomorskiDoprinosPravila,
   ObrtNaDobitPravila,
   ObrtNaDohodakPravila,
   ParStopa,
+  PlacaPravila,
+  PlavaKartaPravila,
 } from '@hr-tax/data'
 import { type Djelatnost, obveznaDavanjaZa, zbrojDavanja } from './davanja.ts'
-import { eur, type Money, scale, subtract, sum } from './money.ts'
+import { izracunajDooClanUprave, izracunajDooSPlacom, type PravilaDoo } from './doo.ts'
+import { MJESECI_U_GODINI } from './doprinosi.ts'
+import { add, eur, isGreaterThan, type Money, scale, subtract, sum } from './money.ts'
 import {
   izracunajPausalniObrtZaRazdoblje,
   type PocetakDjelatnosti,
@@ -20,11 +25,14 @@ import {
   type UzdrzavaniClanovi,
 } from './obrt-na-dohodak.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
+import { izracunajPlacu } from './placa.ts'
 import type {
   Ishod,
   Izracun,
+  NapomenaRezima,
   Naziv,
   Podloga,
+  PravniOblik,
   RazlogNedostupnosti,
   Rezim,
   RezimId,
@@ -62,6 +70,22 @@ export interface UnosUsporedbe extends Unos {
    * так і кажуть замість того, щоб зникнути з переліку.
    */
   readonly djelatnost?: Djelatnost | undefined
+  /**
+   * Вік, якого людина досягає протягом цього податкового періоду.
+   *
+   * Потрібен рівно одному правилу — `olakšica za mlade`, — і саме тому не
+   * задано означає «не рахувати пільгу», а не «понад тридцять»: припустити
+   * старший вік означало б тихо забрати пільгу в того, кому вона належить.
+   */
+  readonly dob?: number | undefined
+  /**
+   * Місячна брутто-плаћа, яку власник d.o.o. призначив собі сам. Не задано —
+   * береться законна підлога.
+   *
+   * Вільна змінна, а не вхід задля повноти: усе, що не пішло в плаћу, виходить
+   * дивідендами під іншу ставку, тож саме це число вирішує, скільки лишиться.
+   */
+  readonly mjesecnaPlacaVlasnika?: Money<'EUR'> | undefined
 }
 
 /**
@@ -76,14 +100,45 @@ export interface PodlogaUsporedbe extends Podloga {
   readonly drugaDjelatnost?: DrugaDjelatnostPravila | undefined
   readonly nepunaGodina?: PravilaNepuneGodine | undefined
   readonly komorskiDoprinos?: KomorskiDoprinosPravila | undefined
+  readonly placa?: PlacaPravila | undefined
+  readonly clanUprave?: ClanUpravePravila | undefined
+  /**
+   * Поріг зарплати `EU plava karta`. Необов'язковий і поза розрахунком: він
+   * не бере й не додає жодного цента, а лише каже, чи дозвіл узагалі видадуть.
+   */
+  readonly plavaKarta?: PlavaKartaPravila | undefined
 }
 
 const NAZIVI: Readonly<Record<RezimId, Naziv>> = {
   'pausalni-obrt': { hr: 'paušalni obrt', uk: 'паушальний обрт' },
   'obrt-na-dohodak': { hr: 'obrt na dohodak', uk: 'обрт на дохідок' },
   'obrt-na-dobit': { hr: 'obrt na dobit', uk: 'обрт у системі porez na dobit' },
+  'doo-placa': {
+    hr: 'd.o.o. — vlasnik u radnom odnosu',
+    uk: 'd.o.o. — власник у трудовому договорі',
+  },
+  'doo-clan-uprave': {
+    hr: 'd.o.o. — vlasnik član uprave',
+    uk: 'd.o.o. — власник член правління',
+  },
   zaposlenik: { hr: 'zaposlenik', uk: 'найманий працівник' },
-  doo: { hr: 'd.o.o.', uk: 'товариство з обмеженою відповідальністю' },
+}
+
+/**
+ * Правова форма кожного режиму — від неї залежать обов'язкові платежі й те,
+ * чи має режим `izdatak` узагалі.
+ *
+ * Таблицею, а не виведенням з ідентифікатора: те, що обидва d.o.o. мають одну
+ * форму, а три обрти — іншу, є юридичним фактом, і вгадувати його з назви
+ * картки означало б тримати право в шарі складання.
+ */
+const PRAVNI_OBLICI: Readonly<Record<RezimId, PravniOblik>> = {
+  'pausalni-obrt': 'obrt',
+  'obrt-na-dohodak': 'obrt',
+  'obrt-na-dobit': 'obrt',
+  'doo-placa': 'trgovačko društvo',
+  'doo-clan-uprave': 'trgovačko društvo',
+  zaposlenik: 'nesamostalni rad',
 }
 
 const nedostupno = (razlog: RazlogNedostupnosti): Ishod => ({ status: 'nedostupno', razlog })
@@ -95,9 +150,7 @@ const nedostupno = (razlog: RazlogNedostupnosti): Ishod => ({ status: 'nedostupn
  * трьома главами `Zakon o doprinosima`, і схлопнути їх в один означало б
  * помилитися для цілого режиму.
  */
-const VRSTE_OBVEZA: Readonly<
-  Record<'pausalni-obrt' | 'obrt-na-dohodak' | 'obrt-na-dobit', VrsteObveza>
-> = {
+const VRSTE_OBVEZA: Readonly<Record<RezimId, VrsteObveza>> = {
   'pausalni-obrt': {
     porez: 'paušalni porez',
     razlika: 'razlika paušalnog poreza',
@@ -115,6 +168,29 @@ const VRSTE_OBVEZA: Readonly<
     razlika: 'razlika poreza na dobit',
     doprinosi: 'doprinosi (obrt na dobit)',
     komorskiDoprinos: 'komorski doprinos',
+  },
+  // Обидва d.o.o. платять `porez na dobit` за тим самим розкладом; різняться
+  // вони тим, за яким правилом нараховуються внески, а не коли.
+  'doo-placa': {
+    porez: 'predujam poreza na dobit',
+    razlika: 'razlika poreza na dobit',
+    doprinosi: 'doprinosi (plaća)',
+    komorskiDoprinos: undefined,
+  },
+  'doo-clan-uprave': {
+    porez: 'predujam poreza na dobit',
+    razlika: 'razlika poreza na dobit',
+    doprinosi: 'doprinosi (član uprave)',
+    komorskiDoprinos: undefined,
+  },
+  // Найманий працівник сам не платить нічого: і податок, і внески утримує та
+  // перераховує роботодавець. Строк однаково лишається строком — саме до
+  // нього прив'язана дата, коли гроші зникають із брутто.
+  zaposlenik: {
+    porez: 'porez na dohodak iz plaće',
+    razlika: 'razlika poreza na dohodak',
+    doprinosi: 'doprinosi (plaća)',
+    komorskiDoprinos: undefined,
   },
 }
 
@@ -146,37 +222,52 @@ const uskladi = (
   izracun: Izracun,
   unos: UnosUsporedbe,
   podloga: PodlogaUsporedbe,
-  vrsteObveza: VrsteObveza,
+  id: RezimId,
 ): Izracun => {
+  const pravniOblik = PRAVNI_OBLICI[id]
   const obveznaDavanja = obveznaDavanjaZa(
     {
       godisnjiPrimitak: unos.godisnjiPrimitak,
       noviObrt: unos.noviObrt === true,
       djelatnost: unos.djelatnost,
+      pravniOblik,
     },
     podloga.komorskiDoprinos,
   )
   const ukupnaDavanja = zbrojDavanja(obveznaDavanja)
 
+  // Найманий працівник `izdatak` не має взагалі: витрати з форми належать
+  // діяльності, а не людині. Відняти їх від плаће означало б покарати найм за
+  // оренду офісу, якого в нього немає.
   const ukupniIzdaci =
-    unos.godisnjiIzdaci === undefined ? eur(0) : zbrojIzdataka(unos.godisnjiIzdaci)
+    pravniOblik === 'nesamostalni rad' || unos.godisnjiIzdaci === undefined
+      ? eur(0)
+      : zbrojIzdataka(unos.godisnjiIzdaci)
 
   return {
     ...izracun,
     obveznaDavanja,
     ukupnaDavanja,
     ukupniIzdaci,
-    vrsteObveza,
+    vrsteObveza: VRSTE_OBVEZA[id],
     // Одна формула на всі режими: надходження без витрат і без усіх
     // обов'язкових платежів. Режими рахували це по-різному — паушал брав
     // primitak без витрат, бо витрат не знав, — і сусідні картки порівнювали
     // різні речі.
+    //
+    // Внески беруться не всі, а лише ті, що виходять із кишені самої людини.
+    // Для кожного, хто веде діяльність сам, це те саме число; для найманого
+    // працівника — ні, і саме тут різниця в 16,5% брутто перестає бути тихою.
     netoZaOsobu: sum('EUR', [
       unos.godisnjiPrimitak,
       scale(ukupniIzdaci, -1),
       scale(izracun.ukupanPorez, -1),
-      scale(izracun.doprinosi.ukupnoGodisnje, -1),
+      scale(izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe, -1),
       scale(ukupnaDavanja, -1),
+      // Повернення річного звіту надійде вже наступного року, але рік
+      // рахується цілком: інакше «на руки» молодого працівника було б
+      // меншим, ніж він справді отримає за цей рік.
+      izracun.povratPoreza,
     ]),
   }
 }
@@ -210,6 +301,8 @@ const uzRadniOdnos = (
     moDrugiStup: zamjena.moDrugiStup,
     zo: zamjena.zo,
     ukupnoGodisnje: zamjena.ukupnoGodisnje,
+    // Другу діяльність людина веде сама, тож усі три внески — її гроші.
+    ukupnoGodisnjeNaTeretOsobe: zamjena.ukupnoGodisnje,
     ustedaUzRadniOdnos: ustedaNaDoprinosima(izracun.doprinosi, zamjena),
   }
   const netoZaOsobu = subtract(
@@ -311,23 +404,189 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
         izracunDobiti.porezi.map((porez) => porez.godisnjiIznos),
       ),
       doprinosi: izracunDobiti.doprinosi,
+      povratPoreza: eur(0),
+      napomene: [],
       obveznaDavanja: [],
       ukupnaDavanja: eur(0),
       ukupniIzdaci: eur(0),
-      // Види обов'язків підставляє usporedba.ts: там відомо, який це режим.
-      vrsteObveza: {
-        porez: 'paušalni porez',
-        razlika: 'razlika paušalnog poreza',
-        doprinosi: 'doprinosi (paušalni obrt)',
-        komorskiDoprinos: 'komorski doprinos',
-      },
+      // Види обов'язків підставляє `uskladi`: там відомо, який це режим.
+      vrsteObveza: VRSTE_OBVEZA['obrt-na-dobit'],
       netoZaOsobu: izracunDobiti.netoZaOsobu,
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
   }
 }
 
-const NEMODELIRANI: readonly RezimId[] = ['zaposlenik', 'doo']
+/**
+ * Спільний каркас `Izracun` для режимів, які його не будують самі.
+ *
+ * Поля, що їх однаково перезапише `uskladi`, стоять тут нулями: писати їх
+ * заново в кожному режимі означало б чотири місця, де можна помилитися й не
+ * помітити, бо `uskladi` все одно накриє результат зверху.
+ */
+const kaoIzracun = ({
+  porezi,
+  ukupanPorez,
+  doprinosi,
+  povratPoreza,
+  napomene,
+  efektivnaStopa,
+}: Pick<
+  Izracun,
+  'porezi' | 'ukupanPorez' | 'doprinosi' | 'povratPoreza' | 'napomene' | 'efektivnaStopa'
+>): Izracun => ({
+  razred: undefined,
+  porezi,
+  ukupanPorez,
+  doprinosi,
+  povratPoreza,
+  napomene,
+  obveznaDavanja: [],
+  ukupnaDavanja: eur(0),
+  ukupniIzdaci: eur(0),
+  vrsteObveza: VRSTE_OBVEZA['pausalni-obrt'],
+  netoZaOsobu: eur(0),
+  efektivnaStopa,
+})
+
+/**
+ * `zaposlenik` — найм як альтернатива діяльності, а не додаток до неї.
+ *
+ * Слайдер тут читається як річна брутто-плаћа, і це прирівнювання назване на
+ * картці: клієнт обрту платить рівно введену суму, роботодавець найманого —
+ * більше на внески, які він несе понад плаћу.
+ */
+const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
+  const { stope } = unos
+  const pravila = podloga.placa
+
+  if (pravila === undefined) return nedostupno({ kod: 'nema-pravila', pravila: 'plaća' })
+  if (stope === undefined) return nedostupno({ kod: 'nema-jedinice' })
+  // Людина вже сказала, що має роботу за наймом. Тоді ця картка порівнювала б
+  // із обртом не альтернативу, а той самий найм удруге.
+  if (unos.uzRadniOdnos === true) return nedostupno({ kod: 'vec-u-radnom-odnosu' })
+
+  const placa = izracunajPlacu(
+    {
+      mjesecnaBrutoPlaca: eur(unos.godisnjiPrimitak.amount.div(MJESECI_U_GODINI)),
+      stope,
+      uzdrzavani: unos.uzdrzavani ?? { clanoviUzeObitelji: 0, djeca: 0 },
+      dob: unos.dob,
+      najnizaOsnovica: {
+        mjesecniIznos: scale(
+          eur(podloga.pretpostavke.prosjecnaPlaca.value),
+          pravila.koeficijentNajnizeOsnovice.value,
+        ),
+        izvor: pravila.koeficijentNajnizeOsnovice.source,
+      },
+      // Роботодавець — чужа фірма: ZO ніколи не був грошима цієї людини.
+      vlastitiPoslodavac: false,
+    },
+    podloga,
+    pravila,
+  )
+
+  const napomene: readonly NapomenaRezima[] = [
+    // Прирівнювання слайдера до брутто-плаће робить саме цей режим, тож і
+    // називає його він, а не модуль плаће.
+    { kod: 'bruto-placa-nije-primitak', trosakZaPoslodavca: placa.trosakZaPoslodavca },
+    ...placa.napomene,
+    ...pragPlaveKarte(placa.mjesecnaBrutoPlaca, podloga),
+  ]
+
+  const obvezniPlacanja = subtract(
+    add(placa.porez.godisnjiIznos, placa.doprinosi.ukupnoGodisnjeNaTeretOsobe),
+    placa.olaksicaZaMlade?.iznos ?? eur(0),
+  )
+
+  return {
+    status: 'izracunato',
+    izracun: kaoIzracun({
+      porezi: [placa.porez],
+      ukupanPorez: placa.porez.godisnjiIznos,
+      doprinosi: placa.doprinosi,
+      povratPoreza: placa.olaksicaZaMlade?.iznos ?? eur(0),
+      napomene,
+      efektivnaStopa: unos.godisnjiPrimitak.amount.isZero()
+        ? undefined
+        : obvezniPlacanja.amount.div(unos.godisnjiPrimitak.amount),
+    }),
+  }
+}
+
+/**
+ * Поріг `EU plava karta`, коли його взагалі є з чого порахувати.
+ *
+ * Порожньо, коли правил немає або коли середньої за повний попередній рік не
+ * існує — для року, що ще не настав, її не публікує ніхто. Мовчання тут
+ * чесніше за поріг, порахований із чужої статистики.
+ */
+const pragPlaveKarte = (
+  mjesecnaBrutoPlaca: Money<'EUR'>,
+  podloga: PodlogaUsporedbe,
+): readonly NapomenaRezima[] => {
+  const { plavaKarta } = podloga
+  const prosjek = podloga.pretpostavke.prosjecnaPlacaPrethodneGodine
+  if (plavaKarta === undefined || prosjek === undefined) return []
+
+  const prag = scale(eur(prosjek.value), plavaKarta.koeficijent.value)
+  return isGreaterThan(prag, mjesecnaBrutoPlaca)
+    ? [{ kod: 'ispod-praga-plave-karte', prag, izvor: plavaKarta.koeficijent.source }]
+    : []
+}
+
+/** Спільна перевірка входів обох режимів d.o.o. */
+const pravilaDoo = (podloga: PodlogaUsporedbe): PravilaDoo | RazlogNedostupnosti => {
+  const { obrtNaDobit, placa, clanUprave } = podloga
+  if (obrtNaDobit === undefined) return { kod: 'nema-pravila', pravila: 'porez na dobit' }
+  if (placa === undefined) return { kod: 'nema-pravila', pravila: 'plaća' }
+  if (clanUprave === undefined) return { kod: 'nema-pravila', pravila: 'član uprave' }
+
+  return {
+    porezNaDobit: obrtNaDobit.porezNaDobit,
+    stopaPorezaNaIsplatuDobiti: obrtNaDobit.stopaPorezaNaIsplatuDobiti,
+    placa,
+    clanUprave,
+  }
+}
+
+/** Вхід, спільний для обох режимів d.o.o. */
+const ulazDoo = (unos: UnosUsporedbe, stope: ParStopa) => ({
+  // Форма знає касовий `primitak`, а `dobit` визначається за нарахуванням.
+  // Прирівнювання назване в JSDoc `UlazDoo` і повторене на картці.
+  godisnjiPrihod: unos.godisnjiPrimitak,
+  godisnjiRashod: unos.godisnjiIzdaci === undefined ? eur(0) : zbrojIzdataka(unos.godisnjiIzdaci),
+  stopePorezaNaDohodak: stope,
+  uzdrzavani: unos.uzdrzavani ?? { clanoviUzeObitelji: 0, djeca: 0 },
+  dob: unos.dob,
+  mjesecnaPlacaVlasnika: unos.mjesecnaPlacaVlasnika,
+})
+
+const dooPlaca = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
+  const { stope } = unos
+  // Правила перевіряються перед входами — так само, як в `obrt na dohodak`:
+  // брак цілого набору правил є важливішою відповіддю, ніж брак одного поля.
+  const pravila = pravilaDoo(podloga)
+  if ('kod' in pravila) return nedostupno(pravila)
+  if (stope === undefined) return nedostupno({ kod: 'nema-jedinice' })
+
+  const izlaz = izracunajDooSPlacom(ulazDoo(unos, stope), podloga, pravila)
+  return { status: 'izracunato', izracun: kaoIzracun(izlaz) }
+}
+
+const dooClanUprave = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
+  const { stope } = unos
+  // Правила перевіряються перед входами — так само, як в `obrt na dohodak`:
+  // брак цілого набору правил є важливішою відповіддю, ніж брак одного поля.
+  const pravila = pravilaDoo(podloga)
+  if ('kod' in pravila) return nedostupno(pravila)
+  if (stope === undefined) return nedostupno({ kod: 'nema-jedinice' })
+
+  return {
+    status: 'izracunato',
+    izracun: kaoIzracun(izracunajDooClanUprave(ulazDoo(unos, stope), podloga, pravila)),
+  }
+}
 
 /**
  * Єдина публічна функція рушія: чиста, синхронна, повертає всі режими одразу.
@@ -338,34 +597,25 @@ const NEMODELIRANI: readonly RezimId[] = ['zaposlenik', 'doo']
  * припущення приходять у `podloga` (ADR-0001).
  */
 export const usporediRezime = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Usporedba => {
-  const dovrsi = (ishod: Ishod, vrste: VrsteObveza): Ishod =>
-    ishod.status === 'izracunato'
-      ? { status: 'izracunato', izracun: uskladi(ishod.izracun, unos, podloga, vrste) }
-      : ishod
+  const dovrsi = (id: RezimId, ishod: Ishod): Rezim => ({
+    id,
+    naziv: NAZIVI[id],
+    ishod:
+      ishod.status === 'izracunato'
+        ? { status: 'izracunato', izracun: uskladi(ishod.izracun, unos, podloga, id) }
+        : ishod,
+  })
 
+  // Порядок сталий і осмислений: три обртні режими, два товариства, найм.
+  // Спершу те, що людина відкриває сама і найдешевше, далі — те, що вимагає
+  // окремої юридичної особи, і насамкінець відмова від власної справи.
   const rezimi: readonly Rezim[] = [
-    {
-      id: 'pausalni-obrt',
-      naziv: NAZIVI['pausalni-obrt'],
-      ishod: dovrsi(pausalniObrt(unos, podloga), VRSTE_OBVEZA['pausalni-obrt']),
-    },
-    {
-      id: 'obrt-na-dohodak',
-      naziv: NAZIVI['obrt-na-dohodak'],
-      ishod: dovrsi(obrtNaDohodak(unos, podloga), VRSTE_OBVEZA['obrt-na-dohodak']),
-    },
-    {
-      id: 'obrt-na-dobit',
-      naziv: NAZIVI['obrt-na-dobit'],
-      ishod: dovrsi(obrtNaDobit(unos, podloga), VRSTE_OBVEZA['obrt-na-dobit']),
-    },
-    ...NEMODELIRANI.map(
-      (id): Rezim => ({
-        id,
-        naziv: NAZIVI[id],
-        ishod: nedostupno({ kod: 'nije-modeliran', rezim: id }),
-      }),
-    ),
+    dovrsi('pausalni-obrt', pausalniObrt(unos, podloga)),
+    dovrsi('obrt-na-dohodak', obrtNaDohodak(unos, podloga)),
+    dovrsi('obrt-na-dobit', obrtNaDobit(unos, podloga)),
+    dovrsi('doo-placa', dooPlaca(unos, podloga)),
+    dovrsi('doo-clan-uprave', dooClanUprave(unos, podloga)),
+    dovrsi('zaposlenik', zaposlenik(unos, podloga)),
   ]
 
   return { godina: podloga.ruleset.godina, rezimi }

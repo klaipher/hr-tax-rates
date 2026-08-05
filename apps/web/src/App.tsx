@@ -144,6 +144,10 @@ export const App = () => {
       uzdrzavani: forma.uzdrzavani,
       noviObrt: forma.noviObrt,
       uzRadniOdnos: forma.uzRadniOdnos,
+      ...(forma.dob === undefined ? {} : { dob: forma.dob }),
+      ...(forma.mjesecnaPlacaVlasnika === undefined
+        ? {}
+        : { mjesecnaPlacaVlasnika: eur(forma.mjesecnaPlacaVlasnika) }),
       ...(jedinica === undefined
         ? {}
         : {

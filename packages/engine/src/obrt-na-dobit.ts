@@ -203,7 +203,11 @@ const porezNaPlacu = ({
  * veći», тож рівно на порозі діє вже вища ставка. Збиток базою не стає —
  * від'ємного податку не буває.
  */
-const porezNaDobit = (
+/**
+ *  Спільне з d.o.o.: обидва режими платять той самий податок за
+ * тією самою статтею, і дві копії цієї функції розійшлися б тихо.
+ */
+export const porezNaDobit = (
   dobit: Money<'EUR'>,
   godisnjiPrihod: Money<'EUR'>,
   pravila: PorezNaDobitPravila,
@@ -229,7 +233,13 @@ const porezNaDobit = (
  * на ті самі гроші й головна різниця з обртом на дохідок, де другого
  * податку при виплаті немає взагалі.
  */
-const porezNaIsplatuDobiti = (dobitNakonPoreza: Money<'EUR'>, stopa: Sourced<Decimal>): Porez => {
+/**
+ *  Спільне з d.o.o. з тієї самої причини, що й `porezNaDobit`.
+ */
+export const porezNaIsplatuDobiti = (
+  dobitNakonPoreza: Money<'EUR'>,
+  stopa: Sourced<Decimal>,
+): Porez => {
   const poreznaOsnovica = bezMinusa(dobitNakonPoreza)
 
   return {

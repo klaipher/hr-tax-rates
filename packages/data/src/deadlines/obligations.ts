@@ -24,6 +24,9 @@ export const OBLIGATION_KINDS = [
   'predujam poreza na dobit',
   'razlika poreza na dobit',
   'komorski doprinos',
+  'porez na dohodak iz plaće',
+  'doprinosi (plaća)',
+  'doprinosi (član uprave)',
 ] as const
 
 export type ObligationKind = (typeof OBLIGATION_KINDS)[number]
@@ -229,5 +232,44 @@ export const DEADLINES: Readonly<Record<ObligationKind, Sourced<Deadline>>> = {
       },
     },
     { ...ODLUKA_O_KOMORSKOM_DOPRINOSU, article: 'čl. 8.', checkedOn: CHECKED_ON },
+  ),
+
+  /**
+   * `predujam poreza` із плаће — утримує й перераховує роботодавець,
+   * одночасно з виплатою самої плаће.
+   *
+   * Дати як такої закон не називає: він в'яже платіж до події. Крайню межу
+   * події задає трудове право — плаћу за минулий місяць треба виплатити
+   * найпізніше до п'ятнадцятого числа наступного, — і саме цю крайню межу
+   * показує календар. Виплатять раніше — раніше піде й податок.
+   */
+  'porez na dohodak iz plaće': sourced(
+    { cadence: 'mjesečno', dueDate: FIFTEENTH_OF_NEXT_MONTH },
+    { ...ZAKON_O_POREZU_NA_DOHODAK, article: 'čl. 24.', checkedOn: CHECKED_ON },
+  ),
+
+  /**
+   * `doprinosi` з плаће й на плаћу — «obračunavaju se istodobno s obračunom
+   * plaće i dospijevaju na naplatu istodobno s isplatom plaće».
+   *
+   * Той самий прив'язок до події, що й у податку з плаће, і та сама крайня
+   * межа з трудового права.
+   */
+  'doprinosi (plaća)': sourced(
+    { cadence: 'mjesečno', dueDate: FIFTEENTH_OF_NEXT_MONTH },
+    { ...ZAKON_O_DOPRINOSIMA, article: 'čl. 24. st. 1.', checkedOn: CHECKED_ON },
+  ),
+
+  /**
+   * `doprinosi` члена правління, який не перебуває в трудовому відношенні.
+   *
+   * Стаття встановлює саму підставу страхування цієї категорії — на неї
+   * посилається й Naredba, друкуючи `osnovica`. Місячний ритм і сам платіж
+   * призначає рішення Porezne uprave, а не окрема норма про строк: тому тут
+   * стоїть загальна форма «до кінця наступного місяця», а не особлива дата.
+   */
+  'doprinosi (član uprave)': sourced(
+    { cadence: 'mjesečno', dueDate: LAST_DAY_OF_NEXT_MONTH },
+    { ...ZAKON_O_DOPRINOSIMA, article: 'čl. 92.', checkedOn: CHECKED_ON },
   ),
 }
