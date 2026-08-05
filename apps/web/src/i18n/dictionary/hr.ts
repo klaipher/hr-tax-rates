@@ -201,10 +201,10 @@ export const hr: Dictionary = {
       'nema-samostalne-djelatnosti':
         'Radnik u radnom odnosu ne obavlja samostalnu djelatnost, pa davanja vezana uz NKD i ' +
         'mjesto do njega uopće ne dolaze.',
-      'prva-skupina-nije-obveznik': (iznos: string) =>
-        `Prva skupina nije obveznik plaćanja: po veličini tvrtka u nju spada, a članstvo je ` +
-        `dobrovoljno — ${iznos} € mjesečno na temelju Izjave. Upravo se tu d.o.o. i obrt ` +
-        'razilaze: obrt svojoj komori plaća uvijek.',
+      'prva-skupina-nije-obveznik':
+        'Prva skupina nije obveznik plaćanja: po veličini tvrtka u nju spada, a članstvo je ' +
+        'dobrovoljno, na temelju Izjave. Upravo se tu d.o.o. i obrt razilaze: obrt svojoj ' +
+        'komori plaća uvijek.',
       'velicina-nije-odrediva':
         'Prihodi su prešli granicu prve skupine, a ostale kriterije — aktivu i broj zaposlenih ' +
         '— obrazac ne zna. Bez njih se skupina ne može odrediti, a nagađati članarinu ne ide.',
@@ -242,9 +242,14 @@ export const hr: Dictionary = {
         `Zadali ste ${trazena} mjesečno, ali doprinosi su obračunati od ${primijenjena}: ispod ` +
         'te osnovice zakon ne dopušta obračun. Zato „stavit ću si minimalac, ostalo izvući ' +
         'dividendom” radi slabije nego što se čini.',
-      'ispod-praga-plave-karte': (prag: string) =>
-        `Za EU plavu kartu potrebna je bruto plaća od ${prag} mjesečno. To je uvjet izdavanja ` +
-        'dozvole, a ne porezno pravilo: na iznose u ovoj kartici ne utječe nikako.',
+      'prag-plave-karte-dosegnut': (prag: string) =>
+        `Za EU plavu kartu potrebna je bruto plaća od ${prag} mjesečno — ovaj iznos taj prag ` +
+        'prelazi. To je uvjet izdavanja dozvole, a ne porezno pravilo: na iznose u ovoj ' +
+        'kartici ne utječe nikako.',
+      'prag-plave-karte-nedosegnut': (prag: string) =>
+        `Za EU plavu kartu potrebna je bruto plaća od ${prag} mjesečno — ovaj iznos taj prag ` +
+        'ne doseže. To je uvjet izdavanja dozvole, a ne porezno pravilo: na iznose u ovoj ' +
+        'kartici ne utječe nikako.',
       'olaksica-za-mlade-kao-povrat': (iznos: string) =>
         `${iznos} tog poreza vratit će vam se kao olakšica za mlade — ali ne u platnoj listi. ` +
         'Tijekom godine predujam se ustegne u cijelosti, a olakšicu Porezna uprava utvrđuje ' +

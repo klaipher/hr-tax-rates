@@ -156,6 +156,17 @@ describe('plaća', () => {
       expect(toCentString(izracunaj({ dob: 31 }).godisnjiNeto)).toBe('16800.00')
     })
 
+    it('межі щаблів включні: 25 дає повну, 26 — половину', () => {
+      // Закон дає пільгу «za cijelo porezno razdoblje u kojem obveznik
+      // navršava određenu godinu života», тож той, кому цього року
+      // виповнюється 25, ще в першому щаблі, а 26 — уже в другому.
+      expect(izracunaj({ dob: 24 }).olaksicaZaMlade?.udio.toString()).toBe('1')
+      expect(izracunaj({ dob: 25 }).olaksicaZaMlade?.udio.toString()).toBe('1')
+      expect(izracunaj({ dob: 26 }).olaksicaZaMlade?.udio.toString()).toBe('0.5')
+      expect(izracunaj({ dob: 30 }).olaksicaZaMlade?.udio.toString()).toBe('0.5')
+      expect(izracunaj({ dob: 31 }).olaksicaZaMlade).toBeUndefined()
+    })
+
     it('без введеного віку пільга не рахується взагалі', () => {
       // Припустити «понад тридцять» означало б тихо забрати пільгу в того,
       // кому вона належить.

@@ -203,10 +203,10 @@ export const en: Dictionary = {
       'nema-samostalne-djelatnosti':
         'An employee carries out no self-employed activity, so levies tied to an NKD and a ' +
         'place never reach them at all.',
-      'prva-skupina-nije-obveznik': (iznos: string) =>
-        `The first group is not liable: by size the company falls into it, and membership ` +
-        `there is voluntary — €${iznos} a month on a declaration. This is exactly where a ` +
-        'd.o.o. and an obrt part ways: an obrt always pays its own chamber.',
+      'prva-skupina-nije-obveznik':
+        'The first group is not liable: by size the company falls into it, and membership ' +
+        'there is voluntary, on a declaration. This is exactly where a d.o.o. and an obrt ' +
+        'part ways: an obrt always pays its own chamber.',
       'velicina-nije-odrediva':
         'Revenue has crossed the first group’s threshold, and the form does not know the other ' +
         'criteria — total assets and headcount. Without them the group cannot be determined, ' +
@@ -246,9 +246,14 @@ export const en: Dictionary = {
         `You set ${trazena} a month, but contributions were computed from ${primijenjena}: the ` +
         'law does not allow a lower osnovica. That is why “pay myself the minimum wage and take ' +
         'the rest as dividends” works far less well than it sounds.',
-      'ispod-praga-plave-karte': (prag: string) =>
-        `An EU Blue Card requires a gross salary from ${prag} a month. That is a condition for ` +
-        'issuing the permit, not a tax rule: it changes none of the figures on this card.',
+      'prag-plave-karte-dosegnut': (prag: string) =>
+        `An EU Blue Card requires a gross salary from ${prag} a month — this figure clears it. ` +
+        'That is a condition for issuing the permit, not a tax rule: it changes none of the ' +
+        'figures on this card.',
+      'prag-plave-karte-nedosegnut': (prag: string) =>
+        `An EU Blue Card requires a gross salary from ${prag} a month — this figure falls ` +
+        'short. That is a condition for issuing the permit, not a tax rule: it changes none of ' +
+        'the figures on this card.',
       'olaksica-za-mlade-kao-povrat': (iznos: string) =>
         `${iznos} of this tax comes back to you as the young-worker relief — but not in your ` +
         'payslip. The advance is withheld in full during the year, and the tax authority grants ' +

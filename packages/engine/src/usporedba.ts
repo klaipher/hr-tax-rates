@@ -144,6 +144,20 @@ const PRAVNI_OBLICI: Readonly<Record<RezimId, PravniOblik>> = {
 const nedostupno = (razlog: RazlogNedostupnosti): Ishod => ({ status: 'nedostupno', razlog })
 
 /**
+ * Заглушка на місці `vrsteObveza`, доки `uskladi` не підставить справжні.
+ *
+ * Порожнього значення в цього поля немає: обов'язок або є, або його немає, і
+ * `undefined` тут означав би режим без жодного платежу. Тому заглушка названа
+ * заглушкою — інакше чужі обов'язки виглядали б як відповідь.
+ */
+const ZAGLUSKA_OBVEZA: VrsteObveza = {
+  porez: 'paušalni porez',
+  razlika: 'razlika paušalnog poreza',
+  doprinosi: 'doprinosi (paušalni obrt)',
+  komorskiDoprinos: undefined,
+}
+
+/**
  * Обов'язки кожного режиму — з чого будується календар.
  *
  * Це юридичні факти, а не оформлення: `doprinosi` мають три різні строки за
@@ -420,9 +434,14 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
 /**
  * Спільний каркас `Izracun` для режимів, які його не будують самі.
  *
- * Поля, що їх однаково перезапише `uskladi`, стоять тут нулями: писати їх
+ * Поля, що їх однаково перезапише `uskladi`, стоять тут порожніми: писати їх
  * заново в кожному режимі означало б чотири місця, де можна помилитися й не
  * помітити, бо `uskladi` все одно накриє результат зверху.
+ *
+ * `vrsteObveza` серед них — і саме воно потребує застереження, бо порожнього
+ * значення в нього немає. Тут стоїть заглушка, яку `uskladi` замінює на
+ * справжні обов'язки режиму за таблицею `VRSTE_OBVEZA`. Прочитати її як
+ * відповідь не можна: до `uskladi` цей `Izracun` нікуди не потрапляє.
  */
 const kaoIzracun = ({
   porezi,
@@ -444,7 +463,7 @@ const kaoIzracun = ({
   obveznaDavanja: [],
   ukupnaDavanja: eur(0),
   ukupniIzdaci: eur(0),
-  vrsteObveza: VRSTE_OBVEZA['pausalni-obrt'],
+  vrsteObveza: ZAGLUSKA_OBVEZA,
   netoZaOsobu: eur(0),
   efektivnaStopa,
 })
@@ -515,11 +534,13 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
 }
 
 /**
- * Поріг `EU plava karta`, коли його взагалі є з чого порахувати.
+ * Поріг `EU plava karta` — постійним рядком, а не лише коли зарплата його не
+ * дістає.
  *
- * Порожньо, коли правил немає або коли середньої за повний попередній рік не
- * існує — для року, що ще не настав, її не публікує ніхто. Мовчання тут
- * чесніше за поріг, порахований із чужої статистики.
+ * Порожньо лише тоді, коли рахувати нема з чого: правил немає або середньої
+ * за повний попередній рік не існує — для року, що ще не настав, її не
+ * публікує ніхто. Мовчання там чесніше за поріг, порахований із чужої
+ * статистики.
  */
 const pragPlaveKarte = (
   mjesecnaBrutoPlaca: Money<'EUR'>,
@@ -530,9 +551,14 @@ const pragPlaveKarte = (
   if (plavaKarta === undefined || prosjek === undefined) return []
 
   const prag = scale(eur(prosjek.value), plavaKarta.koeficijent.value)
-  return isGreaterThan(prag, mjesecnaBrutoPlaca)
-    ? [{ kod: 'ispod-praga-plave-karte', prag, izvor: plavaKarta.koeficijent.source }]
-    : []
+  return [
+    {
+      kod: 'prag-plave-karte',
+      prag,
+      dosegnut: !isGreaterThan(prag, mjesecnaBrutoPlaca),
+      izvor: plavaKarta.koeficijent.source,
+    },
+  ]
 }
 
 /** Спільна перевірка входів обох режимів d.o.o. */

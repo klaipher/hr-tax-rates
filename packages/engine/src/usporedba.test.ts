@@ -403,6 +403,39 @@ describe('усі три обртні режими в одному порівня
       expect(kodovi).toContain('bruto-placa-nije-primitak')
     })
 
+    it('поріг Blue Card стоїть постійно, по обидва боки від нього', () => {
+      // Рядок, що з'являється лише в найгіршому випадку, показує поріг саме
+      // тому, хто вже його перевищив, — а планує переїзд якраз він.
+      const nizak = izracun('zaposlenik', { godisnjiPrimitak: eur(24_000) }).napomene.find(
+        (n) => n.kod === 'prag-plave-karte',
+      )
+      const visok = izracun('zaposlenik', { godisnjiPrimitak: eur(90_000) }).napomene.find(
+        (n) => n.kod === 'prag-plave-karte',
+      )
+
+      if (nizak?.kod !== 'prag-plave-karte' || visok?.kod !== 'prag-plave-karte') {
+        throw new Error('поріг мав би стояти в обох випадках')
+      }
+      expect([nizak.dosegnut, visok.dosegnut]).toEqual([false, true])
+      // 2 016 × 1,5 — з середньої за повний попередній рік, а не за січень–серпень.
+      expect(toCentString(nizak.prag)).toBe('3024.00')
+    })
+
+    it('без середньої за повний рік поріг мовчить, а не стоїть на чужій статистиці', () => {
+      const bezStatistike = usporediRezime(
+        { godisnjiPrimitak: eur(30000), stope: ZAGREB },
+        {
+          ...PUNA_PODLOGA,
+          pretpostavke: { ...pretpostavke2026, prosjecnaPlacaPrethodneGodine: undefined },
+        },
+      ).rezimi.find((r) => r.id === 'zaposlenik')
+
+      if (bezStatistike?.ishod.status !== 'izracunato') throw new Error('найм мав би рахуватися')
+      expect(bezStatistike.ishod.izracun.napomene.map((n) => n.kod)).not.toContain(
+        'prag-plave-karte',
+      )
+    })
+
     it('лідер обирається серед усіх шести режимів, а не серед трьох обртних', () => {
       const svi = usporedi().rezimi.filter((r) => r.ishod.status === 'izracunato')
 

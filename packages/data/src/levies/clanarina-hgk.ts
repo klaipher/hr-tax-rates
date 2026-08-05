@@ -110,7 +110,7 @@ export const clanarinaHgk = (
   ulaz: ClanarinaHgkUlaz,
   pravila: ClanarinaHgkPravila = CLANARINA_HGK_U_SNAZI,
 ): LevyResult => {
-  const { prvaSkupina, dobrovoljniMjesecniIznosPrveSkupine } = pravila
+  const { prvaSkupina } = pravila
   const granice = prvaSkupina.value
 
   // Закон бере «не перевищує двох із трьох». `prihodi` й кількість зайнятих
@@ -120,13 +120,9 @@ export const clanarinaHgk = (
   const uGranicamaZaposlenih = ulaz.brojZaposlenih <= granice.brojZaposlenih
 
   if (uGranicamaPrihoda && uGranicamaZaposlenih) {
-    return levyNotApplicable(
-      {
-        kod: 'prva-skupina-nije-obveznik',
-        dobrovoljniMjesecniIznos: dobrovoljniMjesecniIznosPrveSkupine.value.toFixed(2),
-      },
-      prvaSkupina.source,
-    )
+    // Джерело — стаття, яка робить першу скупину необов'язковим платником.
+    // Саме вона є відповіддю; розмір добровільного внеску живе в іншій.
+    return levyNotApplicable({ kod: 'prva-skupina-nije-obveznik' }, prvaSkupina.source)
   }
 
   return levyNotApplicable({ kod: 'velicina-nije-odrediva' }, prvaSkupina.source)

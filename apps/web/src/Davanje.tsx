@@ -29,15 +29,6 @@ export const RazlogNeprimjeneDavanja = ({ razlog }: { readonly razlog: RazlogNep
     case 'djelatnost-izvan-popisa':
       return <p className="razlog">{tekst['djelatnost-izvan-popisa'](razlog.nkd)}</p>
 
-    case 'prva-skupina-nije-obveznik':
-      // Число тут — не сума до сплати, а розмір добровільного внеску за
-      // заявою. Саме тому воно стоїть у причині, а не в сумі платежу.
-      return (
-        <p className="razlog">
-          {tekst['prva-skupina-nije-obveznik'](razlog.dobrovoljniMjesecniIznos)}
-        </p>
-      )
-
     default:
       return <p className="razlog">{tekst[razlog.kod]}</p>
   }
@@ -111,10 +102,12 @@ export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezi
         </p>
       )
 
-    case 'ispod-praga-plave-karte':
+    case 'prag-plave-karte':
       return (
         <p className="razlog">
-          {tekst['ispod-praga-plave-karte'](format.eur(napomena.prag))}
+          {napomena.dosegnut
+            ? tekst['prag-plave-karte-dosegnut'](format.eur(napomena.prag))
+            : tekst['prag-plave-karte-nedosegnut'](format.eur(napomena.prag))}
           <Izvor izvor={napomena.izvor} />
         </p>
       )
