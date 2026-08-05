@@ -1,8 +1,10 @@
-import { homeCountries, NBU_EUR_UAH_SNAPSHOT } from '@hr-tax/data'
+import type { ExchangeRate, IsoDate } from '@hr-tax/data'
+import { homeCountries, resolveExchangeRate } from '@hr-tax/data'
 import type { Money } from '@hr-tax/engine'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
+import { pocetniRucniTecaj, type RucniTecaj, rucniTecajZa, uEure } from './tecaj.ts'
 
 /**
  * Порівняння з рідною країною — секція, яку розгортають, а не постійна колонка.
@@ -11,17 +13,47 @@ import { useI18n } from './i18n/context.tsx'
  * а сайт має лишатися придатним для будь-кого. Тут же живе застереження про
  * податкове резидентство: воно з'являється в момент, коли людина свідомо
  * відкрила порівняння, а не як черговий дисклеймер, повз який усі проходять.
+ *
+ * Курс приходить ланцюжком `resolveExchangeRate`: живий запит до НБУ →
+ * снепшот із датою → ручне значення, що перебиває обидва. Це єдиний
+ * ввід-вивід у проєкті, і він живе в ефекті, а не в рендері: розрахунок від
+ * нього не залежить — до нього приходить уже готове число.
  */
 export const RidnaKrajina = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: Money<'EUR'> }) => {
   const { t, format } = useI18n()
   const [otvoreno, setOtvoreno] = useState(false)
-  const [tecaj, setTecaj] = useState(NBU_EUR_UAH_SNAPSHOT.value.toString())
+  const [rucni, setRucni] = useState<RucniTecaj>(pocetniRucniTecaj)
+  const [tecaj, setTecaj] = useState<ExchangeRate | undefined>(undefined)
 
-  const rezultat = useMemo(() => {
-    const rate = Number(tecaj)
-    if (!Number.isFinite(rate) || rate <= 0) return undefined
-    return homeCountries.UA.calculate(godisnjiPrimitak.amount.times(rate))
-  }, [godisnjiPrimitak, tecaj])
+  const manual = useMemo(() => rucniTecajZa(rucni), [rucni])
+
+  useEffect(() => {
+    // Секція закрита — у мережу не ходимо: запит заради секції, якої не
+    // видно, платить трафіком за нічого.
+    if (!otvoreno) return
+
+    let vrijedi = true
+    void resolveExchangeRate({
+      fetch: (url) => globalThis.fetch(url),
+      ...(manual === undefined ? {} : { manual }),
+    }).then((rezultat) => {
+      // Відповідь, що прийшла після зміни курсу руками, мовчки відкидається:
+      // інакше повільна мережа перебила б свіжіше рішення людини.
+      if (vrijedi) setTecaj(rezultat)
+    })
+
+    return () => {
+      vrijedi = false
+    }
+  }, [otvoreno, manual])
+
+  const rezultat = useMemo(
+    () =>
+      tecaj === undefined
+        ? undefined
+        : homeCountries.UA.calculate(godisnjiPrimitak.amount.times(tecaj.value)),
+    [godisnjiPrimitak, tecaj],
+  )
 
   return (
     <section className="krajina">
@@ -43,23 +75,51 @@ export const RidnaKrajina = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: 
           <p className="polje">
             <label htmlFor="tecaj">
               {t.krajina.tecaj}
-              <span className="prijevod">{t.krajina.tecajIzvor(NBU_EUR_UAH_SNAPSHOT.asOf)}</span>
+              <span className="prijevod">{t.krajina.tecajPrijevod}</span>
             </label>
             <input
               id="tecaj"
               type="number"
-              min={1}
+              min={0}
               step={0.01}
-              value={tecaj}
+              value={rucni.vrijednost}
               onChange={(event) => {
-                setTecaj(event.target.value)
+                setRucni({ ...rucni, vrijednost: event.target.value })
               }}
             />
           </p>
 
-          {rezultat === undefined ? (
-            <p className="razlog">{t.krajina.tecajNeispravan}</p>
-          ) : (
+          <p className="polje">
+            <label htmlFor="tecaj-na-dan">{t.krajina.tecajNaDan}</label>
+            <input
+              id="tecaj-na-dan"
+              type="date"
+              value={rucni.naDan}
+              onChange={(event) => {
+                setRucni({ ...rucni, naDan: event.target.value as IsoDate })
+              }}
+            />
+          </p>
+
+          {/* Яка ланка ланцюжка спрацювала і якому дню належить число.
+              Снепшот піврічної давнини і живий курс НБУ — різні за
+              достовірністю величини, і людина мусить бачити, яка перед нею. */}
+          <p className="krajina__tecaj">
+            {tecaj === undefined ? (
+              t.krajina.tecajUcitavanje
+            ) : (
+              <>
+                <strong>{format.number(tecaj.value.toNumber())}</strong>{' '}
+                {t.krajina.tecajIzvor(t.krajina.tecajPodrijetlo[tecaj.origin.kind], tecaj.asOf)}
+              </>
+            )}
+          </p>
+
+          {rucni.vrijednost.trim() !== '' && manual === undefined && (
+            <p className="razlog razlog--upozorenje">{t.krajina.tecajNeispravan}</p>
+          )}
+
+          {rezultat !== undefined && tecaj !== undefined && (
             <>
               <dl className="rozbivka">
                 {rezultat.charges.map((charge) => (
@@ -82,12 +142,7 @@ export const RidnaKrajina = ({ godisnjiPrimitak }: { readonly godisnjiPrimitak: 
               </dl>
 
               <p className="glavno">
-                <output className="glavno__iznos">
-                  {format.eur({
-                    currency: 'EUR',
-                    amount: rezultat.net.div(Number(tecaj)),
-                  })}
-                </output>
+                <output className="glavno__iznos">{format.eur(uEure(rezultat.net, tecaj))}</output>
                 <span className="glavno__oznaka">{t.krajina.ostaje}</span>
               </p>
 

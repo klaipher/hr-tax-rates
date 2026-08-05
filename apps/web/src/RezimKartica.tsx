@@ -1,4 +1,5 @@
 import type { Doprinos, Izracun, Rezim } from '@hr-tax/engine'
+import { NapomenaDavanja, RazlogNeprimjeneDavanja } from './Davanje.tsx'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 import { Prijevod } from './i18n/Prijevod.tsx'
@@ -99,6 +100,13 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
             <dt>
               <span className="redak__naziv">{davanje.naziv.hr}</span>
               <Prijevod pojam={davanje.naziv.hr} />
+              {davanje.status === 'ne-primjenjuje-se' ? (
+                <RazlogNeprimjeneDavanja razlog={davanje.razlog} />
+              ) : (
+                davanje.napomene.map((napomena) => (
+                  <NapomenaDavanja key={napomena.kod} napomena={napomena} />
+                ))
+              )}
               <Izvor izvor={davanje.izvor} />
             </dt>
             <dd>
@@ -120,6 +128,13 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
             {izracun.doprinosi.mjesecnaOsnovica !== undefined && (
               <span className="prijevod">
                 {t.kartica.doprinosiOsnovica(format.eur(izracun.doprinosi.mjesecnaOsnovica))}
+              </span>
+            )}
+            {/* Наскільки менші внески виходять із наймом — те, заради чого
+                найм узагалі варто зберігати. Число рахує рушій. */}
+            {izracun.doprinosi.ustedaUzRadniOdnos !== undefined && (
+              <span className="prijevod">
+                {t.kartica.ustedaUzRadniOdnos(format.eur(izracun.doprinosi.ustedaUzRadniOdnos))}
               </span>
             )}
           </dt>

@@ -26,6 +26,8 @@
  * користувачеві.
  */
 
+import type { Napomena } from './levy.ts'
+
 /** Форма коду `NKD`: розділ `55`, група `50.1`, клас `49.31`, підклас `47.111`. */
 const OBLIK_SIFRE = /^\d{2}(\.\d{1,3})?$/
 
@@ -42,8 +44,21 @@ export interface NkdStavka {
  * межах. Тоді сума нарахована умовно: чи належить діяльність обрту до цих
  * меж, з самого коду `NKD` не видно.
  */
-export const napomenaZaOgranicenje = (sifra: string, ogranicenje: string): string =>
-  `Закон бере NKD ${sifra} не повністю, а лише в частині: «${ogranicenje}». Сума нарахована за припущення, що діяльність обрту до неї належить.`
+export const napomenaZaOgranicenje = (nkd: string, ogranicenje: string): Napomena => ({
+  kod: 'ogranicenje-nkd',
+  nkd,
+  ogranicenje,
+})
+
+/**
+ * Чи рядок узагалі має форму коду `NKD`.
+ *
+ * Форма, а не наявність у довіднику: код поза довідником означає рівно
+ * «жоден із двох платежів не виникає» — це відповідь, а не помилка вводу.
+ * Форму ж треба перевірити раніше, бо `normalizirajNkd` на «abc» кидає
+ * виняток, і форма мусить спитати про це до розрахунку, а не після.
+ */
+export const jeOblikNkd = (sifra: string): boolean => OBLIK_SIFRE.test(sifra.trim())
 
 /**
  * Зводить код до цифр, щоб порівнювати ієрархічно: розділ `55` є префіксом

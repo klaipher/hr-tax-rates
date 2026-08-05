@@ -1,4 +1,11 @@
-import type { LegalReference, ObligationKind, Pretpostavke, Ruleset } from '@hr-tax/data'
+import type {
+  LegalReference,
+  Napomena,
+  ObligationKind,
+  Pretpostavke,
+  RazlogNeprimjene,
+  Ruleset,
+} from '@hr-tax/data'
 import type Decimal from 'decimal.js'
 import type { Money } from './money.ts'
 
@@ -121,6 +128,15 @@ export interface Doprinosi {
   readonly zo: Doprinos
   /** Усі складові разом за рік. */
   readonly ukupnoGodisnje: Money<'EUR'>
+  /**
+   * Наскільки менші внески виходять із наймом, ніж без нього. `undefined`,
+   * коли найму немає — там немає з чим порівнювати.
+   *
+   * Число, а не різниця, яку взявся б рахувати екран: порівнювати треба той
+   * самий режим на тих самих входах, і зробити це поза рушієм означало б
+   * складати два розрахунки в шарі показу.
+   */
+  readonly ustedaUzRadniOdnos: Money<'EUR'> | undefined
 }
 
 /**
@@ -138,13 +154,18 @@ export type ObveznoDavanje =
       readonly godisnjiIznos: Money<'EUR'>
       /** Звідки взялася сума: база й ставка, словами. */
       readonly obracun: string
-      readonly napomene: readonly string[]
+      /**
+       * Застереження, за яких сума може виявитися іншою — кодами, а не
+       * реченнями: речення складає інтерфейс мовою читача (ADR-0004).
+       */
+      readonly napomene: readonly Napomena[]
       readonly izvor: LegalReference
     }
   | {
       readonly status: 'ne-primjenjuje-se'
       readonly naziv: Naziv
-      readonly razlog: string
+      /** Чому платежу немає — код із параметрами, а не проза (ADR-0004). */
+      readonly razlog: RazlogNeprimjene
       readonly izvor: LegalReference
     }
 

@@ -179,6 +179,18 @@ describe('обрив розряду', () => {
       })
     })
 
+    it('межа веде до статті з таблицею розрядів (ADR-0002)', () => {
+      // Межа розряду — юридичне число, і від нього має бути дорога до акта,
+      // а не лише до сусіднього числа на екрані.
+      for (const podlogaZa of [naSnazi, najava]) {
+        const obriv = obrivNa(eur(39_000), podlogaZa)
+
+        expect(obriv.izvor.article.length).toBeGreaterThan(0)
+        expect(obriv.izvor.url).toMatch(/^https:\/\//)
+      }
+      expect(obrivNa(eur(55_000), najava).izvor.article.length).toBeGreaterThan(0)
+    })
+
     it('на самій межі відстань нульова, а стрибок нікуди не дівається', () => {
       const obriv = obrivRazreda(eur(40_000), najava)
 

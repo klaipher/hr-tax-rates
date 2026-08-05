@@ -26,6 +26,7 @@ const make = <C extends Currency>(currency: C, amount: Decimal.Value): Money<C> 
 export const eur = (amount: Decimal.Value): Money<'EUR'> => make('EUR', amount)
 
 /** Сума в гривнях (hrivnja). */
+/** @internal Гривні будує шар даних рідної країни; рушій ними не рахує. */
 export const uah = (amount: Decimal.Value): Money<'UAH'> => make('UAH', amount)
 
 export const zero = <C extends Currency>(currency: C): Money<C> => make(currency, 0)
@@ -57,4 +58,5 @@ export const roundToCents = <C extends Currency>(a: Money<C>): Money<C> =>
   make(a.currency, a.amount.toDecimalPlaces(2, Decimal.ROUND_HALF_UP))
 
 /** Рядок для порівнянь у тестах і для форматування: завжди два знаки. */
+/** @internal Порівняння в тестах до цента; на екран числа йдуть через `Intl`. */
 export const toCentString = (a: Money): string => a.amount.toFixed(2)

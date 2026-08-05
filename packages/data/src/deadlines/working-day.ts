@@ -31,6 +31,7 @@ import { type CalendarDate, isWeekend, nextDay } from './calendar-date.ts'
  * перенесло його на понеділок 2 березня. Цей випадок відтворено тестом —
  * якщо ланцюг тлумачення хибний, ми розійдемося з відомством на видимій даті.
  */
+/** @internal Ланцюг норм, який тест звіряє з оголошенням Porezna uprava. */
 export const PRIJENOS_NA_RADNI_DAN: readonly LegalReference[] = [
   // Сама норма про перенесення.
   { ...ZAKON_O_OPCEM_UPRAVNOM_POSTUPKU, article: 'čl. 81. st. 2.', checkedOn: '2026-08-04' },

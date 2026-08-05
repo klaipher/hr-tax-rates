@@ -1,4 +1,5 @@
 import Decimal from 'decimal.js'
+import type { LegalReference } from '../legal.ts'
 import { type Sourced, sourced } from '../sourced.ts'
 import {
   type ActReference,
@@ -47,6 +48,19 @@ export const RASPON_SPOMENICKE_RENTE_PO_M2: Sourced<{
     checkedOn: CHECKED_ON,
   },
 )
+
+/**
+ * Норма, що робить місце вирішальним для ренти за площею: рента виникає з
+ * діяльності **в** нерухомому культурному добрі чи його зоні.
+ *
+ * Окремою константою, бо на неї посилаються двічі — і сам розрахунок, коли
+ * відмовляє, і той, хто збирає платежі в перелік, коли місця ще не знає.
+ */
+export const IZVOR_RENTE_PO_POVRSINI: LegalReference = {
+  ...ZAKON_O_KULTURNIM_DOBRIMA,
+  article: 'čl. 116. st. 1.',
+  checkedOn: CHECKED_ON,
+}
 
 /** Ставка `indirektna spomenička renta` у відсотках `ukupni prihod`. */
 export const INDIREKTNA_SPOMENICKA_RENTA_STOPA: Sourced<string> = sourced('0.05', {
@@ -130,18 +144,17 @@ export interface SpomenickaRentaGodisnje {
 const povrsinskaRenta = (ulaz: SpomenickaRentaUlaz): LevyResult => {
   if (ulaz.pretezitoProizvodna) {
     return levyNotApplicable(
-      'pretezito-proizvodna-djelatnost',
-      'spomenička renta за площею не нараховується: закон звільняє тих, чия переважна діяльність — переробна або виробнича.',
-      { ...ZAKON_O_KULTURNIM_DOBRIMA, article: 'čl. 116. st. 9.', checkedOn: CHECKED_ON },
+      { kod: 'pretezito-proizvodna-djelatnost' },
+      {
+        ...ZAKON_O_KULTURNIM_DOBRIMA,
+        article: 'čl. 116. st. 9.',
+        checkedOn: CHECKED_ON,
+      },
     )
   }
 
   if (ulaz.polozaj.kind === 'izvan') {
-    return levyNotApplicable(
-      'izvan-kulturnog-dobra',
-      'spomenička renta за площею не нараховується: діяльність не ведеться в нерухомому культурному добрі чи на території культурно-історичної цілості.',
-      { ...ZAKON_O_KULTURNIM_DOBRIMA, article: 'čl. 116. st. 1.', checkedOn: CHECKED_ON },
-    )
+    return levyNotApplicable({ kod: 'izvan-kulturnog-dobra' }, IZVOR_RENTE_PO_POVRSINI)
   }
 
   const { korisnaPovrsinaM2, mjesecniIznosPoM2 } = ulaz.polozaj
@@ -159,9 +172,7 @@ const povrsinskaRenta = (ulaz: SpomenickaRentaUlaz): LevyResult => {
     naCente(godisnji),
     `${new Decimal(korisnaPovrsinaM2).toFixed(2)} м² × ${stopa.toFixed(2)} €/м² × ${MJESECI} місяців`,
     RASPON_SPOMENICKE_RENTE_PO_M2.source,
-    [
-      'Ставку за м² встановлює Odluka міста, общини або Grada Zagreba — закон задає лише діапазон, тож сума залежить від конкретного місця.',
-    ],
+    [{ kod: 'stopu-utvrduje-jedinica' }],
   )
 }
 
@@ -169,8 +180,7 @@ const indirektnaRenta = (ulaz: SpomenickaRentaUlaz): LevyResult => {
   const djelatnost = najtocnijiPogodak(ulaz.nkd, INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.value)
   if (djelatnost === undefined) {
     return levyNotApplicable(
-      'djelatnost-izvan-popisa',
-      `indirektna spomenička renta не нараховується: NKD ${ulaz.nkd} немає в переліку діяльностей čl. 117. st. 1. Zakona o zaštiti i očuvanju kulturnih dobara.`,
+      { kod: 'djelatnost-izvan-popisa', nkd: ulaz.nkd },
       INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source,
     )
   }
