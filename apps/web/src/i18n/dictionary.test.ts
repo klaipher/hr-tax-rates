@@ -1,3 +1,5 @@
+import { nkdDirektorij } from '@hr-tax/data'
+import type { UnosUsporedbe } from '@hr-tax/engine'
 import { eur, usporediRezime } from '@hr-tax/engine'
 import { describe, expect, it } from 'vitest'
 import { PODLOGA } from '../podloga.ts'
@@ -72,8 +74,77 @@ describe('словник', () => {
  */
 const PRIMICI = ['0', '1', '11000', '15000', '19000', '23000', '30000', '40000', '60000', '60001']
 
+const IZDACI = {
+  najamnina: eur(2000),
+  nabavkaRobe: eur(0),
+  nabavkaUsluga: eur(1000),
+  placeRadnika: eur(0),
+  troskoviBanke: eur(200),
+  reprezentacija: eur(300),
+  osobnoVozilo: eur(400),
+  ostalo: eur(500),
+}
+
+/**
+ * Обставини, які вмикають різні гілки рушія.
+ *
+ * Порожній варіант лишається першим — саме на ньому видно, що каже рушій,
+ * коли форма ще нічого не знає. Решта доводить решту: без витрат і ставок
+ * `porez na dohodak` узагалі не з'являється, а без `NKD` і без культурного
+ * добра не з'являються причини незастосування двох платежів.
+ */
+const OKOLNOSTI: readonly Partial<UnosUsporedbe>[] = [
+  {},
+  { godisnjiIzdaci: IZDACI, stope: { niza: 2300, visa: 3300 } },
+  { noviObrt: true },
+  { uzdrzavani: { clanoviUzeObitelji: 1, djeca: 10 } },
+  ...nkdDirektorij.map(
+    (stavka): Partial<UnosUsporedbe> => ({
+      djelatnost: {
+        nkd: stavka.sifra,
+        imaLokalnuTuristickuZajednicu: true,
+        potpomognutoPodrucje: false,
+        pretezitoProizvodna: false,
+        polozaj: { kind: 'izvan' },
+      },
+    }),
+  ),
+  {
+    djelatnost: {
+      // Код правильної форми, якого в переліках немає: рівно той випадок,
+      // коли платіж не виникає, а причина мусить це сказати.
+      nkd: '62.01',
+      imaLokalnuTuristickuZajednicu: false,
+      potpomognutoPodrucje: true,
+      pretezitoProizvodna: true,
+      polozaj: { kind: 'izvan' },
+    },
+  },
+  {
+    djelatnost: {
+      nkd: '92.00',
+      imaLokalnuTuristickuZajednicu: true,
+      potpomognutoPodrucje: false,
+      pretezitoProizvodna: false,
+      polozaj: { kind: 'u-kulturnom-dobru', korisnaPovrsinaM2: 40, mjesecniIznosPoM2: '0.20' },
+    },
+  },
+]
+
 const usporedbe = () =>
-  PRIMICI.map((primitak) => usporediRezime({ godisnjiPrimitak: eur(primitak) }, PODLOGA))
+  PRIMICI.flatMap((primitak) =>
+    OKOLNOSTI.map((okolnosti) =>
+      usporediRezime({ ...okolnosti, godisnjiPrimitak: eur(primitak) }, PODLOGA),
+    ),
+  )
+
+/** Усі обов'язкові платежі, які рушій уміє повернути на цій сітці. */
+const davanja = () =>
+  usporedbe().flatMap((usporedba) =>
+    usporedba.rezimi.flatMap((rezim) =>
+      rezim.ishod.status === 'izracunato' ? rezim.ishod.izracun.obveznaDavanja : [],
+    ),
+  )
 
 describe('покриття того, що повертає рушій', () => {
   it('перекладає кожен хорватський термін, який рушій уміє показати', () => {
@@ -85,11 +156,15 @@ describe('покриття того, що повертає рушій', () => {
         if (rezim.ishod.status !== 'izracunato') {
           continue
         }
-        const { porezi, doprinosi } = rezim.ishod.izracun
+        const { porezi, doprinosi, obveznaDavanja } = rezim.ishod.izracun
         for (const porez of porezi) pojmovi.add(porez.naziv.hr)
         for (const doprinos of [doprinosi.moPrviStup, doprinosi.moDrugiStup, doprinosi.zo]) {
           pojmovi.add(doprinos.naziv.hr)
         }
+        // Обов'язкові платежі стоять на картці поруч із податком і внесками,
+        // тож і пояснення терміна мусять мати ті самі — інакше в переліку
+        // мовчки з'явився б рядок без тлумачення.
+        for (const davanje of obveznaDavanja) pojmovi.add(davanje.naziv.hr)
       }
     }
 
@@ -98,6 +173,44 @@ describe('покриття того, що повертає рушій', () => {
       for (const pojam of pojmovi) {
         expect(DICTIONARIES[locale].pojmovi[pojam], `${locale}: ${pojam}`).toBeTypeOf('string')
       }
+    }
+  })
+
+  it('пояснює кожну причину, з якої платіж не нараховано', () => {
+    // Та сама хвороба, що й із причинами недоступності режиму: рушій віддає
+    // код, а словник мусить мати текст на кожен, який той уміє повернути
+    // (ADR-0004). Ключується за кодом, тож нова причина без перекладу
+    // валить білд.
+    const kodovi = new Set(
+      davanja().flatMap((davanje) =>
+        davanje.status === 'ne-primjenjuje-se' ? [davanje.razlog.kod] : [],
+      ),
+    )
+
+    expect(kodovi.size).toBeGreaterThan(0)
+    for (const locale of LOCALES) {
+      const razlozi = DICTIONARIES[locale].kartica.davanjaRazlozi as unknown as Record<
+        string,
+        Leaf | undefined
+      >
+      for (const kod of kodovi) expect(razlozi[kod], `${locale}: ${kod}`).toBeDefined()
+    }
+  })
+
+  it('пояснює кожне застереження, з яким платіж нараховано', () => {
+    const kodovi = new Set(
+      davanja().flatMap((davanje) =>
+        davanje.status === 'obračunato' ? davanje.napomene.map((napomena) => napomena.kod) : [],
+      ),
+    )
+
+    expect(kodovi.size).toBeGreaterThan(0)
+    for (const locale of LOCALES) {
+      const napomene = DICTIONARIES[locale].kartica.davanjaNapomene as unknown as Record<
+        string,
+        Leaf | undefined
+      >
+      for (const kod of kodovi) expect(napomene[kod], `${locale}: ${kod}`).toBeDefined()
     }
   })
 

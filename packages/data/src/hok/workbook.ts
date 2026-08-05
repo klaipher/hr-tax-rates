@@ -5,8 +5,10 @@ import { hokWorkbooks } from './workbooks.generated.ts'
 // потрібен ширший тип.
 const workbooks: HokWorkbooks = hokWorkbooks
 
+/** @internal Доступ до фікстур HOK — матеріал голден-тестів, не екрана. */
 export const hokWorkbook = (scenario: HokScenario): HokWorkbook => workbooks[scenario]
 
+/** @internal Перелік аркушів фікстури: потрібен тестам структури книги. */
 export const hokSheetNames = (scenario: HokScenario): readonly string[] =>
   Object.keys(workbooks[scenario].sheets)
 
@@ -22,6 +24,7 @@ export const hokCell = ({ scenario, sheet, cell }: HokCellRef): HokCell => {
   return found
 }
 
+/** @internal Формула комірки HOK: нею тести доводять помилки в книгах. */
 export const hokFormula = (ref: HokCellRef): string => {
   const { formula } = hokCell(ref)
   if (formula === undefined) {

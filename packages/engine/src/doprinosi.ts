@@ -94,6 +94,9 @@ export const doprinosiOdGodisnjeOsnovice = (
     moPrviStup,
     moDrugiStup,
     zo,
+    // Без найму порівнювати немає з чим: виграш підставляє `usporedba.ts`,
+    // коли модифікатор справді ввімкнено.
+    ustedaUzRadniOdnos: undefined,
     ukupnoGodisnje: sum('EUR', [
       moPrviStup.godisnjiIznos,
       moDrugiStup.godisnjiIznos,

@@ -30,8 +30,7 @@ describe('turistička članarina (туристичний членський вн
 
     expect(result.kind).toBe('not-applicable')
     if (result.kind !== 'not-applicable') return
-    expect(result.reason).toBe('djelatnost-izvan-popisa')
-    expect(result.obrazlozenje).toContain('62.01')
+    expect(result.razlog).toEqual({ kod: 'djelatnost-izvan-popisa', nkd: '62.01' })
     expect(result.source.article).toContain('čl. 5.')
   })
 
@@ -68,7 +67,7 @@ describe('turistička članarina (туристичний членський вн
 
     expect(result.kind).toBe('not-applicable')
     if (result.kind !== 'not-applicable') return
-    expect(result.reason).toBe('izvan-podrucja-turisticke-zajednice')
+    expect(result.razlog).toEqual({ kod: 'izvan-podrucja-turisticke-zajednice' })
     expect(result.source.article).toContain('čl. 4.')
   })
 
@@ -79,7 +78,8 @@ describe('turistička članarina (туристичний членський вн
 
     if (result.kind !== 'due') throw new Error('65.12 у переліку є')
     expect(result.napomene).toHaveLength(1)
-    expect(result.napomene[0]).toContain('osiguranje')
+    expect(result.napomene[0]?.kod).toBe('ogranicenje-nkd')
+    expect(JSON.stringify(result.napomene[0])).toContain('osiguranje')
   })
 
   it('нульовий primitak дає нуль як нараховану суму, а не «не застосовується»', () => {

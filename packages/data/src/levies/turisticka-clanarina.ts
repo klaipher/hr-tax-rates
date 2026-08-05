@@ -176,17 +176,19 @@ export interface TuristickaClanarinaUlaz {
 export const turistickaClanarina = (ulaz: TuristickaClanarinaUlaz): LevyResult => {
   if (!ulaz.imaLokalnuTuristickuZajednicu) {
     return levyNotApplicable(
-      'izvan-podrucja-turisticke-zajednice',
-      'turistička članarina не нараховується: обов’язок виникає лише на території місцевої turistička zajednica, заснованої за законом.',
-      { ...ZAKON_O_CLANARINAMA, article: 'čl. 4. st. 1.', checkedOn: CHECKED_ON },
+      { kod: 'izvan-podrucja-turisticke-zajednice' },
+      {
+        ...ZAKON_O_CLANARINAMA,
+        article: 'čl. 4. st. 1.',
+        checkedOn: CHECKED_ON,
+      },
     )
   }
 
   const djelatnost = najtocnijiPogodak(ulaz.nkd, TURISTICKA_CLANARINA_DJELATNOSTI.value)
   if (djelatnost === undefined) {
     return levyNotApplicable(
-      'djelatnost-izvan-popisa',
-      `turistička članarina не нараховується: NKD ${ulaz.nkd} немає в переліку діяльностей čl. 5. st. 1. Zakona o članarinama u turističkim zajednicama.`,
+      { kod: 'djelatnost-izvan-popisa', nkd: ulaz.nkd },
       TURISTICKA_CLANARINA_DJELATNOSTI.source,
     )
   }

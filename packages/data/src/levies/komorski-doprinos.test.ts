@@ -40,12 +40,12 @@ describe('komorski doprinos (внесок до обртницької палат
 
     expect(result.kind).toBe('not-applicable')
     if (result.kind !== 'not-applicable') return
-    expect(result.reason).toBe('novootvoreni-obrt')
-    // Пояснення мусить називати саме той строк, що лежить у ruleset, а не
-    // слово, вписане в шаблон повз джерело.
-    expect(result.obrazlozenje).toContain(
-      `${KOMORSKI_DOPRINOS_U_SNAZI.oslobodenjeGodina.value} роки ведення обрту`,
-    )
+    // Причина мусить нести саме той строк, що лежить у правилах, а не слово,
+    // вписане в шаблон повз джерело (ADR-0004).
+    expect(result.razlog).toEqual({
+      kod: 'novootvoreni-obrt',
+      oslobodenjeGodina: KOMORSKI_DOPRINOS_U_SNAZI.oslobodenjeGodina.value,
+    })
     // Звільнення теж має джерело: čl. 15. Odluke, а не «ми так вирішили».
     expect(result.source.article).toBe('čl. 15.')
     expect(result.source.gazette).toBe('NN 154/22')
@@ -94,7 +94,9 @@ describe('komorski doprinos (внесок до обртницької палат
 
     const prijedlog = komorskiDoprinos({ uPrveDvijeGodine: false }, KOMORSKI_DOPRINOS_PRIJEDLOG)
     if (prijedlog.kind !== 'due') throw new Error('проєкт не скасовує внесок')
-    expect(prijedlog.napomene.join(' ')).toContain('стел')
+    expect(prijedlog.napomene).toEqual([
+      { kod: 'stopa-je-gornja-granica', stopa: KOMORSKI_DOPRINOS_PRIJEDLOG.mjesecnaStopa.value },
+    ])
 
     const uSnazi = komorskiDoprinos({ uPrveDvijeGodine: false })
     if (uSnazi.kind !== 'due') throw new Error('чинний обрт платить')

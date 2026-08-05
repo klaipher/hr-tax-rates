@@ -1,3 +1,4 @@
+import type { LegalReference } from '@hr-tax/data'
 import { MJESECI_U_GODINI } from './doprinosi.ts'
 import { add, eur, isGreaterThan, type Money, subtract } from './money.ts'
 import { izracunajPausalniObrt } from './pausalni-obrt.ts'
@@ -49,17 +50,29 @@ export interface Skok {
   readonly retroaktivnihMjeseci: number
 }
 
+/**
+ * Сама межа — спільне для обох видів обриву: де вона, скільки до неї і
+ * звідки вона взялася.
+ *
+ * `izvor` не оздоблення: межа розряду — юридичне число, і від нього має бути
+ * дорога до статті з таблицею розрядів (ADR-0002).
+ */
+interface Granica {
+  /** `gornja granica razreda` — сама межа. */
+  readonly granica: Money<'EUR'>
+  /** Скільки `primitak` лишилося до межі. Нуль, коли він рівно на ній. */
+  readonly doGranice: Money<'EUR'>
+  /** Стаття з таблицею розрядів. */
+  readonly izvor: LegalReference
+}
+
 /** Попереду наступний розряд: платіж стрибне, режим лишиться. */
-export interface ObrivRazreda {
+export interface ObrivRazreda extends Granica {
   readonly vrsta: 'razred'
   /** Розряд, у якому `primitak` зараз. */
   readonly redniBroj: number
   /** Розряд, у який його переведе перетин межі. */
   readonly sljedeciRedniBroj: number
-  /** `gornja granica razreda` — сама межа. */
-  readonly granica: Money<'EUR'>
-  /** Скільки `primitak` лишилося до межі. Нуль, коли він рівно на ній. */
-  readonly doGranice: Money<'EUR'>
   readonly skok: Skok
 }
 
@@ -70,12 +83,10 @@ export interface ObrivRazreda {
  * стрибка, з яким можна порівняти відстань, за цією межею немає — там немає
  * чого рахувати цими правилами.
  */
-export interface KrajRezima {
+export interface KrajRezima extends Granica {
   readonly vrsta: 'kraj-rezima'
   readonly redniBroj: number
-  readonly granica: Money<'EUR'>
-  readonly doGranice: Money<'EUR'>
-  /** Чому за межею режиму немає — словами рушія, а не переказом. */
+  /** Чому за межею режиму немає — структурою рушія, а не переказом. */
   readonly razlog: RazlogNedostupnosti
 }
 
@@ -114,6 +125,7 @@ export const obrivZa = (
       redniBroj: razred.redniBroj,
       granica,
       doGranice,
+      izvor: razred.izvor,
       razlog: ishodZaGranicom.razlog,
     }
   }
@@ -133,6 +145,7 @@ export const obrivZa = (
     sljedeciRedniBroj: sljedeci.redniBroj,
     granica,
     doGranice,
+    izvor: razred.izvor,
     skok: {
       porez: subtract(poslije.ukupanPorez, prije.ukupanPorez),
       doprinosi,

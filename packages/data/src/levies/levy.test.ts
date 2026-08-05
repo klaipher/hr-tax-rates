@@ -19,7 +19,7 @@ describe('підсумок обов’язкових платежів', () => {
   })
 
   it('не змішує ненарахований платіж із нулем: сума ігнорує його, але сам запис лишається', () => {
-    const skipped = levyNotApplicable('djelatnost-izvan-popisa', 'бо не той NKD', IZVOR)
+    const skipped = levyNotApplicable({ kod: 'djelatnost-izvan-popisa', nkd: '62.01' }, IZVOR)
     const results: readonly LevyResult[] = [
       levyDue(new Decimal('136.80'), 'перший', IZVOR),
       skipped,
@@ -29,8 +29,28 @@ describe('підсумок обов’язкових платежів', () => {
     // Головна вимога тікета: «не застосовується» має лишатися видимим, а не
     // розчинятися в нулі. Тому запис зберігає і причину, і статтю закону.
     expect(skipped.kind).toBe('not-applicable')
-    expect(skipped.reason).toBe('djelatnost-izvan-popisa')
+    expect(skipped.razlog).toEqual({ kod: 'djelatnost-izvan-popisa', nkd: '62.01' })
     expect(skipped.source.article).toBe('čl. 6. st. 1.')
+  })
+
+  it('причина — код із параметрами, а не готове речення (ADR-0004)', () => {
+    // Проза не перекладається: шар даних мови читача не знає, і склеєний ним
+    // рядок інтерфейс може хіба що показати як є. Тому в записі лишаються
+    // самі числа й коди, з яких кожна локаль складає власне речення.
+    const skipped = levyNotApplicable({ kod: 'djelatnost-izvan-popisa', nkd: '62.01' }, IZVOR)
+
+    expect(Object.keys(skipped).sort()).toEqual(['kind', 'razlog', 'source'])
+    expect(Object.values(skipped.razlog).every((v) => typeof v === 'string')).toBe(true)
+  })
+
+  it('застереження до нарахованого платежу теж код, а не речення', () => {
+    const due = levyDue(new Decimal('56.85'), 'база × ставка', IZVOR, [
+      { kod: 'ogranicenje-nkd', nkd: '65.12', ogranicenje: 'turističko osiguranje' },
+    ])
+
+    expect(due.napomene).toEqual([
+      { kod: 'ogranicenje-nkd', nkd: '65.12', ogranicenje: 'turističko osiguranje' },
+    ])
   })
 
   it('порожній перелік дає нуль, а не NaN', () => {

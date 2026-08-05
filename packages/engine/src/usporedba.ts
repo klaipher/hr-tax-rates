@@ -5,7 +5,7 @@ import type {
   ObrtNaDohodakPravila,
   ParStopa,
 } from '@hr-tax/data'
-import { KOMORSKI_DOPRINOS_U_SNAZI, komorskiDoprinos } from '@hr-tax/data'
+import { type Djelatnost, obveznaDavanjaZa, zbrojDavanja } from './davanja.ts'
 import { eur, type Money, scale, subtract, sum } from './money.ts'
 import {
   izracunajPausalniObrtZaRazdoblje,
@@ -24,7 +24,6 @@ import type {
   Ishod,
   Izracun,
   Naziv,
-  ObveznoDavanje,
   Podloga,
   RazlogNedostupnosti,
   Rezim,
@@ -33,7 +32,7 @@ import type {
   Usporedba,
   VrsteObveza,
 } from './types.ts'
-import { doprinosiUzRadniOdnos } from './uz-radni-odnos.ts'
+import { doprinosiUzRadniOdnos, ustedaNaDoprinosima } from './uz-radni-odnos.ts'
 
 /**
  * Вхід порівняння.
@@ -57,6 +56,12 @@ export interface UnosUsporedbe extends Unos {
    * новий `obrt` від `komorski doprinos` на перші два роки.
    */
   readonly noviObrt?: boolean | undefined
+  /**
+   * `NKD` і місце діяльності — від них залежать `turistička članarina` і
+   * `spomenička renta`. Не задано — застосовність обох невизначена, і вони
+   * так і кажуть замість того, щоб зникнути з переліку.
+   */
+  readonly djelatnost?: Djelatnost | undefined
 }
 
 /**
@@ -122,11 +127,6 @@ const VRSTE_OBVEZA: Readonly<
  */
 const zbrojIzdataka = (izdaci: IzdaciPoStavkama): Money<'EUR'> => sum('EUR', Object.values(izdaci))
 
-const NAZIV_KOMORSKOG = {
-  hr: 'komorski doprinos',
-  uk: 'внесок до обртницької палати',
-} as const
-
 /**
  * Додає обов'язкові платежі й зводить «на руки» до спільного означення.
  *
@@ -148,36 +148,22 @@ const uskladi = (
   podloga: PodlogaUsporedbe,
   vrsteObveza: VrsteObveza,
 ): Izracun => {
-  const rezultat = komorskiDoprinos(
-    { uPrveDvijeGodine: unos.noviObrt === true },
-    podloga.komorskiDoprinos ?? KOMORSKI_DOPRINOS_U_SNAZI,
+  const obveznaDavanja = obveznaDavanjaZa(
+    {
+      godisnjiPrimitak: unos.godisnjiPrimitak,
+      noviObrt: unos.noviObrt === true,
+      djelatnost: unos.djelatnost,
+    },
+    podloga.komorskiDoprinos,
   )
-
-  const davanje: ObveznoDavanje =
-    rezultat.kind === 'due'
-      ? {
-          status: 'obračunato',
-          naziv: NAZIV_KOMORSKOG,
-          godisnjiIznos: eur(rezultat.godisnjiIznos),
-          obracun: rezultat.obracun,
-          napomene: rezultat.napomene,
-          izvor: rezultat.source,
-        }
-      : {
-          status: 'ne-primjenjuje-se',
-          naziv: NAZIV_KOMORSKOG,
-          razlog: rezultat.obrazlozenje,
-          izvor: rezultat.source,
-        }
-
-  const ukupnaDavanja = davanje.status === 'obračunato' ? davanje.godisnjiIznos : eur(0)
+  const ukupnaDavanja = zbrojDavanja(obveznaDavanja)
 
   const ukupniIzdaci =
     unos.godisnjiIzdaci === undefined ? eur(0) : zbrojIzdataka(unos.godisnjiIzdaci)
 
   return {
     ...izracun,
-    obveznaDavanja: [davanje],
+    obveznaDavanja,
     ukupnaDavanja,
     ukupniIzdaci,
     vrsteObveza,
@@ -224,6 +210,7 @@ const uzRadniOdnos = (
     moDrugiStup: zamjena.moDrugiStup,
     zo: zamjena.zo,
     ukupnoGodisnje: zamjena.ukupnoGodisnje,
+    ustedaUzRadniOdnos: ustedaNaDoprinosima(izracun.doprinosi, zamjena),
   }
   const netoZaOsobu = subtract(
     subtract(godisnjiPrimitak, izracun.ukupanPorez),

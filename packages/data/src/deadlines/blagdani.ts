@@ -14,6 +14,7 @@ import { type CalendarDate, calendarDate, compareCalendarDates, nextDay } from '
  * сюди не входять: стаття 4 говорить лише про статті 1 і 3, тож пам'ятні дні
  * лишаються робочими.
  */
+/** @internal Стаття, якою тест звіряє перелік свят із текстом акта. */
 export const BLAGDANI_REFERENCE: LegalReference = {
   ...ZAKON_O_BLAGDANIMA,
   article: 'čl. 1. st. 1.',

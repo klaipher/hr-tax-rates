@@ -409,6 +409,76 @@ describe('усі три обртні режими в одному порівня
     }
   })
 
+  it('обов’язкові платежі однакові в усіх трьох режимах', () => {
+    // Платежі не знають ні `razred`, ні способу визначати `dohodak`, тож
+    // перелік мусить бути той самий — інакше картки порівнювали б різне.
+    const popisi = ['pausalni-obrt', 'obrt-na-dohodak', 'obrt-na-dobit'].map((id) =>
+      izracunZa(id).obveznaDavanja.map((davanje) => `${davanje.naziv.hr}:${davanje.status}`),
+    )
+
+    expect(popisi[1]).toEqual(popisi[0])
+    expect(popisi[2]).toEqual(popisi[0])
+  })
+
+  it('turistička članarina і spomenička renta входять у «на руки», а не губляться', () => {
+    const bezDjelatnosti = izracunZa('pausalni-obrt')
+    const rezim = usporedi({
+      djelatnost: {
+        nkd: '56.10',
+        imaLokalnuTuristickuZajednicu: true,
+        potpomognutoPodrucje: false,
+        pretezitoProizvodna: false,
+        polozaj: { kind: 'izvan' },
+      },
+    }).rezimi[0]
+    if (rezim?.ishod.status !== 'izracunato') throw new Error('паушал недоступний')
+    const zClanarinom = rezim.ishod.izracun
+
+    // 30 000 € × 0,14212 % = 42,636 → 42,64 € понад 136,80 € komorskog.
+    expect(toCentString(zClanarinom.ukupnaDavanja)).toBe('179.44')
+    expect(toCentString(bezDjelatnosti.ukupnaDavanja)).toBe('136.80')
+    expect(zClanarinom.netoZaOsobu.amount.minus(bezDjelatnosti.netoZaOsobu.amount).toFixed(2)).toBe(
+      '-42.64',
+    )
+  })
+
+  it('новий обрт не платить komorski doprinos — і це видно в «на руки»', () => {
+    const rezim = usporedi({ noviObrt: true }).rezimi[0]
+    if (rezim?.ishod.status !== 'izracunato') throw new Error('паушал недоступний')
+
+    expect(toCentString(rezim.ishod.izracun.ukupnaDavanja)).toBe('0.00')
+    expect(
+      rezim.ishod.izracun.netoZaOsobu.amount
+        .minus(izracunZa('pausalni-obrt').netoZaOsobu.amount)
+        .toFixed(2),
+    ).toBe('136.80')
+  })
+
+  it('утриманці й діти зменшують porez na dohodak через osobni odbitak', () => {
+    const bez = izracunZa('obrt-na-dohodak')
+    const zDitmy = usporedi({ uzdrzavani: { clanoviUzeObitelji: 1, djeca: 2 } }).rezimi.find(
+      (r) => r.id === 'obrt-na-dohodak',
+    )
+    if (zDitmy?.ishod.status !== 'izracunato') throw new Error('обрт на дохідок недоступний')
+
+    expect(zDitmy.ishod.izracun.ukupanPorez.amount.lessThan(bez.ukupanPorez.amount)).toBe(true)
+  })
+
+  it('понад дев’яту дитину режим відмовляється рахувати, а не обрізає до дев’яти', () => {
+    // Закон друкує коефіцієнти лише до дев'ятої дитини, далі — правило з
+    // пропуском. Обрізати означало б вигадати податок.
+    const rezim = usporedi({ uzdrzavani: { clanoviUzeObitelji: 0, djeca: 10 } }).rezimi.find(
+      (r) => r.id === 'obrt-na-dohodak',
+    )
+    if (rezim?.ishod.status !== 'nedostupno') throw new Error('десята дитина мала б зупинити лічбу')
+
+    expect(rezim.ishod.razlog).toMatchObject({
+      kod: 'koeficijent-djeteta-nije-propisan',
+      dostupnoDjece: 9,
+      trazenoDjece: 10,
+    })
+  })
+
   it('модифікатор найму зменшує внески паушалу', () => {
     const bez = izracunZa('pausalni-obrt')
     const rezimUzRad = usporedi({ uzRadniOdnos: true }).rezimi[0]
@@ -420,6 +490,23 @@ describe('усі три обртні режими в одному порівня
     ).toBe(true)
     // Закон другої діяльності місячної osnovica не знає — база річна.
     expect(uzRad.doprinosi.mjesecnaOsnovica).toBeUndefined()
+  })
+
+  it('виграш на внесках рахує рушій, а не екран', () => {
+    const bez = izracunZa('pausalni-obrt')
+    const rezimUzRad = usporedi({ uzRadniOdnos: true }).rezimi[0]
+    if (rezimUzRad?.ishod.status !== 'izracunato') throw new Error('паушал уз рад недоступний')
+    const uzRad = rezimUzRad.ishod.izracun
+
+    // Порівнюється той самий режим на тих самих входах — інакше в число
+    // потрапила б різниця режимів, а не наявність найму.
+    expect(toCentString(uzRad.doprinosi.ustedaUzRadniOdnos ?? eur(0))).toBe(
+      toCentString(
+        eur(bez.doprinosi.ukupnoGodisnje.amount.minus(uzRad.doprinosi.ukupnoGodisnje.amount)),
+      ),
+    )
+    // Без найму порівнювати немає з чим: нуль тут читався б як «виграшу немає».
+    expect(bez.doprinosi.ustedaUzRadniOdnos).toBeUndefined()
   })
 })
 

@@ -6,6 +6,7 @@ import {
   type LevyResult,
   levyDue,
   levyNotApplicable,
+  type Napomena,
   naCente,
   postotakOd,
 } from './levy.ts'
@@ -51,6 +52,9 @@ const PRIJEDLOG_ZAKONA_O_OBRTU = {
 /**
  * Законна стеля місячного внеску: `Skupština` HOK не може встановити більше.
  * Не ставка — саме межа, у якій ставку ухвалює Odluka.
+ *
+ * @internal Сторож цілісності даних: тест звіряє чинну ставку з цією межею.
+ * На екран число не йде — там стоїть сама ставка, а не її стеля.
  */
 export const GORNJA_GRANICA_KOMORSKOG_DOPRINOSA: Sourced<string> = sourced('2', {
   ...ZAKON_O_OBRTU,
@@ -140,7 +144,13 @@ export const mjesecniKomorskiDoprinos = (
   pravila: KomorskiDoprinosPravila = KOMORSKI_DOPRINOS_U_SNAZI,
 ): Decimal => naCente(postotakOd(pravila.osnovniOsobniOdbitak.value, pravila.mjesecnaStopa.value))
 
-/** Тромісячне зобов'язання за `čl. 8.` Odluke — три місячні внески. */
+/**
+ * Тромісячне зобов'язання за `čl. 8.` Odluke — три місячні внески.
+ *
+ * @internal Календар ділить річну суму сам, за спільним для всіх обов'язків
+ * розкладом (`deadlines/schedule.ts`); ця функція лишається для тесту, який
+ * доводить, що обидва шляхи дають те саме число.
+ */
 export const tromjesecniKomorskiDoprinos = (
   pravila: KomorskiDoprinosPravila = KOMORSKI_DOPRINOS_U_SNAZI,
 ): Decimal => mjesecniKomorskiDoprinos(pravila).times(MJESECI_U_TROMJESECJU)
@@ -169,18 +179,15 @@ export const komorskiDoprinos = (
   const { oslobodenjeGodina } = pravila
   if (ulaz.uPrveDvijeGodine) {
     return levyNotApplicable(
-      'novootvoreni-obrt',
-      `komorski doprinos не нараховується: новий obrt звільнений на перші ${oslobodenjeGodina.value} роки ведення обрту. Звільнення дає лише перший упис у Obrtni registar.`,
+      { kod: 'novootvoreni-obrt', oslobodenjeGodina: oslobodenjeGodina.value },
       oslobodenjeGodina.source,
     )
   }
 
   const mjesecni = mjesecniKomorskiDoprinos(pravila)
-  const napomene =
+  const napomene: readonly Napomena[] =
     pravila.narav === 'gornja granica'
-      ? [
-          `${pravila.mjesecnaStopa.value} % — це законна стеля, а не ухвалена ставка: суму треба читати як максимум, поки HOK не ухвалить нову Odluku в цих межах.`,
-        ]
+      ? [{ kod: 'stopa-je-gornja-granica', stopa: pravila.mjesecnaStopa.value }]
       : []
 
   return levyDue(

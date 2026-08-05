@@ -33,7 +33,7 @@ describe('spomenička renta (пам’яткова рента)', () => {
 
     expect(povrsinska.kind).toBe('not-applicable')
     if (povrsinska.kind !== 'not-applicable') return
-    expect(povrsinska.reason).toBe('izvan-kulturnog-dobra')
+    expect(povrsinska.razlog).toEqual({ kod: 'izvan-kulturnog-dobra' })
     expect(povrsinska.source.article).toContain('čl. 116.')
   })
 
@@ -42,7 +42,7 @@ describe('spomenička renta (пам’яткова рента)', () => {
 
     expect(povrsinska.kind).toBe('not-applicable')
     if (povrsinska.kind !== 'not-applicable') return
-    expect(povrsinska.reason).toBe('pretezito-proizvodna-djelatnost')
+    expect(povrsinska.razlog).toEqual({ kod: 'pretezito-proizvodna-djelatnost' })
     expect(povrsinska.source.article).toBe('čl. 116. st. 9.')
   })
 
@@ -91,8 +91,7 @@ describe('spomenička renta (пам’яткова рента)', () => {
 
     expect(indirektna.kind).toBe('not-applicable')
     if (indirektna.kind !== 'not-applicable') return
-    expect(indirektna.reason).toBe('djelatnost-izvan-popisa')
-    expect(indirektna.obrazlozenje).toContain('56.10')
+    expect(indirektna.razlog).toEqual({ kod: 'djelatnost-izvan-popisa', nkd: '56.10' })
   })
 
   it('звільнення для виробничої діяльності стосується лише čl. 116., не čl. 117.', () => {

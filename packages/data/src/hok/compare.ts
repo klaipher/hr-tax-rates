@@ -69,6 +69,7 @@ export const checkAgainstHok = (
  * статус, і той, хто забуде його перевірити, отримає зелений тест на
  * розбіжності. Тут забути неможливо.
  */
+/** @internal Знаряддя голден-тестів: у застосунку порівнювати нема чого. */
 export const assertMatchesHok = (
   comparison: HokComparison,
   divergenceRegistry: readonly Divergence[] = registry,

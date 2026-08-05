@@ -418,6 +418,11 @@ body {
 .polje--potvrda .prijevod {
   grid-column: 2;
 }
+/* Джерело під позначкою: число в підписі теж юридичне (ADR-0002). */
+.polje__izvor {
+  margin-block: -0.5rem 0.75rem;
+  padding-inline-start: 1.6rem;
+}
 
 /* --- порівняння з рідною країною ---------------------------------------- */
 .krajina {
@@ -530,16 +535,25 @@ body {
   color: var(--tekst-prigušen);
   font-size: 0.9rem;
 }
+/* Посилання всередині підпису не успадковує його жирність: воно супровід
+   числа, а не сам підпис. */
+.polje label .izvor {
+  font-weight: 400;
+}
 
 .unos__redak {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 0.35rem;
   margin-block: 0.35rem 0.75rem;
 }
 .unos__polje {
+  /* Не стискається: у двох стовпцях поруч із відформатованою сумою поле
+     втрачало останню цифру, і головне число сторінки читалося обрізаним. */
+  flex: 0 0 auto;
   width: 100%;
-  max-width: 12ch;
+  max-width: 8ch;
   padding: 0.2rem 0.4rem;
   font: inherit;
   font-size: clamp(1.9rem, 1.2rem + 3vw, 2.6rem);
@@ -673,4 +687,149 @@ body {
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--naglasak);
+}
+
+/* --- попередження, яке не мусить загубитися серед пояснень ---------------- */
+.razlog--upozorenje {
+  border-inline-start: 3px solid var(--naglasak);
+  padding-inline-start: 0.75rem;
+  color: var(--tekst);
+}
+
+/* --- обрив розряду -------------------------------------------------------- */
+.obriv {
+  margin-block: 0 1.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+/* Близько до межі — виділяємо рамкою, а не самим лише кольором: різниця має
+   лишатися видимою й тим, хто кольору не розрізняє. */
+.obriv--blizu {
+  border-color: var(--naglasak);
+  background: var(--naglasak-tlo);
+}
+.obriv__naslov {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+.obriv--blizu .obriv__naslov {
+  color: var(--naglasak);
+}
+.obriv__odstup {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.obriv__skok {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+.obriv .razlog {
+  margin-top: 0.35rem;
+}
+
+/* --- точки перевороту ----------------------------------------------------- */
+.preokret {
+  margin-block: 0 1.25rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px dashed var(--rub);
+  border-radius: 0.9rem;
+}
+.preokret__naslov {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+.preokret__prijevod {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+.preokret__popis {
+  margin: 0.6rem 0 0;
+  padding-inline-start: 1.2rem;
+  font-size: 0.92rem;
+}
+.preokret__popis li + li {
+  margin-top: 0.3rem;
+}
+
+/* --- драбина розрядів ----------------------------------------------------- */
+.tablica {
+  margin-block: 2rem;
+}
+.tablica h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.tablica__prijevod {
+  margin: 0.3rem 0 0.9rem;
+  color: var(--tekst-prigušen);
+  max-width: 52rem;
+}
+/* Таблиця широка — гортається сама, а не тягне за собою всю сторінку. */
+.tablica__okvir {
+  overflow-x: auto;
+}
+.tablica__mreza {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+}
+.tablica__mreza th,
+.tablica__mreza td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--rub);
+  vertical-align: baseline;
+}
+.tablica__mreza thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tekst-prigušen);
+  text-align: right;
+  white-space: nowrap;
+}
+.tablica__mreza thead th:first-child,
+.tablica__mreza tbody th {
+  text-align: left;
+}
+.tablica__mreza tbody th {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tablica__mreza td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tablica__redak--vas {
+  background: var(--naglasak-tlo);
+}
+.tablica__oznaka {
+  margin-left: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+}
+
+/* --- курс, за яким зроблено перерахунок ----------------------------------- */
+.krajina__tecaj {
+  margin-block: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--tekst-prigušen);
+}
+.krajina__tecaj strong {
+  color: var(--tekst);
+  font-variant-numeric: tabular-nums;
 }

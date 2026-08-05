@@ -14,10 +14,19 @@ const pojmovi: Record<string, string> = {
   zaposlenik: 'employee',
   'd.o.o.': 'limited liability company',
   'paušalni porez': 'lump-sum tax',
+  'porez na dohodak': 'progressive tax on actual taxable income',
+  'porez na dohodak iz poduzetničke plaće': 'tax on the salary the owner pays themselves',
+  'porez na dobit': 'profit tax, on an accrual basis',
+  'porez na dohodak od kapitala pri isplati dobiti':
+    'a third tax on the same money — on paying the profit out to the owner',
   'MO — I. stup': 'pension, pay-as-you-go pillar',
   'MO — II. stup': 'pension, funded pillar',
   ZO: 'health insurance',
   'prosječna plaća': 'average gross salary',
+  'komorski doprinos': 'chamber levy, payable by every obrt',
+  'turistička članarina': 'tourist board levy',
+  'spomenička renta': 'monument levy on floor area in a cultural monument',
+  'indirektna spomenička renta': 'monument levy on total revenue, for listed NKD codes',
 }
 
 export const en: Dictionary = {
@@ -57,14 +66,65 @@ export const en: Dictionary = {
     reprezentacija: 'Entertainment',
     osobnoVozilo: 'Personal vehicle',
     polovicno: 'recognised at 50%',
+    traziGrad: 'Search among 556 units',
     grad: 'City or municipality',
     gradPrijevod: 'jedinica lokalne samouprave — its odluka sets the porez na dohodak rates',
     gradNijeOdabran: 'not selected',
+    gradNijeNaden: (upit: string) => `No unit matches “${upit}”.`,
+    brojMjeseci: (mjeseci: string) =>
+      `${mjeseci} months of activity: full months plus the last one count, so opening on ` +
+      '15 August gives five months, not four.',
     uzRadniOdnos: 'I run the obrt alongside employment',
     uzRadniOdnosPrijevod: 'druga djelatnost — a different contribution rate and an annual base',
     pocetak: 'Month the obrt opened',
     pocetakPrijevod: 'in the opening year the razred boundaries scale proportionally',
     punaGodina: 'full year',
+    noviObrt: 'The obrt opened less than two years ago',
+    noviObrtPrijevod: 'no komorski doprinos is charged for the first two years',
+    rucneStope: 'Enter the porez na dohodak rates by hand',
+    rucneStopePrijevod: 'for when the directory is stale or the unit changed its odluka mid-year',
+    nizaStopa: 'niža stopa, %',
+    visaStopa: 'viša stopa, %',
+    stopeIzvanGranica: (niza: string, visa: string) =>
+      `No unit could have adopted that pair: the law allows ${niza} for the lower rate and ` +
+      `${visa} for the higher one. While the pair is out of bounds, the calculation uses the ` +
+      'rates from the selected unit’s odluka — they are shown on the card next to the tax.',
+
+    uzdrzavaniNaslov: 'Dependants',
+    uzdrzavaniPrijevod:
+      'The law states the osobni odbitak as a construction, not a sum: one unit for the ' +
+      'taxpayer, a coefficient for each dependant and a separate coefficient for each child in ' +
+      'order. While these are zero, you are taxed as if you supported nobody.',
+    clanoviUzeObitelji: 'Dependants in the immediate family',
+    clanoviPrijevod:
+      'uzdržavani članovi uže obitelji — spouse, parents, adult children after their first ' +
+      'job. Children are not counted here: they have their own scale.',
+    djeca: 'Dependent children',
+    djecaPrijevod:
+      'uzdržavana djeca — each further child carries a larger coefficient, not the same one',
+
+    djelatnostNaslov: 'Activity and location',
+    djelatnostPrijevod:
+      'The NKD decides turistička članarina and spomenička renta — two levies no other ' +
+      'calculator shows next to the tax.',
+    nkd: 'NKD',
+    nkdPrijevod: 'the activity code as the law prints it: 55, 50.1, 49.31 or 47.111',
+    nkdNeispravan: 'That does not look like an NKD code. Examples: 55, 50.1, 49.31, 47.111.',
+    nkdOpseg: (koliko: string) =>
+      `The suggestions hold only the ${koliko} codes the two statutes name verbatim. If yours ` +
+      'is not there, that means exactly one thing: neither levy arises for it.',
+    turistickaZajednica: 'A local turistička zajednica covers the place of activity',
+    turistickaZajednicaPrijevod: 'without one no obligation arises at all, whatever the NKD',
+    potpomognutoPodrucje: 'The place of activity is a potpomognuto područje',
+    potpomognutoPrijevod: (popust: string) => `a ${popust}% reduction on the turistička članarina`,
+    uKulturnomDobru: 'The premises are in an immovable cultural monument or its zone',
+    korisnaPovrsina: 'Usable floor area of the premises, m²',
+    iznosPoM2: 'Monthly amount per m², €',
+    iznosPoM2Prijevod: (najmanje: string, najvise: string) =>
+      `set by the odluka of the city or municipality, within ${najmanje} – ${najvise}`,
+    pretezitoProizvodna: 'The predominant activity is manufacturing or production',
+    pretezitoProizvodnaPrijevod:
+      'the law exempts such activity from the floor-area spomenička renta — and from that one only',
   },
 
   kartica: {
@@ -77,8 +137,77 @@ export const en: Dictionary = {
     davanjaNema: 'not applicable',
     doprinosiUkupno: 'doprinosi in total',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} per month`,
+    ustedaUzRadniOdnos: (usteda: string) => `${usteda} less than without employment`,
     osobnaStednja: 'personal savings, not a tax',
     nedostupno: 'unavailable',
+
+    davanjaRazlozi: {
+      'novootvoreni-obrt': (godina: string) =>
+        `A newly opened obrt is exempt for its first ${godina} years. Only the first entry in ` +
+        'the Obrtni registar grants the exemption — a reopened obrt pays from day one.',
+      'djelatnost-izvan-popisa': (nkd: string) =>
+        `NKD ${nkd} is not in the list of activities that give rise to this levy.`,
+      'izvan-podrucja-turisticke-zajednice':
+        'The obligation arises only on the territory of a local turistička zajednica ' +
+        'established under the act.',
+      'izvan-kulturnog-dobra':
+        'The activity is not carried out in an immovable cultural monument or in a ' +
+        'historic-cultural zone.',
+      'pretezito-proizvodna-djelatnost':
+        'The law exempts those whose predominant activity is manufacturing or production.',
+      'djelatnost-nije-zadana':
+        'The NKD and the place of activity decide whether this applies, and the form does not ' +
+        'know them yet. Fill them in and you will see whether the levy arises.',
+    },
+
+    davanjaNapomene: {
+      'ogranicenje-nkd': (nkd: string, ogranicenje: string) =>
+        `The law does not take NKD ${nkd} whole, only the part reading “${ogranicenje}”. The ` +
+        'amount assumes the obrt’s activity falls within it.',
+      'stopa-je-gornja-granica': (stopa: string) =>
+        `${stopa}% is the statutory ceiling, not an adopted rate: read the amount as a maximum ` +
+        'until HOK adopts a new Odluka within those bounds.',
+      'stopu-utvrduje-jedinica':
+        'The amount per m² is set by the odluka of the city, the municipality or the City of ' +
+        'Zagreb — the law fixes only the range, so the sum depends on the exact place.',
+    },
+  },
+
+  obriv: {
+    naslov: 'A razred boundary lies ahead',
+    doGranice: (doGranice: string, granica: string) =>
+      `${doGranice} of annual primitak left before the ${granica} boundary.`,
+    skok: (ukupno: string, porez: string, doprinosi: string) =>
+      `One euro past it costs ${ukupno} a year: ${porez} of tax and ${doprinosi} of contributions.`,
+    retroaktivno: (mjeseci: string) =>
+      `Contributions are recomputed ${mjeseci} months back. The koeficijent depends on the ` +
+      'razred, so crossing the boundary in December rewrites the whole year, not December.',
+    krajRezima: 'Past this boundary the paušalni regime does not exist at all — books follow.',
+  },
+
+  preokret: {
+    naslov: 'Where the regimes change places',
+    prijevod:
+      'The card says how much is left at this primitak. This says how far your choice stays ' +
+      'the cheapest one.',
+    doPrve: (primitak: string, rezim: string) => `Below ${primitak} the best is ${rezim}.`,
+    tocka: (primitak: string, dosadasnji: string, sljedeci: string) =>
+      `From ${primitak} the lead passes from ${dosadasnji} to ${sljedeci}.`,
+    nema: 'One regime stays the cheapest across the whole range — there is nowhere to switch.',
+  },
+
+  tablica: {
+    naslov: 'Every razred at once',
+    prijevod:
+      'Inside a razred the amount is fixed — which is why the payment jumps at the boundary ' +
+      'without a jump in primitak. The ladder concerns paušalni obrt only: the other regimes ' +
+      'know no razredi.',
+    granica: 'primitak cap',
+    osnovica: 'paušalni dohodak',
+    porez: 'paušalni porez',
+    doprinosi: 'doprinosi',
+    ukupno: 'total per year',
+    vas: 'your razred',
   },
 
   pojmovi,
@@ -134,8 +263,16 @@ export const en: Dictionary = {
       'resident. A Croatian resident does not get that choice: more than 183 days or a centre ' +
       'of vital interests here, and Croatia taxes worldwide income — tax paid in Ukraine does ' +
       'not discharge the Croatian liability.',
-    tecaj: 'Hryvnia per euro',
-    tecajIzvor: (datum: string) => `official NBU rate, snapshot of ${datum}`,
+    tecaj: 'Your own hryvnia-per-euro rate',
+    tecajPrijevod: 'leave empty and we take the NBU rate',
+    tecajNaDan: 'Date the rate is valid for',
+    tecajUcitavanje: 'Asking the NBU for the rate…',
+    tecajPodrijetlo: {
+      'nbu-live': 'live NBU rate',
+      'nbu-snapshot': 'NBU snapshot stored in the repository — the live request failed',
+      manual: 'your rate',
+    },
+    tecajIzvor: (podrijetlo: string, datum: string) => `${podrijetlo}, as of ${datum}`,
     tecajNeispravan: 'The rate must be a positive number.',
     ukupno: 'Total',
     ostaje: 'left per year',
@@ -188,11 +325,16 @@ export const en: Dictionary = {
       'physically — it is published from January–August 2026 data — so the contribution ' +
       'figures here are a forecast, not a calculation.',
     samoPausal:
-      'The changes concern paušalni obrt only — and within it only the top two razredi, from ' +
-      '40 000 €. The other regimes do not depend on them.',
+      'Of the paušal razredi the package touches only the top two, from 40 000 €. But the same ' +
+      'package lowers the statutory ceiling of the komorski doprinos, and that concerns every ' +
+      'obrt at any primitak — which is why the cards move below 40 000 € too.',
     delta: (iznos: string) =>
-      `Paušalni obrt: ${iznos} a year of difference against the law in force.`,
-    bezRazlike: 'At this primitak the announced changes make no difference — it is below 40 000 €.',
+      `Paušal rules: ${iznos} a year of difference against the law in force. The change to the ` +
+      'komorski doprinos is not counted here — it is the same across the range and shows as its ' +
+      'own line on the card.',
+    bezRazlike:
+      'At this primitak the paušal rules make no difference — it is below 40 000 €. The ' +
+      'komorski doprinos line on the card differs all the same.',
   },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,

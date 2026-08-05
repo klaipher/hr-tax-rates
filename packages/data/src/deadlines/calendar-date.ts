@@ -116,5 +116,6 @@ export const compareCalendarDates = (a: CalendarDate, b: CalendarDate): number =
   a.year - b.year || a.month - b.month || a.day - b.day
 
 /** `YYYY-MM-DD` — форма для показу й для порівнянь у тестах. */
+/** @internal Форма для порівнянь у тестах: календар показує дати сам. */
 export const toIsoDate = (date: CalendarDate): string =>
   `${date.year}-${pad(date.month)}-${pad(date.day)}`

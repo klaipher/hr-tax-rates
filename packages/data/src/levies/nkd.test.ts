@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { najtocnijiPogodak, nazivNkd, nkdDirektorij, normalizirajNkd } from './nkd.ts'
+import { jeOblikNkd, najtocnijiPogodak, nazivNkd, nkdDirektorij, normalizirajNkd } from './nkd.ts'
 import { INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI } from './spomenicka-renta.ts'
 import { TURISTICKA_CLANARINA_DJELATNOSTI } from './turisticka-clanarina.ts'
 
@@ -17,6 +17,32 @@ describe('довідник NKD', () => {
     expect(() => normalizirajNkd('5')).toThrow(/NKD/)
     expect(() => normalizirajNkd('ugostiteljstvo')).toThrow(/NKD/)
     expect(() => normalizirajNkd('49.')).toThrow(/NKD/)
+  })
+
+  it('форму коду можна спитати наперед, не ловлячи винятку', () => {
+    // Форма мусить знати про хибний ввід до розрахунку: `normalizirajNkd`
+    // на «abc» кидає, і ловити виняток замість питання — гірше за питання.
+    expect(['55', '50.1', '49.31', '47.111', ' 56 '].map(jeOblikNkd)).toEqual([
+      true,
+      true,
+      true,
+      true,
+      true,
+    ])
+    expect(['', '5', 'ugostiteljstvo', '49.', '49.3111'].map(jeOblikNkd)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+    ])
+  })
+
+  it('код поза довідником — це відповідь «жоден із двох платежів», а не хибний ввід', () => {
+    // 62.01 має правильну форму, але жоден із двох законів його не називає.
+    // Тому форма його приймає, а розрахунок каже «не застосовується».
+    expect(jeOblikNkd('62.01')).toBe(true)
+    expect(najtocnijiPogodak('62.01', nkdDirektorij)).toBeUndefined()
   })
 
   it('серед перекривних записів обирає найточніший, а не перший-ліпший', () => {

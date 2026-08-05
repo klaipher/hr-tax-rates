@@ -34,6 +34,7 @@ const LITERAL = /^\d+(?:\.\d+)?$/
  */
 const MIN_LINKS = 2
 
+/** @internal Розбір формул HOK для голден-тестів — не частина застосунку. */
 export const parseRazredChain = (formula: string): readonly RazredRow[] => {
   const links = [...formula.matchAll(LINK)]
   if (links.length < MIN_LINKS) return []
