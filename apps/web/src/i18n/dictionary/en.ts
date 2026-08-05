@@ -73,7 +73,9 @@ export const en: Dictionary = {
       'the cost in full only when the use is charged as plaća (salary). For example: 3 000 € a ' +
       'year lowers the base by 1 500 €. Do not enter insurance here — čl. 33. st. 2. recognises ' +
       'it in full, so it belongs under “ordinary”.',
-    traziGrad: 'Search among 556 units',
+    traziGrad: 'Search by name',
+    nadenoJedinica: (nadeno: string, ukupno: string) =>
+      `showing ${nadeno} of ${ukupno} — the list below is already narrowed`,
     grad: 'City or municipality',
     gradPrijevod: 'jedinica lokalne samouprave — its odluka sets the porez na dohodak rates',
     gradNijeOdabran: 'not selected',
@@ -115,11 +117,25 @@ export const en: Dictionary = {
       'The NKD decides turistička članarina and spomenička renta — two levies no other ' +
       'calculator shows next to the tax.',
     nkd: 'NKD',
-    nkdPrijevod: 'the activity code as the law prints it: 55, 50.1, 49.31 or 47.111',
+    nkdPrijevod: 'your activity — pick it from the list or enter your own code',
     nkdNeispravan: 'That does not look like an NKD code. Examples: 55, 50.1, 49.31, 47.111.',
     nkdOpseg: (koliko: string) =>
-      `The suggestions hold only the ${koliko} codes the two statutes name verbatim. If yours ` +
+      `The list holds only the ${koliko} codes the two statutes name verbatim. If yours ` +
       'is not there, that means exactly one thing: neither levy arises for it.',
+    nkdNijeOdabran: 'not on the list — neither levy arises',
+    nkdRucnoUnesi: 'another code — I will type it',
+    nkdRucnoOznaka: 'NKD code',
+    nkdRucnoPrijevod:
+      'a five-digit NKD 2025 subclass is fine too: the levy follows the closest match, ' +
+      'so 47.111 falls back to division 47',
+    skupineNkd: {
+      'turisticka-prva': 'turistička članarina · prva skupina (highest rate)',
+      'turisticka-druga': 'turistička članarina · druga skupina',
+      'turisticka-treca': 'turistička članarina · treća skupina',
+      'turisticka-cetvrta': 'turistička članarina · četvrta skupina',
+      'turisticka-peta': 'turistička članarina · peta skupina (lowest rate)',
+      spomenicka: 'spomenička renta — a different statute, its own list',
+    },
     turistickaZajednica: 'A local turistička zajednica covers the place of activity',
     turistickaZajednicaPrijevod: 'without one no obligation arises at all, whatever the NKD',
     potpomognutoPodrucje: 'The place of activity is a potpomognuto područje',

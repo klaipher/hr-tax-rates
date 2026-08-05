@@ -680,6 +680,12 @@ body {
   margin-block-start: -0.35rem;
 }
 
+/* Скільки одиниць лишилося після пошуку — єдиний видимий знак, що він працює. */
+.polje__brojac {
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+}
+
 .pdv__tablica {
   width: 100%;
   border-collapse: collapse;

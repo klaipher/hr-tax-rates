@@ -96,7 +96,9 @@ export const uk = {
       // як два різні числа.
       '3 000 € за рік зменшать базу на 1 500 €. Страховку сюди не пишіть — čl. 33. st. 2. ' +
       'визнає її повністю, тож їй місце у «звичайних».',
-    traziGrad: 'Пошук серед 556 одиниць',
+    traziGrad: 'Пошук за назвою',
+    nadenoJedinica: (nadeno: string, ukupno: string) =>
+      `знайдено ${nadeno} з ${ukupno} — список нижче вже звужено`,
     grad: 'Місто або община',
     gradPrijevod: 'jedinica lokalne samouprave — її odluka встановлює ставки porez na dohodak',
     gradNijeOdabran: 'не обрано',
@@ -138,11 +140,29 @@ export const uk = {
       'Від NKD залежать turistička članarina і spomenička renta — два платежі, яких немає ' +
       'у жодному калькуляторі поруч із податком.',
     nkd: 'NKD',
-    nkdPrijevod: 'вид діяльності, як його друкує закон: 55, 50.1, 49.31 або 47.111',
+    nkdPrijevod: 'вид діяльності — оберіть зі списку або введіть свій код',
     nkdNeispravan: 'Це не схоже на код NKD. Приклади: 55, 50.1, 49.31, 47.111.',
     nkdOpseg: (koliko: string) =>
-      `У підказці — лише ті ${koliko} кодів, які дослівно називають два закони про ці платежі. ` +
+      `У списку — лише ті ${koliko} кодів, які дослівно називають два закони про ці платежі. ` +
       'Вашого коду там немає — означає рівно одне: жоден із двох платежів за ним не виникає.',
+    nkdNijeOdabran: 'не з переліку — жоден із двох платежів не виникає',
+    nkdRucnoUnesi: 'інший код — введу вручну',
+    nkdRucnoOznaka: 'Код NKD',
+    nkdRucnoPrijevod:
+      'п’ятизначний підклас NKD 2025 теж годиться: платіж визначить найточніший збіг, ' +
+      'тож 47.111 зведеться до розділу 47',
+    /**
+     * Назви груп. Хорватський порядковий числівник лишається як є — саме так
+     * групи називає `čl. 5. st. 1.`, і за цією назвою їх шукають у тексті.
+     */
+    skupineNkd: {
+      'turisticka-prva': 'turistička članarina · prva skupina (найвища ставка)',
+      'turisticka-druga': 'turistička članarina · druga skupina',
+      'turisticka-treca': 'turistička članarina · treća skupina',
+      'turisticka-cetvrta': 'turistička članarina · četvrta skupina',
+      'turisticka-peta': 'turistička članarina · peta skupina (найнижча ставка)',
+      spomenicka: 'spomenička renta — інший закон, окремий перелік',
+    },
     turistickaZajednica: 'На території діяльності є місцева turistička zajednica',
     turistickaZajednicaPrijevod: 'без неї обов’язок не виникає взагалі, хай який NKD',
     potpomognutoPodrucje: 'Місце діяльності — potpomognuto područje',

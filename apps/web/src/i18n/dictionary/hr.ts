@@ -73,7 +73,9 @@ export const hr: Dictionary = {
       'priznaje samo ako se po osnovi korištenja utvrđuje plaća. Primjer: 3 000 € godišnje ' +
       'smanjuje osnovicu za 1 500 €. Osiguranje ne upisujte ovdje — čl. 33. st. 2. priznaje ga ' +
       'u cijelosti, pa ide u „ostalo”.',
-    traziGrad: 'Pretraži među 556 jedinica',
+    traziGrad: 'Pretraži po nazivu',
+    nadenoJedinica: (nadeno: string, ukupno: string) =>
+      `pronađeno ${nadeno} od ${ukupno} — popis ispod je već sužen`,
     grad: 'Grad ili općina',
     gradPrijevod: 'jedinica lokalne samouprave — njezina odluka propisuje stope poreza na dohodak',
     gradNijeOdabran: 'nije odabrano',
@@ -115,11 +117,25 @@ export const hr: Dictionary = {
       'O NKD-u ovise turistička članarina i spomenička renta — dva davanja kojih nema ni u ' +
       'jednom kalkulatoru uz porez.',
     nkd: 'NKD',
-    nkdPrijevod: 'djelatnost onako kako je zakon ispisuje: 55, 50.1, 49.31 ili 47.111',
+    nkdPrijevod: 'djelatnost — odaberite s popisa ili upišite svoju šifru',
     nkdNeispravan: 'Ovo ne izgleda kao šifra NKD-a. Primjeri: 55, 50.1, 49.31, 47.111.',
     nkdOpseg: (koliko: string) =>
-      `U prijedlogu su samo one ${koliko} šifre koje dva zakona o tim davanjima izrijekom ` +
+      `Na popisu su samo one ${koliko} šifre koje dva zakona o tim davanjima izrijekom ` +
       'navode. Ako vaše ondje nema, to znači točno jedno: nijedno od dvaju davanja po njoj ne nastaje.',
+    nkdNijeOdabran: 'nije s popisa — nijedno od dvaju davanja ne nastaje',
+    nkdRucnoUnesi: 'druga šifra — upisat ću je sam',
+    nkdRucnoOznaka: 'Šifra NKD-a',
+    nkdRucnoPrijevod:
+      'i peteroznamenkasti podrazred NKD-a 2025. je u redu: davanje određuje najtočniji ' +
+      'pogodak, pa se 47.111 svodi na područje 47',
+    skupineNkd: {
+      'turisticka-prva': 'turistička članarina · prva skupina (najviša stopa)',
+      'turisticka-druga': 'turistička članarina · druga skupina',
+      'turisticka-treca': 'turistička članarina · treća skupina',
+      'turisticka-cetvrta': 'turistička članarina · četvrta skupina',
+      'turisticka-peta': 'turistička članarina · peta skupina (najniža stopa)',
+      spomenicka: 'spomenička renta — drugi zakon, zaseban popis',
+    },
     turistickaZajednica: 'Na području djelatnosti postoji lokalna turistička zajednica',
     turistickaZajednicaPrijevod: 'bez nje obveza ne nastaje uopće, bez obzira na NKD',
     potpomognutoPodrucje: 'Mjesto djelatnosti je potpomognuto područje',

@@ -5,10 +5,12 @@ import {
   jeOblikNkd,
   najsireGranice,
   nkdDirektorij,
+  nkdPoSkupinama,
   POPUST_ZA_POTPOMOGNUTA_PODRUCJA,
   PRAVILA_NEPUNE_GODINE,
   RASPON_SPOMENICKE_RENTE_PO_M2,
   searchJedinice,
+  sveJedinice,
   uGranicama,
 } from '@hr-tax/data'
 import type {
@@ -149,6 +151,15 @@ export const djelatnostIzForme = (stanje: StanjeForme): Djelatnost | undefined =
   }
 }
 
+/**
+ * Значення пункту «інший код» у списку `NKD`.
+ *
+ * Не порожній рядок і не код: порожній уже означає «не з переліку», а будь-яка
+ * цифрова форма зіткнулася б із справжнім кодом. Крапки в ній немає навмисно —
+ * `jeOblikNkd` таке не пропустить, якщо воно колись просочиться далі.
+ */
+const RUCNO = 'rucno'
+
 const MJESECI: readonly Mjesec[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
 
 const TIPOVI_KLIJENATA: readonly TipKlijenta[] = ['poslovni-eu', 'poslovni-izvan-eu', 'tuzemni']
@@ -263,6 +274,10 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
   const [upit, setUpit] = useState('')
   const pronadene = useMemo(() => searchJedinice(upit), [upit])
 
+  // Спосіб вибору, а не сам вибір: у стані форми лежить код, а не те, звідки
+  // його взяли, — тому прапорець тутешній, поруч із запитом пошуку.
+  const [rucniNkd, setRucniNkd] = useState(false)
+
   const jedinica: JedinicaLokalneSamouprave | undefined = jedinicaBySifra(stanje.sifraJedinice)
   const { rucneStope } = stanje
   const { mjesecPocetka } = stanje
@@ -330,26 +345,32 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
       <h2 className="forma__podnaslov">{t.unos.okolnostiNaslov}</h2>
       <p className="forma__prijevod">{t.unos.okolnostiPrijevod}</p>
 
-      {/* Пошук над списком: одиниць 556, і гортати їх до «SVETA NEDELJA»
-          неможливо. Фільтрує сам довідник — байдуже до регістру й діакритики,
-          бо «Đakovo» шукають як «dakovo». */}
-      <p className="polje">
-        <label htmlFor="trazi-jedinicu">{t.unos.traziGrad}</label>
-        <input
-          id="trazi-jedinicu"
-          type="text"
-          value={upit}
-          onChange={(event) => {
-            setUpit(event.target.value)
-          }}
-        />
-      </p>
-
+      {/* Пошук і список — одне поле, а не два.
+          Одиниць 556, і гортати їх до «SVETA NEDELJA» неможливо; фільтрує сам
+          довідник — байдуже до регістру й діакритики, бо «Đakovo» шукають як
+          «dakovo». Але пошук, який лише звужує згорнутий список нижче, не
+          подає жодного видимого знаку і читається як зламаний. Тому поруч
+          завжди стоїть лічильник, а коли запит звузився до однієї одиниці,
+          вона й обирається: набрав «Zagreb» — отримав Zagreb. */}
       <p className="polje">
         <label htmlFor="jedinica">
           {t.unos.grad}
           <span className="prijevod">{t.unos.gradPrijevod}</span>
         </label>
+        <input
+          id="trazi-jedinicu"
+          type="search"
+          placeholder={t.unos.traziGrad}
+          aria-label={t.unos.traziGrad}
+          value={upit}
+          onChange={(event) => {
+            const noviUpit = event.target.value
+            setUpit(noviUpit)
+            const pogodci = searchJedinice(noviUpit)
+            const jedini = pogodci.length === 1 ? pogodci[0] : undefined
+            if (jedini !== undefined) promijeni({ sifraJedinice: jedini.sifra })
+          }}
+        />
         <select
           id="jedinica"
           value={stanje.sifraJedinice}
@@ -371,6 +392,13 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
             </option>
           ))}
         </select>
+        {/* `aria-live`: інакше той, хто набирає з екранним читачем, ніяк не
+            дізнається, що список під пальцями змінився. */}
+        {upit.trim() !== '' && pronadene.length > 0 && (
+          <span className="polje__brojac" aria-live="polite">
+            {t.unos.nadenoJedinica(String(pronadene.length), String(sveJedinice.value.length))}
+          </span>
+        )}
       </p>
       {pronadene.length === 0 && <p className="razlog">{t.unos.gradNijeNaden(upit)}</p>}
 
@@ -487,32 +515,60 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
       <h2 className="forma__podnaslov">{t.unos.djelatnostNaslov}</h2>
       <p className="forma__prijevod">{t.unos.djelatnostPrijevod}</p>
 
+      {/* Список із назвами, а не голе поле для коду.
+          Раніше тут стояв `input` із `datalist`: код доводилося знати
+          напам'ять, бо назва діяльності показувалася лише тому, хто вже
+          вгадав перші цифри. Тепер видно і код, і що за ним стоїть, і до якої
+          `skupina` закон його відніс — а `skupina` вирішує ставку.
+          Ручний ввід лишився окремим пунктом: `NKD 2025` знає п'ятизначні
+          підкласи, яких закон не друкує, і 47.111 має право дійти до рушія —
+          там його зведе до 47 правило найточнішого збігу. */}
       <p className="polje">
         <label htmlFor="nkd">
           {t.unos.nkd}
           <span className="prijevod">{t.unos.nkdPrijevod}</span>
         </label>
-        <input
+        <select
           id="nkd"
-          type="text"
-          inputMode="decimal"
-          list="nkd-popis"
-          value={stanje.nkd}
+          value={rucniNkd ? RUCNO : stanje.nkd}
           onChange={(event) => {
-            promijeni({ nkd: event.target.value })
+            const odabir = event.target.value
+            setRucniNkd(odabir === RUCNO)
+            promijeni({ nkd: odabir === RUCNO ? '' : odabir })
           }}
-        />
-        {/* Підказка, а не закритий список: `NKD 2025` знає п'ятизначні
-            підкласи, яких закон не друкує, і 47.111 має право дійти до
-            рушія — там його зведе до 47 правило найточнішого збігу. */}
-        <datalist id="nkd-popis">
-          {nkdDirektorij.map((stavka) => (
-            <option key={stavka.sifra} value={stavka.sifra}>
-              {stavka.naziv}
-            </option>
+        >
+          <option value="">{t.unos.nkdNijeOdabran}</option>
+          {nkdPoSkupinama.map((skupina) => (
+            <optgroup key={skupina.kod} label={t.unos.skupineNkd[skupina.kod]}>
+              {skupina.stavke.map((stavka) => (
+                <option key={stavka.sifra} value={stavka.sifra}>
+                  {stavka.sifra} — {stavka.naziv}
+                </option>
+              ))}
+            </optgroup>
           ))}
-        </datalist>
+          <option value={RUCNO}>{t.unos.nkdRucnoUnesi}</option>
+        </select>
       </p>
+
+      {rucniNkd && (
+        <p className="polje">
+          <label htmlFor="nkd-rucno">
+            {t.unos.nkdRucnoOznaka}
+            <span className="prijevod">{t.unos.nkdRucnoPrijevod}</span>
+          </label>
+          <input
+            id="nkd-rucno"
+            type="text"
+            inputMode="decimal"
+            value={stanje.nkd}
+            onChange={(event) => {
+              promijeni({ nkd: event.target.value })
+            }}
+          />
+        </p>
+      )}
+
       {stanje.nkd.trim() !== '' && !jeOblikNkd(stanje.nkd) && (
         <p className="razlog razlog--upozorenje">{t.unos.nkdNeispravan}</p>
       )}
