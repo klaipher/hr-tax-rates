@@ -157,6 +157,7 @@ export const hr: Dictionary = {
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} od ${poreznaOsnovica}`,
     davanja: 'Obvezna davanja',
     davanjaNema: 'ne primjenjuje se',
+    neprimjenjivo: (koliko: string) => `ne primjenjuje se: ${koliko}`,
     doprinosiUkupno: 'doprinosi ukupno',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} mjesečno`,
     ustedaUzRadniOdnos: (usteda: string) => `${usteda} manje nego bez radnog odnosa`,
@@ -271,8 +272,15 @@ export const hr: Dictionary = {
     naslov: 'Pretpostavke',
     godina: (godina: string) => `Pravila su na snazi za ${godina}. godinu.`,
     objasnjenje:
-      'Doprinosi se računaju iz te veličine. Zakon je ne propisuje, nego se na nju samo ' +
-      'poziva, pa stoji u sloju odvojenom od pravila i može se nadomjestiti.',
+      'Doprinosi se računaju iz te veličine: osnovica = prosječna plaća × koeficijent, a onda ' +
+      '36,5 % od nje. Zakon je ne propisuje, nego se na nju samo poziva, pa stoji u sloju ' +
+      'odvojenom od pravila — prekidač scenarija je ne dira. Upravo zbog nje dva službena ' +
+      'izračuna za 2027. daju različite iznose doprinosa uz iste stope: obrazloženje ' +
+      'prijedloga zakona računa od važećih 1 993 €, kalkulator HOK-a od prognoziranih 2 180 €.',
+    placaPrijevod: 'prosječna mjesečna bruto plaća iz koje zakon izvodi osnovicu',
+    objavljena: 'objavljeno',
+    prognoza: 'prognoza',
+    rucnoZadano: 'ručno upisano — ta brojka izvora nema',
   },
 
   krajina: {

@@ -686,6 +686,63 @@ body {
   color: var(--tekst-prigušen);
 }
 
+/* --- prosječna plaća: величина, до якої застосовують правила -------------- */
+.placa {
+  margin-block: 1.5rem;
+}
+.placa__preseti {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.5rem 0.75rem;
+}
+.placa__preset {
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  color: var(--tekst);
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+.placa__preset:hover {
+  border-color: var(--naglasak);
+}
+.placa__preset:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
+}
+/* Обране видно не лише кольором: рамка й тло разом, щоб різниця лишалася
+   помітною і в монохромі. */
+.placa__preset--odabran {
+  background: var(--naglasak-tlo);
+  border-color: var(--naglasak);
+  font-weight: 600;
+}
+.placa__preset .prijevod {
+  font-weight: 400;
+}
+
+/* Що не застосовується — під згорткою: у розбивці лишаються самі суми. */
+.neprimjenjivo {
+  margin-block-start: 0.75rem;
+  font-size: 0.85rem;
+}
+.neprimjenjivo > summary {
+  cursor: pointer;
+  color: var(--tekst-prigušen);
+}
+.neprimjenjivo > summary:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 2px;
+  border-radius: 0.3rem;
+}
+.neprimjenjivo .rozbivka {
+  margin-block-start: 0.4rem;
+}
+
 .pdv__tablica {
   width: 100%;
   border-collapse: collapse;

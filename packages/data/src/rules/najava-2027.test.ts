@@ -254,8 +254,7 @@ describe('ruleset запланованих змін на 2027', () => {
       // законопроєкт за закон (ADR-0001).
       const { source, value } = pretpostavkeNajave2027.prosjecnaPlaca
 
-      expect(source.status).toBe('forecast')
-      expect(source.period).toContain('2026')
+      expect(source).toMatchObject({ status: 'forecast', period: expect.stringContaining('2026') })
       expect(value.toFixed(2)).toBe('2180.00')
     })
   })

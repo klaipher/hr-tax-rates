@@ -1,4 +1,4 @@
-import type { Doprinos, Izracun, Rezim } from '@hr-tax/engine'
+import type { Doprinos, Izracun, ObveznoDavanje, Porez, Rezim } from '@hr-tax/engine'
 import { NapomenaDavanja, RazlogNeprimjeneDavanja } from './Davanje.tsx'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
@@ -31,8 +31,78 @@ const DoprinosRedak = ({ doprinos }: { readonly doprinos: Doprinos }) => {
   )
 }
 
+/**
+ * Рядок податку. Однаковий у розбивці й у складеному переліку — інакше
+ * приховане виглядало б іншим за суттю, а воно те саме.
+ */
+const PorezRedak = ({ porez }: { readonly porez: Porez }) => {
+  const { t, format } = useI18n()
+
+  return (
+    <div className="redak">
+      <dt>
+        <span className="redak__naziv">
+          {porez.naziv.hr}
+          <span className="udio">
+            {t.kartica.udioPoreza(format.percent(porez.stopa), format.eur(porez.poreznaOsnovica))}
+          </span>
+        </span>
+        <Prijevod pojam={porez.naziv.hr} />
+        <Izvor izvor={porez.izvor} />
+      </dt>
+      <dd>{format.eur(porez.godisnjiIznos)}</dd>
+    </div>
+  )
+}
+
+const DavanjeRedak = ({ davanje }: { readonly davanje: ObveznoDavanje }) => {
+  const { t, format } = useI18n()
+
+  return (
+    <div className="redak">
+      <dt>
+        <span className="redak__naziv">{davanje.naziv.hr}</span>
+        <Prijevod pojam={davanje.naziv.hr} />
+        {davanje.status === 'ne-primjenjuje-se' ? (
+          <RazlogNeprimjeneDavanja razlog={davanje.razlog} />
+        ) : (
+          davanje.napomene.map((napomena) => (
+            <NapomenaDavanja key={napomena.kod} napomena={napomena} />
+          ))
+        )}
+        <Izvor izvor={davanje.izvor} />
+      </dt>
+      <dd>
+        {davanje.status === 'obračunato'
+          ? format.eur(davanje.godisnjiIznos)
+          : t.kartica.davanjaNema}
+      </dd>
+    </div>
+  )
+}
+
 const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
   const { t, format } = useI18n()
+
+  /*
+    Що не застосовується — під згортку, а не в розбивку поруч із сумами.
+    `obrt na dobit` платить три податки за двома законами, і два з них
+    нульові, доки власник не виймає гроші; поруч із ними стоять іще два
+    платежі, які взагалі не виникають без NKD. П'ять рядків «нуль» ховали
+    справжні суми серед себе.
+
+    Саме під згортку, а не геть: нуль за законом і «ми про це не подумали» —
+    різні речі, і причина, чому платіж не виникає, лишається за один клік.
+  */
+  const neprimjenjiviPorezi = izracun.porezi.filter((porez) => porez.godisnjiIznos.amount.isZero())
+  const primjenjiviPorezi = izracun.porezi.filter((porez) => !porez.godisnjiIznos.amount.isZero())
+  const neprimjenjivaDavanja = izracun.obveznaDavanja.filter(
+    (davanje) => davanje.status !== 'obračunato',
+  )
+  const primjenjivaDavanja = izracun.obveznaDavanja.filter(
+    (davanje) => davanje.status === 'obračunato',
+  )
+  const skriveno = neprimjenjiviPorezi.length + neprimjenjivaDavanja.length
 
   return (
     <>
@@ -67,54 +137,17 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
           законами. Кожен показується своїм рядком зі своєю статтею — схлопнути
           їх в один означало б втратити і суми, і джерела.
         */}
-        {izracun.porezi.map((porez) => (
-          <div className="redak" key={porez.naziv.hr}>
-            <dt>
-              <span className="redak__naziv">
-                {porez.naziv.hr}
-                <span className="udio">
-                  {t.kartica.udioPoreza(
-                    format.percent(porez.stopa),
-                    format.eur(porez.poreznaOsnovica),
-                  )}
-                </span>
-              </span>
-              <Prijevod pojam={porez.naziv.hr} />
-              <Izvor izvor={porez.izvor} />
-            </dt>
-            <dd>{format.eur(porez.godisnjiIznos)}</dd>
-          </div>
+        {primjenjiviPorezi.map((porez) => (
+          <PorezRedak key={porez.naziv.hr} porez={porez} />
         ))}
 
         <DoprinosRedak doprinos={izracun.doprinosi.moPrviStup} />
         <DoprinosRedak doprinos={izracun.doprinosi.moDrugiStup} />
         <DoprinosRedak doprinos={izracun.doprinosi.zo} />
 
-        {/*
-          Обов'язкові платежі поза податками і внесками. Незастосовний
-          лишається в списку з причиною: людина має відрізняти «не забули»
-          від «нічого не винен».
-        */}
-        {izracun.obveznaDavanja.map((davanje) => (
-          <div className="redak" key={davanje.naziv.hr}>
-            <dt>
-              <span className="redak__naziv">{davanje.naziv.hr}</span>
-              <Prijevod pojam={davanje.naziv.hr} />
-              {davanje.status === 'ne-primjenjuje-se' ? (
-                <RazlogNeprimjeneDavanja razlog={davanje.razlog} />
-              ) : (
-                davanje.napomene.map((napomena) => (
-                  <NapomenaDavanja key={napomena.kod} napomena={napomena} />
-                ))
-              )}
-              <Izvor izvor={davanje.izvor} />
-            </dt>
-            <dd>
-              {davanje.status === 'obračunato'
-                ? format.eur(davanje.godisnjiIznos)
-                : t.kartica.davanjaNema}
-            </dd>
-          </div>
+        {/* Обов'язкові платежі поза податками і внесками. */}
+        {primjenjivaDavanja.map((davanje) => (
+          <DavanjeRedak key={davanje.naziv.hr} davanje={davanje} />
         ))}
 
         <div className="redak redak--zbroj">
@@ -141,6 +174,20 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
           <dd>{format.eur(izracun.doprinosi.ukupnoGodisnje)}</dd>
         </div>
       </dl>
+
+      {skriveno > 0 && (
+        <details className="neprimjenjivo">
+          <summary>{t.kartica.neprimjenjivo(format.number(skriveno))}</summary>
+          <dl className="rozbivka">
+            {neprimjenjiviPorezi.map((porez) => (
+              <PorezRedak key={porez.naziv.hr} porez={porez} />
+            ))}
+            {neprimjenjivaDavanja.map((davanje) => (
+              <DavanjeRedak key={davanje.naziv.hr} davanje={davanje} />
+            ))}
+          </dl>
+        </details>
+      )}
     </>
   )
 }

@@ -1,4 +1,4 @@
-import type { LegalReference, StatisticalReference } from '@hr-tax/data'
+import type { LegalReference, PodrijetloPretpostavke } from '@hr-tax/data'
 import type { ReactNode } from 'react'
 import { useI18n } from './i18n/context.tsx'
 
@@ -42,9 +42,17 @@ export const Izvor = ({ izvor }: { readonly izvor: LegalReference }) => {
   )
 }
 
-/** Джерело статистики: хто опублікував і за який період. */
-export const IzvorStatistike = ({ izvor }: { readonly izvor: StatisticalReference }) => {
+/**
+ * Джерело статистики: хто опублікував і за який період.
+ *
+ * Вбите руками число посилання не отримує — воно його не має. Замість
+ * посилання стоїть підпис, і саме тому тип тут об'єднання: інакше цей випадок
+ * було б легко проґавити й показати чуже джерело під власним числом.
+ */
+export const IzvorStatistike = ({ izvor }: { readonly izvor: PodrijetloPretpostavke }) => {
   const { t } = useI18n()
+
+  if (izvor.status === 'rucno') return <span className="izvor">{t.pretpostavke.rucnoZadano}</span>
 
   return (
     <Poveznica url={izvor.url} naslov={t.izvor.provjereno(izvor.checkedOn)}>

@@ -15,6 +15,12 @@ import { tekst } from './tekst.ts'
 export const Statistika = ({ pretpostavke }: { readonly pretpostavke: Pretpostavke }) => {
   const { value, source } = pretpostavke.prosjecnaPlaca
 
+  // Секція документує величини, з якими застосунок постачається, а не те, що
+  // людина вбила в поле: у вбитого руками числа джерела немає, а без джерела
+  // тут нічого показувати. Сюди приходить `PODLOGA`, тож гілка не спрацьовує —
+  // але тип змушує назвати випадок, а не змовчати про нього.
+  if (source.status === 'rucno') return null
+
   return (
     <section className="izvori-statistika" aria-labelledby="izvori-statistika-naslov">
       <h3 id="izvori-statistika-naslov">{tekst.pretpostavke.naslov}</h3>

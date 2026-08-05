@@ -1,10 +1,11 @@
 import {
   jedinicaBySifra,
   KOMORSKI_DOPRINOS_PRIJEDLOG,
-  pretpostavkeNajave2027,
+  prosjecnaPlacaZa,
   resolveStope,
   rulesetNajave2027,
   uGranicama,
+  ZADANA_PROSJECNA_PLACA,
 } from '@hr-tax/data'
 import type { Money, PodlogaUsporedbe, UnosUsporedbe } from '@hr-tax/engine'
 import { eur, tockePreokreta, usporediRezime } from '@hr-tax/engine'
@@ -20,6 +21,7 @@ import { Kalendar } from './Kalendar.tsx'
 import { Obriv } from './Obriv.tsx'
 import { Pdv } from './Pdv.tsx'
 import { Preokret } from './Preokret.tsx'
+import { ProsjecnaPlaca } from './ProsjecnaPlaca.tsx'
 import { PODLOGA } from './podloga.ts'
 import { RezimKartica } from './RezimKartica.tsx'
 import { RidnaKrajina } from './RidnaKrajina.tsx'
@@ -32,6 +34,10 @@ import { TablicaRazreda } from './TablicaRazreda.tsx'
  * izdatak` і `koeficijent` різні по розрядах, а тип правил тримає по одному
  * скаляру, як і чинний закон. Розряд вибирається з `primitak` — так само, як
  * його вибирає рушій.
+ *
+ * Жоден зі сценаріїв не чіпає `pretpostavke`: перемикач міняє закон, а
+ * `prosječna plaća` має власне поле. Доти, доки вона їхала разом із правилами,
+ * перемикання показувало зміну статистики як зміну закону (ADR-0001).
  */
 const SCENARIJI = [
   {
@@ -46,7 +52,6 @@ const SCENARIJI = [
     status: 'draft',
     podlogaZa: (primitak: ReturnType<typeof eur>) => ({
       ruleset: rulesetNajave2027(primitak.amount),
-      pretpostavke: pretpostavkeNajave2027,
       // Проєкт змін до `Zakona o obrtu` знижує законну стелю `komorski
       // doprinos` з 2 % до 1,5 %. Це частина того самого пакета, тож сценарій
       // бере і її — а сума виходить із застереженням, бо стеля не є ставкою.
@@ -77,22 +82,47 @@ const PROSJECNA_PLACA = 'prosječna plaća'
 
 type IdScenarija = (typeof SCENARIJI)[number]['id']
 
+/**
+ * Підкладка з обраною `prosječna plaća`.
+ *
+ * Припущення накладаються **останніми** навмисно: сценарій «чинний закон»
+ * повертає всю `PODLOGA` разом із її власними `pretpostavke`, і при
+ * будь-якому іншому порядку вони затирали б вибір людини мовчки.
+ */
+const sPretpostavkama = <T extends PodlogaUsporedbe>(podloga: T, prosjecnaPlaca: number): T => ({
+  ...podloga,
+  pretpostavke: { prosjecnaPlaca: prosjecnaPlacaZa(prosjecnaPlaca) },
+})
+
 export const App = () => {
   const { t, format } = useI18n()
   const [godisnjiPrimitak, setGodisnjiPrimitak] = useState(POCETNI_PRIMITAK)
   const [forma, setForma] = useState(POCETNO_STANJE)
   const [scenarij, setScenarij] = useState<IdScenarija>('na-snazi')
+  const [prosjecnaPlacaUnos, setProsjecnaPlacaUnos] = useState(
+    ZADANA_PROSJECNA_PLACA.value.toNumber(),
+  )
 
   // Функція, а не готова підкладка: обриви, драбина розрядів і точки
   // перевороту питають правила по обидва боки від межі, а в проєкті
   // `koeficijent` залежить від розряду.
   const podlogaZa = useMemo(() => {
     const odabrani = SCENARIJI.find((s) => s.id === scenarij) ?? SCENARIJI[0]
-    return (primitak: Money<'EUR'>): PodlogaUsporedbe => ({
-      ...PODLOGA,
-      ...odabrani.podlogaZa(primitak),
-    })
-  }, [scenarij])
+    return (primitak: Money<'EUR'>): PodlogaUsporedbe =>
+      sPretpostavkama({ ...PODLOGA, ...odabrani.podlogaZa(primitak) }, prosjecnaPlacaUnos)
+  }, [scenarij, prosjecnaPlacaUnos])
+
+  // Графік малює обидва сценарії водночас, і обидва — за тією самою
+  // `prosječna plaća`: інакше криві розходилися б ще й через статистику.
+  const scenarijiGrafa = useMemo(
+    () =>
+      SCENARIJI.map((s) => ({
+        ...s,
+        podlogaZa: (primitak: Money<'EUR'>) =>
+          sPretpostavkama({ ...PODLOGA, ...s.podlogaZa(primitak) }, prosjecnaPlacaUnos),
+      })),
+    [prosjecnaPlacaUnos],
+  )
 
   /**
    * Усе, що форма знає про платника, крім самого `primitak`.
@@ -156,18 +186,20 @@ export const App = () => {
       return ishod?.status === 'izracunato' ? ishod.izracun.netoZaOsobu.amount : undefined
     }
 
-    const naSnazi = zaPodlogu(PODLOGA)
-    // Припущення лишаються ті самі: інакше в дельту потрапила б ще й
-    // прогнозна prosječna plaća, і «різниця проти чинного закону» показувала б
-    // зміну статистики як зміну закону (ADR-0001).
-    const najava = zaPodlogu({
-      ...PODLOGA,
-      ruleset: SCENARIJI[1].podlogaZa(eur(godisnjiPrimitak)).ruleset,
-    })
+    // Припущення по обидва боки ті самі — і саме ті, які обрала людина.
+    // Інакше в дельту потрапила б ще й зміна prosječna plaća, і «різниця проти
+    // чинного закону» показувала б зміну статистики як зміну закону (ADR-0001).
+    const naSnazi = zaPodlogu(sPretpostavkama(PODLOGA, prosjecnaPlacaUnos))
+    const najava = zaPodlogu(
+      sPretpostavkama(
+        { ...PODLOGA, ruleset: SCENARIJI[1].podlogaZa(eur(godisnjiPrimitak)).ruleset },
+        prosjecnaPlacaUnos,
+      ),
+    )
     return naSnazi === undefined || najava === undefined ? undefined : najava.minus(naSnazi)
-  }, [godisnjiPrimitak])
+  }, [godisnjiPrimitak, prosjecnaPlacaUnos])
 
-  const { prosjecnaPlaca } = PODLOGA.pretpostavke
+  const prosjecnaPlaca = prosjecnaPlacaZa(prosjecnaPlacaUnos)
 
   return (
     <main className="stranica">
@@ -273,6 +305,10 @@ export const App = () => {
             </p>
           </section>
 
+          {/* Одразу під перемикачем: тут видно, що правила й статистика — два
+              різні органи керування, і перемикач другого не чіпає. */}
+          <ProsjecnaPlaca vrijednost={prosjecnaPlacaUnos} onPromjena={setProsjecnaPlacaUnos} />
+
           <Forma stanje={forma} onPromjena={setForma} />
         </div>
 
@@ -295,7 +331,7 @@ export const App = () => {
       </div>
 
       <GrafOpterecenja
-        scenariji={SCENARIJI}
+        scenariji={scenarijiGrafa}
         godisnjiPrimitak={godisnjiPrimitak}
         najvisiPrimitak={NAJVISI_PRIMITAK}
         onOdabir={setGodisnjiPrimitak}
@@ -319,7 +355,9 @@ export const App = () => {
           <Prijevod pojam={PROSJECNA_PLACA} />
           <strong>{format.eur(eur(prosjecnaPlaca.value))}</strong>
         </p>
-        <p>{t.pretpostavke.objasnjenje}</p>
+        {/* Пояснення тут не повторюється: воно стоїть біля самого поля вгорі,
+            а внизу лишається зведення — рік правил і величина, до якої вони
+            застосовані. */}
         <p>
           <IzvorStatistike izvor={prosjecnaPlaca.source} />
         </p>

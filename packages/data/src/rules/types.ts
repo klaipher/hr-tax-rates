@@ -110,10 +110,26 @@ export interface StatisticalReference {
   readonly checkedOn: `${number}-${number}-${number}`
 }
 
-/** Величина з `pretpostavke` разом зі своїм джерелом статистики. */
+/**
+ * Величина, яку людина вбила руками.
+ *
+ * Джерела в неї немає — і саме тому це окремий член об'єднання, а не
+ * `StatisticalReference` з порожнім `publisher`: показати вбите руками число
+ * під посиланням на `NN 133/25` означало б приписати статистиці те, чого вона
+ * не публікувала. Об'єднання змушує кожного, хто малює джерело, спершу
+ * розрізнити ці два випадки.
+ */
+export interface RucnoZadanaVelicina {
+  readonly status: 'rucno'
+}
+
+/** Звідки взялося число `pretpostavke`: з публікації статистики чи з поля. */
+export type PodrijetloPretpostavke = StatisticalReference | RucnoZadanaVelicina
+
+/** Величина з `pretpostavke` разом зі своїм походженням. */
 export interface Pretpostavka<T> {
   readonly value: T
-  readonly source: StatisticalReference
+  readonly source: PodrijetloPretpostavke
 }
 
 /**

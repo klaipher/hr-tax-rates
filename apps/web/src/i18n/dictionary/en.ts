@@ -158,6 +158,7 @@ export const en: Dictionary = {
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} of ${poreznaOsnovica}`,
     davanja: 'Mandatory levies',
     davanjaNema: 'not applicable',
+    neprimjenjivo: (koliko: string) => `not applicable: ${koliko}`,
     doprinosiUkupno: 'doprinosi in total',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} per month`,
     ustedaUzRadniOdnos: (usteda: string) => `${usteda} less than without employment`,
@@ -275,8 +276,16 @@ export const en: Dictionary = {
     naslov: 'Assumptions',
     godina: (godina: string) => `The rules are those in force for ${godina}.`,
     objasnjenje:
-      'Contributions are computed from this figure. The law does not set it, it only refers ' +
-      'to it, so it sits in a layer separate from the rules and can be overridden.',
+      'Contributions are computed from this figure: osnovica = prosječna plaća × koeficijent, ' +
+      'then 36.5% of that. The law does not set it, it only refers to it, so it sits in a layer ' +
+      'separate from the rules — the scenario switch leaves it alone. It is also why the two ' +
+      'official 2027 calculations differ on contributions while agreeing on the rates: the ' +
+      'bill’s impact assessment works from the current 1 993 €, the HOK calculator from a ' +
+      'forecast 2 180 €.',
+    placaPrijevod: 'the average monthly gross salary the law derives the osnovica from',
+    objavljena: 'published',
+    prognoza: 'forecast',
+    rucnoZadano: 'entered by hand — this figure has no source',
   },
 
   krajina: {

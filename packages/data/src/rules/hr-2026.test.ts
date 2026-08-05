@@ -97,9 +97,13 @@ describe('ruleset 2026', () => {
     it('prosječna plaća має джерело статистики, а не правове', () => {
       const { source } = pretpostavke2026.prosjecnaPlaca
 
-      expect(source.publisher).toBe('Državni zavod za statistiku')
-      expect(source.status).toBe('published')
-      expect(source.period).toContain('2025')
+      // Одним `toMatchObject`, бо `source` — об'єднання: вбита руками величина
+      // джерела не має взагалі, і полів `publisher`/`period` у ній немає.
+      expect(source).toMatchObject({
+        publisher: 'Državni zavod za statistiku',
+        status: 'published',
+        period: expect.stringContaining('2025'),
+      })
     })
   })
 

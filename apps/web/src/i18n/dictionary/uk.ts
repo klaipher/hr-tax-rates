@@ -185,6 +185,7 @@ export const uk = {
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} від ${poreznaOsnovica}`,
     davanja: 'Обов’язкові платежі',
     davanjaNema: 'не застосовується',
+    neprimjenjivo: (koliko: string) => `не застосовується: ${koliko}`,
     doprinosiUkupno: 'doprinosi разом',
     doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} на місяць`,
     ustedaUzRadniOdnos: (usteda: string) => `на ${usteda} менше, ніж без найму`,
@@ -315,8 +316,15 @@ export const uk = {
     naslov: 'Припущення',
     godina: (godina: string) => `Правила чинні на ${godina} рік.`,
     objasnjenje:
-      'Внески рахуються з цієї величини. Закон її не встановлює, а лише на неї посилається, ' +
-      'тому вона лежить окремим шаром від правил і може бути перевизначена.',
+      'Внески рахуються з цієї величини: osnovica = prosječna plaća × koeficijent, і далі з ' +
+      'неї 36,5 %. Закон її не встановлює, а лише на неї посилається, тому вона лежить окремим ' +
+      'шаром від правил — перемикач сценарію її не чіпає. Саме через неї два офіційні ' +
+      'розрахунки на 2027 рік дають різні суми внесків за однакових ставок: обґрунтування ' +
+      'законопроєкту рахує від чинних 1 993 €, калькулятор HOK — від прогнозних 2 180 €.',
+    placaPrijevod: 'середня місячна брутто-зарплата, з якої закон виводить osnovica',
+    objavljena: 'опубліковано',
+    prognoza: 'прогноз',
+    rucnoZadano: 'введено вручну — джерела в цього числа немає',
   },
 
   krajina: {
