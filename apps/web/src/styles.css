@@ -630,3 +630,47 @@ body {
   background: var(--naglasak-tlo);
   border-radius: 0.6rem;
 }
+
+.pdv__tablica {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1rem;
+}
+.pdv__tablica th,
+.pdv__tablica td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--rub);
+  vertical-align: baseline;
+}
+.pdv__tablica thead th {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tekst-prigušen);
+  text-align: right;
+}
+.pdv__tablica tbody th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+.pdv__tablica td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pdv__stupac {
+  text-align: right;
+}
+.pdv__stupac--obvezni {
+  background: var(--naglasak-tlo);
+}
+.pdv__oznaka {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+}

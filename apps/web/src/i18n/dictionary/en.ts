@@ -156,6 +156,11 @@ export const en: Dictionary = {
     inozemneUslugePrijevod: 'hosting, contractors, subscriptions — bought outside Croatia',
     status: (status: string) => `At this primitak the law imposes: ${status}.`,
     statusi: { 'izvan-sustava': 'outside the PDV system', 'u-sustavu': 'inside the PDV system' },
+    premaZakonu: 'by law',
+    stavka: 'Item',
+    bezInozemnih:
+      'Foreign services are set to zero, so the input side is empty. Enter an amount and you ' +
+      'will see how much tax you lose outside the PDV system and how much entering it returns.',
     izlaz: 'PDV on your invoices',
     nepovratni: 'Non-deductible PDV on foreign services',
     uSustavuNepovratni: 'The same, were you inside the PDV system',

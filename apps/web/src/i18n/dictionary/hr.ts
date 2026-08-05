@@ -155,6 +155,11 @@ export const hr: Dictionary = {
     inozemneUslugePrijevod: 'hosting, podizvođači, pretplate — kupljeni izvan Hrvatske',
     status: (status: string) => `Zakon na ovaj primitak nameće stanje: ${status}.`,
     statusi: { 'izvan-sustava': 'izvan sustava PDV-a', 'u-sustavu': 'u sustavu PDV-a' },
+    premaZakonu: 'po zakonu',
+    stavka: 'Stavka',
+    bezInozemnih:
+      'Inozemnih usluga uneseno je nula, pa je ulazna strana prazna. Upišite iznos i vidjet ' +
+      'ćete koliko poreza gubite izvan sustava PDV-a i koliko vraća ulazak u njega.',
     izlaz: 'PDV na vašim računima',
     nepovratni: 'Nepovratni PDV na inozemne usluge',
     uSustavuNepovratni: 'Isto, da ste u sustavu PDV-a',

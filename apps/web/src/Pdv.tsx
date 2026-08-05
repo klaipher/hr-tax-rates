@@ -1,5 +1,11 @@
 import { pdvPravila2026 } from '@hr-tax/data'
-import { eur, type Money, type TipKlijenta, usporediSustavPdv } from '@hr-tax/engine'
+import {
+  eur,
+  type Money,
+  type PdvStatus,
+  type TipKlijenta,
+  usporediSustavPdv,
+} from '@hr-tax/engine'
 import { useMemo } from 'react'
 import { Izvor } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
@@ -39,6 +45,10 @@ export const Pdv = ({
 
   const { izvanSustava, uSustavu, obvezniStatus } = usporedba
 
+  /** Колонка стану, який нав'язує закон, виділяється; друга лишається довідкою. */
+  const stupac = (status: PdvStatus) =>
+    status === obvezniStatus ? 'pdv__stupac pdv__stupac--obvezni' : 'pdv__stupac'
+
   return (
     <section className="pdv">
       <h2>PDV</h2>
@@ -48,29 +58,71 @@ export const Pdv = ({
         <Izvor izvor={usporedba.izvorStatusa} />
       </p>
 
-      <dl className="rozbivka">
-        <div className="redak">
-          <dt>
-            <span className="redak__naziv">{t.pdv.izlaz}</span>
-            <Izvor izvor={izvanSustava.izlaz.izvor} />
-          </dt>
-          <dd>{format.eur(izvanSustava.izlaz.godisnjiPdv)}</dd>
-        </div>
-        <div className="redak">
-          <dt>
-            <span className="redak__naziv">{t.pdv.nepovratni}</span>
-            <Izvor izvor={izvanSustava.ulaz.izvorSamoobracuna} />
-            <Izvor izvor={izvanSustava.ulaz.izvorOdbitka} />
-          </dt>
-          <dd>{format.eur(izvanSustava.ulaz.nepovratniPdv)}</dd>
-        </div>
-        <div className="redak">
-          <dt>
-            <span className="redak__naziv">{t.pdv.uSustavuNepovratni}</span>
-          </dt>
-          <dd>{format.eur(uSustavu.ulaz.nepovratniPdv)}</dd>
-        </div>
-      </dl>
+      {/*
+        Два стани поруч, а не один. Показувати лише «поза системою» означало
+        нічого не показувати: під порогом і з нульовими закордонними послугами
+        там усе нуль, і перемикання типу клієнта не змінює на екрані нічого —
+        тоді як уся суть у різниці між станами.
+      */}
+      <table className="pdv__tablica">
+        <thead>
+          <tr>
+            <th scope="col">
+              <span className="vizualno-skriveno">{t.pdv.stavka}</span>
+            </th>
+            {/*
+              Обидва стани показані, але видно, який із них нав'язує закон:
+              вище порогу «поза системою» вже не вибір, а нижче нього — вибір.
+              Без позначки таблиця читалася б як два рівноправні варіанти.
+            */}
+            <th scope="col" className={stupac('izvan-sustava')}>
+              {t.pdv.statusi['izvan-sustava']}
+              {obvezniStatus === 'izvan-sustava' && (
+                <span className="pdv__oznaka">{t.pdv.premaZakonu}</span>
+              )}
+            </th>
+            <th scope="col" className={stupac('u-sustavu')}>
+              {t.pdv.statusi['u-sustavu']}
+              {obvezniStatus === 'u-sustavu' && (
+                <span className="pdv__oznaka">{t.pdv.premaZakonu}</span>
+              )}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">
+              <span className="redak__naziv">{t.pdv.izlaz}</span>
+              <Izvor izvor={izvanSustava.izlaz.izvor} />
+            </th>
+            <td className={stupac('izvan-sustava')}>
+              {format.eur(izvanSustava.izlaz.godisnjiPdv)}
+            </td>
+            <td className={stupac('u-sustavu')}>{format.eur(uSustavu.izlaz.godisnjiPdv)}</td>
+          </tr>
+          <tr>
+            <th scope="row">
+              <span className="redak__naziv">{t.pdv.nepovratni}</span>
+              <Izvor izvor={izvanSustava.ulaz.izvorSamoobracuna} />
+              <Izvor izvor={izvanSustava.ulaz.izvorOdbitka} />
+            </th>
+            <td className={stupac('izvan-sustava')}>
+              {format.eur(izvanSustava.ulaz.nepovratniPdv)}
+            </td>
+            <td className={stupac('u-sustavu')}>{format.eur(uSustavu.ulaz.nepovratniPdv)}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/*
+        Нулі можуть бути законними, і тоді треба сказати чому — інакше вони
+        читаються як зламаний розрахунок.
+      */}
+      {izvanSustava.izlaz.godisnjiPdv.amount.isZero() &&
+        uSustavu.izlaz.godisnjiPdv.amount.isZero() && (
+          <p className="razlog">{izvanSustava.izlaz.obrazlozenje}</p>
+        )}
+      {inozemneUsluge === 0 && <p className="razlog">{t.pdv.bezInozemnih}</p>}
 
       {/*
         Інверсія одним числом. Дві сторони навмисно не складаються: вихідний
