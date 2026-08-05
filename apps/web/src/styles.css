@@ -585,6 +585,36 @@ body {
   align-items: start;
   margin-block: 2rem;
 }
+
+/*
+  Без цього колонка не стискається вужче за свій найширший вміст: у грід-сітці
+  елементи мають `min-width: auto`, а список із 556 міст задає дуже широкий
+  min-content. На вузькому екрані це виштовхувало сторінку за край, і суми
+  на картках обрізалися.
+*/
+.raspored__unos,
+.raspored__ishod {
+  min-width: 0;
+}
+
+/*
+  `<select>` міст ширшає під найдовшу назву зі списку, і разом із ним ширшають
+  усі його предки. Обмежити треба весь ланцюг, а не лише сам елемент.
+*/
+.polje,
+.polje label {
+  min-width: 0;
+}
+
+.polje select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.polje .prijevod {
+  overflow-wrap: anywhere;
+}
 @media (min-width: 62rem) {
   .raspored {
     grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr);
