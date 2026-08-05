@@ -690,6 +690,22 @@ body {
 .placa {
   margin-block: 1.5rem;
 }
+.placa__redak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.placa__redak input {
+  /* Не тягнеться на всю ширину: інакше «€ на місяць» відлітає від числа так
+     далеко, що перестає читатися як його одиниця виміру. */
+  flex: 0 0 auto;
+  max-width: 9ch;
+}
+.placa__mjera {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
 .placa__preseti {
   display: flex;
   flex-wrap: wrap;

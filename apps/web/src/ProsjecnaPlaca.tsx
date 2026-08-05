@@ -33,19 +33,24 @@ export const ProsjecnaPlaca = ({
           <span className="pojam">prosječna plaća</span>
           <span className="prijevod">{t.pretpostavke.placaPrijevod}</span>
         </label>
-        <input
-          id="prosjecna-placa"
-          type="number"
-          inputMode="decimal"
-          min={0}
-          step={10}
-          value={vrijednost}
-          aria-describedby="prosjecna-placa-opis"
-          onChange={(event) => {
-            const uneseno = Number(event.target.value)
-            onPromjena(Number.isFinite(uneseno) ? Math.max(0, uneseno) : 0)
-          }}
-        />
+        {/* Одиниця виміру просто в полі: «1993» без неї читається як рік, а не
+            як сума — тим більше що рік стоїть поруч у назві періоду. */}
+        <span className="placa__redak">
+          <input
+            id="prosjecna-placa"
+            type="number"
+            inputMode="decimal"
+            min={0}
+            step={10}
+            value={vrijednost}
+            aria-describedby="prosjecna-placa-opis"
+            onChange={(event) => {
+              const uneseno = Number(event.target.value)
+              onPromjena(Number.isFinite(uneseno) ? Math.max(0, uneseno) : 0)
+            }}
+          />
+          <span className="placa__mjera">{t.pretpostavke.mjesecno}</span>
+        </span>
         <IzvorStatistike izvor={pretpostavka.source} />
       </p>
 

@@ -283,6 +283,7 @@ export const en: Dictionary = {
       'bill’s impact assessment works from the current 1 993 €, the HOK calculator from a ' +
       'forecast 2 180 €.',
     placaPrijevod: 'the average monthly gross salary the law derives the osnovica from',
+    mjesecno: '€ per month',
     objavljena: 'published',
     prognoza: 'forecast',
     rucnoZadano: 'entered by hand — this figure has no source',

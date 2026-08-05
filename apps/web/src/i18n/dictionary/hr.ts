@@ -278,6 +278,7 @@ export const hr: Dictionary = {
       'izračuna za 2027. daju različite iznose doprinosa uz iste stope: obrazloženje ' +
       'prijedloga zakona računa od važećih 1 993 €, kalkulator HOK-a od prognoziranih 2 180 €.',
     placaPrijevod: 'prosječna mjesečna bruto plaća iz koje zakon izvodi osnovicu',
+    mjesecno: '€ mjesečno',
     objavljena: 'objavljeno',
     prognoza: 'prognoza',
     rucnoZadano: 'ručno upisano — ta brojka izvora nema',
