@@ -4,6 +4,7 @@ import {
   prosjecnaPlacaZa,
   resolveStope,
   rulesetNajave2027,
+  sProsjecnomPlacom,
   uGranicama,
   ZADANA_PROSJECNA_PLACA,
 } from '@hr-tax/data'
@@ -91,7 +92,11 @@ type IdScenarija = (typeof SCENARIJI)[number]['id']
  */
 const sPretpostavkama = <T extends PodlogaUsporedbe>(podloga: T, prosjecnaPlaca: number): T => ({
   ...podloga,
-  pretpostavke: { prosjecnaPlaca: prosjecnaPlacaZa(prosjecnaPlaca) },
+  // Заміну одного поля робить шар даних, а не цей рядок. Доти, доки він
+  // будував `pretpostavke` заново, друга статистика — середня за повний
+  // попередній рік — мовчки зникала разом із порогом `EU plava karta`, і
+  // ані тип, ані тести цього не бачили.
+  pretpostavke: sProsjecnomPlacom(podloga.pretpostavke, prosjecnaPlaca),
 })
 
 export const App = () => {

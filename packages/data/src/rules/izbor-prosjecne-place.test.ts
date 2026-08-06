@@ -3,6 +3,7 @@ import { pretpostavke2026 } from './hr-2026.ts'
 import {
   prosjecnaPlacaZa,
   SLUZBENE_PROSJECNE_PLACE,
+  sProsjecnomPlacom,
   ZADANA_PROSJECNA_PLACA,
 } from './izbor-prosjecne-place.ts'
 import { pretpostavkeNajave2027 } from './najava-2027.ts'
@@ -39,5 +40,27 @@ describe('prosjecnaPlacaZa', () => {
 
   it('обидва офіційні числа лишаються доступними', () => {
     expect(SLUZBENE_PROSJECNE_PLACE.map((p) => p.value.toFixed(2))).toEqual(['1993.00', '2180.00'])
+  })
+})
+
+describe('sProsjecnomPlacom', () => {
+  it('міняє лише `prosječna plaća`, лишаючи решту припущень на місці', () => {
+    // Сторож проти помилки, яку зробив застосунок і не спіймали ані тип, ані
+    // тести: він будував `pretpostavke` заново з одного поля, і середня за
+    // повний попередній рік зникала разом із порогом `EU plava karta`.
+    const zamijenjene = sProsjecnomPlacom(pretpostavke2026, 2500)
+
+    expect(zamijenjene.prosjecnaPlaca.value.toString()).toBe('2500')
+    expect(zamijenjene.prosjecnaPlacaPrethodneGodine).toBe(
+      pretpostavke2026.prosjecnaPlacaPrethodneGodine,
+    )
+  })
+
+  it('лишає всі поля набору, скільки б їх не додали', () => {
+    // Не перелік полів, а їхня кількість: нове припущення, забуте в цій
+    // функції, впаде тут, а не тихо зникне з екрана.
+    expect(Object.keys(sProsjecnomPlacom(pretpostavke2026, 2500)).sort()).toEqual(
+      Object.keys(pretpostavke2026).sort(),
+    )
   })
 })

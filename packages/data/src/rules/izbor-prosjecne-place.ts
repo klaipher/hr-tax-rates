@@ -16,7 +16,7 @@
 import { Decimal } from 'decimal.js'
 import { pretpostavke2026 } from './hr-2026.ts'
 import { pretpostavkeNajave2027 } from './najava-2027.ts'
-import type { Pretpostavka } from './types.ts'
+import type { Pretpostavka, Pretpostavke } from './types.ts'
 
 /** Офіційні значення, між якими є сенс перемикатися. */
 export const SLUZBENE_PROSJECNE_PLACE: readonly Pretpostavka<Decimal>[] = [
@@ -41,3 +41,20 @@ export const prosjecnaPlacaZa = (iznos: Decimal.Value): Pretpostavka<Decimal> =>
 
   return { value: new Decimal(iznos), source: { status: 'rucno' } }
 }
+
+/**
+ * Той самий набір припущень, але з іншою `prosječna plaća`.
+ *
+ * Функція існує через помилку, яку зробив застосунок і не спіймав ані тип,
+ * ані 827 тестів: він будував `pretpostavke` заново з одного поля, і друга
+ * статистика — середня за повний попередній рік — мовчки зникала разом із
+ * порогом `EU plava karta`, що на ній стоїть. Об'єктний літерал у місці
+ * узагальненого типу перевіряється поблажливо, тож пропажа була тихою.
+ *
+ * Заміна одного поля живе тут, а не в шарі показу, саме тому: додати
+ * припущення й забути про це місце тепер неможливо.
+ */
+export const sProsjecnomPlacom = (
+  pretpostavke: Pretpostavke,
+  iznos: Decimal.Value,
+): Pretpostavke => ({ ...pretpostavke, prosjecnaPlaca: prosjecnaPlacaZa(iznos) })
