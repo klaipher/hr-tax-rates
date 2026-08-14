@@ -279,6 +279,16 @@ const uskladi = (
       ? eur(0)
       : zbrojIzdataka(unos.godisnjiIzdaci)
 
+  // `neoporezivi primici` не входять у слайдер: він читається як брутто-плаћа,
+  // а вони приходять понад неї. Спільна формула бачить лише `godisnjiPrimitak`,
+  // тож без цього доданка введена сума показувалася б у застереженні й тихо
+  // зникала з головного числа картки.
+  //
+  // Лише найманому: в обртних режимах такої статті немає взагалі, а власник
+  // d.o.o. передає в плаћу нуль — його ревізія не покривала.
+  const neoporeziviPrimici =
+    pravniOblik === 'nesamostalni rad' ? (unos.neoporeziviPrimici ?? eur(0)) : eur(0)
+
   return {
     ...izracun,
     obveznaDavanja,
@@ -295,6 +305,7 @@ const uskladi = (
     // працівника — ні, і саме тут різниця в 16,5% брутто перестає бути тихою.
     netoZaOsobu: sum('EUR', [
       unos.godisnjiPrimitak,
+      neoporeziviPrimici,
       scale(ukupniIzdaci, -1),
       scale(izracun.ukupanPorez, -1),
       scale(izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe, -1),
