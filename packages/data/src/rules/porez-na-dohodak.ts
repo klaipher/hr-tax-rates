@@ -64,6 +64,25 @@ export interface OsobniOdbitakPravila {
    * відмовляється рахувати.
    */
   readonly koeficijentiDjece: Sourced<readonly Decimal[]>
+  /**
+   * Коефіцієнт за інвалідністю (`r. br. 12.`) — окремо на кожну особу: на
+   * самого платника, на кожного утриманця й на кожну утримувану дитину.
+   *
+   * Не «на сім'ю» і не «раз»: акт друкує рядок так, що коефіцієнт множиться
+   * на кількість осіб, а не на факт наявності. Порахувати його один раз
+   * означало б забрати відрахунок у другої дитини з інвалідністю.
+   */
+  readonly koeficijentInvalidnosti: Sourced<Decimal>
+  /**
+   * Коефіцієнт за 100 % інвалідністю по одній підставі або за правом на
+   * `doplatak za pomoć i njegu`, `osobna invalidnina` чи `inkluzivni dodatak`
+   * (`r. br. 13.`).
+   *
+   * Акт прямо каже, що використання цього рядка виключає `r. br. 12.` — але
+   * для тієї самої особи, а не для всієї сім'ї. Тому в моделі це дві окремі
+   * кількості людей, а не прапорець «яка інвалідність».
+   */
+  readonly koeficijentPotpuneInvalidnosti: Sourced<Decimal>
 }
 
 /** Прогресія `porez na dohodak`: дві ставки й точка переходу між ними. */
@@ -160,6 +179,8 @@ export const obrtNaDohodak2026: ObrtNaDohodakPravila = {
         ],
         TABLICA_KOEFICIJENATA,
       ),
+      koeficijentInvalidnosti: sourced(new Decimal('0.3'), TABLICA_KOEFICIJENATA),
+      koeficijentPotpuneInvalidnosti: sourced(new Decimal('1.0'), TABLICA_KOEFICIJENATA),
     },
     progresija: {
       pragViseStope: sourced(new Decimal('60000'), {

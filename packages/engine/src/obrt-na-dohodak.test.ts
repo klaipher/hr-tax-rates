@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest'
 import { MJESECI_U_GODINI } from './doprinosi.ts'
 import { eur, type Money, toCentString } from './money.ts'
 import {
+  BEZ_UZDRZAVANIH,
   type IzdaciPoStavkama,
   izracunajObrtNaDohodak,
   type PodlogaObrtaNaDohodak,
@@ -81,7 +82,7 @@ const unos = ({
 }: Argumenti = {}): UnosObrtaNaDohodak => ({
   godisnjiPrimitak: eur(primitak),
   godisnjiIzdaci: { ...BEZ_IZDATAKA, ...izdaci },
-  uzdrzavani: { clanoviUzeObitelji, djeca },
+  uzdrzavani: { ...BEZ_UZDRZAVANIH, clanoviUzeObitelji, djeca },
   stope,
 })
 

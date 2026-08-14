@@ -120,6 +120,46 @@ export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezi
         </p>
       )
 
+    case 'neoporezivi-primici-uracunati':
+      return (
+        <p className="razlog">
+          {tekst['neoporezivi-primici-uracunati'](format.eur(napomena.iznos))}
+          <Izvor izvor={napomena.stavke.source} />
+        </p>
+      )
+
+    case 'oslobodenje-za-prvo-zaposlenje':
+      return (
+        <p className="razlog">
+          {tekst['oslobodenje-za-prvo-zaposlenje'](format.eur(napomena.usteda))}
+          <Izvor izvor={napomena.izvor} />
+          {/* Друге посилання — на означення, а не на саму норму: питання «а чи
+              це взагалі я?» тут важливіше за питання «а скільки?», і відповідає
+              на нього інша стаття. */}
+          <Izvor izvor={napomena.izvorDefinicije} />
+        </p>
+      )
+
+    case 'umanjenje-za-podrucje':
+      return (
+        <p className="razlog">
+          {tekst['umanjenje-za-podrucje'](format.eur(napomena.iznos))}
+          <Izvor izvor={napomena.izvor} />
+        </p>
+      )
+
+    case 'umanjenje-za-povratnika':
+      return (
+        <p className="razlog">
+          {tekst['umanjenje-za-povratnika'](
+            format.eur(napomena.iznos),
+            String(napomena.godina.value),
+          )}
+          <Izvor izvor={napomena.izvor} />
+          <Izvor izvor={napomena.izvorIskljucenja} />
+        </p>
+      )
+
     default:
       return <p className="razlog">{tekst[napomena.kod]}</p>
   }

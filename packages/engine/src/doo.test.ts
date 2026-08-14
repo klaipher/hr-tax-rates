@@ -13,6 +13,7 @@ import {
   type UlazDoo,
 } from './doo.ts'
 import { eur, toCentString } from './money.ts'
+import { BEZ_UZDRZAVANIH } from './obrt-na-dohodak.ts'
 import type { Podloga, Porez } from './types.ts'
 
 const podloga: Podloga = { ruleset: ruleset2026, pretpostavke: pretpostavke2026 }
@@ -31,7 +32,7 @@ const ulaz = (dopune: Partial<UlazDoo> = {}): UlazDoo => ({
   godisnjiPrihod: eur(100_000),
   godisnjiRashod: eur(0),
   stopePorezaNaDohodak: STOPE,
-  uzdrzavani: { clanoviUzeObitelji: 0, djeca: 0 },
+  uzdrzavani: BEZ_UZDRZAVANIH,
   dob: undefined,
   mjesecnaPlacaVlasnika: undefined,
   ...dopune,
@@ -76,7 +77,7 @@ describe('d.o.o.', () => {
       // ZO тут теж його, бо виходить із тієї самої dobit, яку він інакше
       // забрав би дивідендами, — тож обидва підсумки збігаються.
       //
-      // Підлога 1 295,45 стоїть **під** порогом 1 300, тож `čl. 20.a` дає
+      // Підлога 1 295,45 стоїть **під** порогом 1 300, тож `čl. 21.a` дає
       // навіть їй тонку знижку 0,5 × (1 300 − 1 295,45) = 2,275, і база
       // MO I. stup падає до 1 293,175. Дрібниця, але саме такі дрібниці й
       // розходяться тихо.

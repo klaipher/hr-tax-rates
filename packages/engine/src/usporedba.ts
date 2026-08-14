@@ -20,6 +20,7 @@ import {
 } from './nepuna-godina.ts'
 import { izracunajObrtNaDobit } from './obrt-na-dobit.ts'
 import {
+  BEZ_UZDRZAVANIH,
   type IzdaciPoStavkama,
   izracunajObrtNaDohodak,
   type UzdrzavaniClanovi,
@@ -86,6 +87,26 @@ export interface UnosUsporedbe extends Unos {
    * дивідендами під іншу ставку, тож саме це число вирішує, скільки лишиться.
    */
   readonly mjesecnaPlacaVlasnika?: Money<'EUR'> | undefined
+  /**
+   * Річна сума `neoporezivi primici`, про яку домовлено з роботодавцем. Не
+   * задано — жодних: закон дає стелі, а не обіцянки.
+   */
+  readonly neoporeziviPrimici?: Money<'EUR'> | undefined
+  /**
+   * Чи це перше працевлаштування за договором на неозначений час. Стосується
+   * лише вартості для роботодавця — на «на руки» не впливає ані на цент.
+   */
+  readonly prvoZaposlenje?: boolean | undefined
+  /**
+   * Чи обрана `jedinica lokalne samouprave` дає `umanjenje` з `čl. 46. st. 1.`
+   *
+   * Приходить готовою відповіддю, а не назвою одиниці: список друкує `Odluka`
+   * Влади, зіставлення з довідником робить `imaUmanjenjeZaPodrucje`, а рушію
+   * лишається сам наслідок.
+   */
+  readonly umanjenjeZaPodrucje?: boolean | undefined
+  /** Чи людина підпадає під `čl. 46. st. 3.` — поверненець з-за кордону. */
+  readonly povratnik?: boolean | undefined
 }
 
 /**
@@ -371,7 +392,7 @@ const obrtNaDohodak = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod =>
     {
       godisnjiPrimitak: unos.godisnjiPrimitak,
       godisnjiIzdaci,
-      uzdrzavani: unos.uzdrzavani ?? { clanoviUzeObitelji: 0, djeca: 0 },
+      uzdrzavani: unos.uzdrzavani ?? BEZ_UZDRZAVANIH,
       stope,
     },
     { ...podloga, obrtNaDohodak: pravila },
@@ -489,7 +510,7 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
     {
       mjesecnaBrutoPlaca: eur(unos.godisnjiPrimitak.amount.div(MJESECI_U_GODINI)),
       stope,
-      uzdrzavani: unos.uzdrzavani ?? { clanoviUzeObitelji: 0, djeca: 0 },
+      uzdrzavani: unos.uzdrzavani ?? BEZ_UZDRZAVANIH,
       dob: unos.dob,
       najnizaOsnovica: {
         mjesecniIznos: scale(
@@ -500,6 +521,10 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       },
       // Роботодавець — чужа фірма: ZO ніколи не був грошима цієї людини.
       vlastitiPoslodavac: false,
+      neoporeziviPrimici: unos.neoporeziviPrimici ?? eur(0),
+      prvoZaposlenje: unos.prvoZaposlenje ?? false,
+      umanjenjeZaPodrucje: unos.umanjenjeZaPodrucje ?? false,
+      povratnik: unos.povratnik ?? false,
     },
     podloga,
     pravila,
@@ -515,7 +540,7 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
 
   const obvezniPlacanja = subtract(
     add(placa.porez.godisnjiIznos, placa.doprinosi.ukupnoGodisnjeNaTeretOsobe),
-    placa.olaksicaZaMlade?.iznos ?? eur(0),
+    placa.ukupniPovrat,
   )
 
   return {
@@ -524,7 +549,7 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       porezi: [placa.porez],
       ukupanPorez: placa.porez.godisnjiIznos,
       doprinosi: placa.doprinosi,
-      povratPoreza: placa.olaksicaZaMlade?.iznos ?? eur(0),
+      povratPoreza: placa.ukupniPovrat,
       napomene,
       efektivnaStopa: unos.godisnjiPrimitak.amount.isZero()
         ? undefined
@@ -583,7 +608,7 @@ const ulazDoo = (unos: UnosUsporedbe, stope: ParStopa) => ({
   godisnjiPrihod: unos.godisnjiPrimitak,
   godisnjiRashod: unos.godisnjiIzdaci === undefined ? eur(0) : zbrojIzdataka(unos.godisnjiIzdaci),
   stopePorezaNaDohodak: stope,
-  uzdrzavani: unos.uzdrzavani ?? { clanoviUzeObitelji: 0, djeca: 0 },
+  uzdrzavani: unos.uzdrzavani ?? BEZ_UZDRZAVANIH,
   dob: unos.dob,
   mjesecnaPlacaVlasnika: unos.mjesecnaPlacaVlasnika,
 })

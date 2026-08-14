@@ -63,6 +63,45 @@ export interface UlazPlace {
   readonly dob: number | undefined
   readonly najnizaOsnovica: NajnizaOsnovica
   /**
+   * Річна сума `neoporezivi primici` — виплат, які роботодавець дає понад
+   * плаћу без податку й без внесків.
+   *
+   * Приходить числом, а не виводиться зі стель закону: закон називає стелю,
+   * а не зобов'язання, і підставити її означало б показати чужу щедрість як
+   * норму. Нуль — це «не домовлено», і саме він типовий.
+   *
+   * У жодну базу сума не входить. Вона додається до «на руки» й рівно на
+   * стільки ж до вартості для роботодавця — бо це гроші, які він таки
+   * витратив.
+   */
+  readonly neoporeziviPrimici: Money<'EUR'>
+  /**
+   * Чи це перше працевлаштування за договором на неозначений час
+   * (`čl. 7. t. 54.` ZoD).
+   *
+   * Не вік: вікове звільнення від внесків скасовано з 1 січня 2025 року. Це
+   * інша, чинна норма, і вона знімає з роботодавця ZO — тобто здешевлює
+   * плаћу фірмі на 16,5 %, не змінюючи «на руки» ані на цент.
+   */
+  readonly prvoZaposlenje: boolean
+  /**
+   * Чи людина живе в одиниці з I. skupine розвиненості або у Вуковарі
+   * (`čl. 46. st. 1.`).
+   *
+   * Вирішує не цей модуль: список одиниць друкує `Odluka` Влади, а не
+   * податковий закон, і зіставлення з довідником робить той, хто знає, яку
+   * саме одиницю обрала людина.
+   */
+  readonly umanjenjeZaPodrucje: boolean
+  /**
+   * Чи людина підпадає під `čl. 46. st. 3.` — громадянин Хорватії, який
+   * щонайменше два роки безперервно жив за кордоном і повернувся.
+   *
+   * Не додається до решти, а замінює їх: `st. 9.` прямо виключає обидва інші
+   * зменшення. Тому прапорець, а не ще один доданок.
+   */
+  readonly povratnik: boolean
+  /**
    * Чи роботодавцем є та сама людина — тобто чи це її власна фірма.
    *
    * Вирішує єдине, але важливе: чию кишеню порожнить ZO. У найманого
@@ -96,6 +135,20 @@ export interface OlaksicaZaMlade {
   readonly izvor: import('@hr-tax/data').LegalReference
 }
 
+/**
+ * Зменшення річного податку, яке рахується від **усього** податку з плаће, а
+ * не від частини за нижчою ставкою.
+ *
+ * Форма та сама, що в `OlaksicaZaMlade`, а поняття інше, і саме тому це
+ * окремий тип: сплутати «половина всього податку» з «половина податку за
+ * нижчою ставкою» легко, а різниця в грошах помітна вже на середній зарплаті.
+ */
+export interface UmanjenjeGodisnjegPoreza {
+  readonly udio: Decimal
+  readonly iznos: Money<'EUR'>
+  readonly izvor: import('@hr-tax/data').LegalReference
+}
+
 /** Розрахунок плаће за рік. */
 export interface IzracunPlace {
   readonly mjesecnaBrutoPlaca: Money<'EUR'>
@@ -111,6 +164,30 @@ export interface IzracunPlace {
   readonly porez: Porez
   /** `undefined`, коли вік не введено або людині вже понад тридцять. */
   readonly olaksicaZaMlade: OlaksicaZaMlade | undefined
+  /**
+   * `čl. 46. st. 1.` — половина річного податку мешканцеві одиниці з I. skupine
+   * розвиненості або Вуковара. `undefined`, коли підстави немає.
+   *
+   * Рахується з того, що лишилося **після** молодіжного зменшення: `st. 7.`
+   * ставить їх саме в цьому порядку, і зворотний дав би іншу суму.
+   */
+  readonly umanjenjeZaPodrucje: UmanjenjeGodisnjegPoreza | undefined
+  /**
+   * `čl. 46. st. 3.` — увесь річний податок із плаће поверненцеві з-за
+   * кордону. `undefined`, коли підстави немає.
+   *
+   * Коли воно є, обидва інші зменшення — `undefined`, і це не помилка
+   * розрахунку, а `st. 9.`: закон дає одне замість двох, а не три разом.
+   */
+  readonly umanjenjeZaPovratnika: UmanjenjeGodisnjegPoreza | undefined
+  /**
+   * Скільки податку повертається річним звітом — усі зменшення разом.
+   *
+   * Окремим полем, а не складанням на картці: доданків троє, взаємні
+   * виключення між ними задає закон, і скласти їх правильно може лише той,
+   * хто ці виключення застосував.
+   */
+  readonly ukupniPovrat: Money<'EUR'>
   /**
    * Скільки з плаће справді лишається людині за рік: брутто без утриманих
    * внесків, без податку і з поверненням пільги.
@@ -138,13 +215,14 @@ const doprinosiZa = (
   umanjenjePrvogStupa: Money<'EUR'>,
   { ruleset }: Podloga,
   vlastitiPoslodavac: boolean,
+  prvoZaposlenje: boolean,
 ): Doprinosi => {
   const godisnjaOsnovica = godisnje(mjesecnaOsnovica)
 
   const moPrviStup = doprinos({
     naziv: { hr: 'MO — I. stup', uk: 'пенсійне, генераційна солідарність' },
     stopa: ruleset.doprinosi.stopaMoPrviStup,
-    // Єдиний внесок, чия база менша за решту: `čl. 20.a` знижує саме її й
+    // Єдиний внесок, чия база менша за решту: `čl. 21.a` знижує саме її й
     // тільки її. Застосувати знижку до трьох внесків означало б занизити
     // платіж і не помітити цього.
     godisnjaOsnovica: bezMinusa(subtract(godisnjaOsnovica, godisnje(umanjenjePrvogStupa))),
@@ -159,7 +237,11 @@ const doprinosiZa = (
   const zo = doprinos({
     naziv: { hr: 'ZO', uk: 'медичне страхування' },
     stopa: ruleset.doprinosi.stopaZo,
-    godisnjaOsnovica,
+    // `čl. 20. st. 2.` ZoD: за того, хто вперше працевлаштовується, з бази
+    // нараховують **лише** внески «iz osnovice» — обидва стовпи MO. ZO не
+    // нараховують узагалі, тож тут нульова база, а не нульова ставка: ставка
+    // лишається законними 16,5 %, і застереження поруч каже, чому сума нульова.
+    godisnjaOsnovica: prvoZaposlenje ? zero('EUR') : godisnjaOsnovica,
     osobnaStednja: false,
     // Внесок «na osnovicu» (`čl. 81. t. 2.` ZoD): роботодавець платить його
     // понад плаћу. Чиї це гроші — залежить від того, хто роботодавець. У
@@ -184,7 +266,7 @@ const doprinosiZa = (
 }
 
 /**
- * `umanjenje osnovice` для MO I. stup — знижка бази, яку `čl. 20.a` дає
+ * `umanjenje osnovice` для MO I. stup — знижка бази, яку `čl. 21.a` дає
  * невисоким зарплатам.
  *
  * Поріг міряється по **фактичній** плаћі, а не по базі після законної
@@ -213,15 +295,23 @@ const umanjenjeZa = (
 
 /** Місячний `osobni odbitak`: основний розмір на суму коефіцієнтів. */
 const mjesecniOsobniOdbitak = (
-  { clanoviUzeObitelji, djeca }: UzdrzavaniClanovi,
+  { clanoviUzeObitelji, djeca, sInvaliditetom, sPotpunimInvaliditetom }: UzdrzavaniClanovi,
   pravila: PlacaPravila['osobniOdbitak'],
 ): Money<'EUR'> => {
   const zaPlatnikaIUzdrzavane = new Decimal(1).plus(
     pravila.koeficijentUzdrzavanogClana.value.times(clanoviUzeObitelji),
   )
-  const ukupniKoeficijent = pravila.koeficijentiDjece.value
+  const zaDjecu = pravila.koeficijentiDjece.value
     .slice(0, djeca)
     .reduce((zbroj, koeficijent) => zbroj.plus(koeficijent), zaPlatnikaIUzdrzavane)
+
+  // Обидва рядки множаться на кількість **людей**, а не додаються по разу:
+  // акт дає коефіцієнт «на платника, на кожного утриманця й на кожну
+  // утримувану дитину». Що одна людина не може стояти в обох рядках, стереже
+  // не ця функція, а поле форми: два незалежні лічильники осіб.
+  const ukupniKoeficijent = zaDjecu
+    .plus(pravila.koeficijentInvalidnosti.value.times(sInvaliditetom))
+    .plus(pravila.koeficijentPotpuneInvalidnosti.value.times(sPotpunimInvaliditetom))
 
   return scale(eur(pravila.osnovni.value), ukupniKoeficijent)
 }
@@ -301,6 +391,69 @@ const olaksicaZa = (
   }
 }
 
+/** Усі три зменшення річного податку разом із їхньою сумою. */
+interface Umanjenja {
+  readonly olaksicaZaMlade: OlaksicaZaMlade | undefined
+  readonly zaPodrucje: UmanjenjeGodisnjegPoreza | undefined
+  readonly zaPovratnika: UmanjenjeGodisnjegPoreza | undefined
+  readonly ukupno: Money<'EUR'>
+}
+
+/**
+ * Зменшення річного податку — усі, які дає `čl. 46.`, у порядку, який вимагає
+ * сама стаття.
+ *
+ * Порядок тут не стилістичний. `st. 9.` робить зменшення для поверненця
+ * заміною, а не додачею: коли воно є, двох інших немає взагалі. `st. 7.`
+ * вимагає порахувати молодіжне **перед** територіальним, тож половина
+ * береться вже від залишку, а не від початкового податку. Переставити ці два
+ * кроки — значить видати іншу суму, яка все одно виглядатиме правдоподібно.
+ */
+const umanjenjaZa = ({
+  dob,
+  poStopama,
+  godisnjiPorez,
+  umanjenjeZaPodrucje,
+  povratnik,
+  pravila,
+}: {
+  readonly dob: number | undefined
+  readonly poStopama: PorezPoStopama
+  readonly godisnjiPorez: Money<'EUR'>
+  readonly umanjenjeZaPodrucje: boolean
+  readonly povratnik: boolean
+  readonly pravila: PlacaPravila
+}): Umanjenja => {
+  const { zaPodrucje, zaPovratnika } = pravila.umanjenjaGodisnjegPoreza
+
+  if (povratnik) {
+    const iznos = scale(godisnjiPorez, zaPovratnika.value)
+    return {
+      olaksicaZaMlade: undefined,
+      zaPodrucje: undefined,
+      zaPovratnika: { udio: zaPovratnika.value, iznos, izvor: zaPovratnika.source },
+      ukupno: iznos,
+    }
+  }
+
+  const olaksicaZaMlade = olaksicaZa(dob, poStopama, pravila)
+  const nakonMladih = subtract(godisnjiPorez, olaksicaZaMlade?.iznos ?? zero('EUR'))
+  const podrucje = umanjenjeZaPodrucje
+    ? {
+        udio: zaPodrucje.value,
+        iznos: scale(nakonMladih, zaPodrucje.value),
+        izvor: zaPodrucje.source,
+      }
+    : undefined
+
+  return {
+    olaksicaZaMlade,
+    zaPodrucje: podrucje,
+    zaPovratnika: undefined,
+    ukupno: sum('EUR', [olaksicaZaMlade?.iznos ?? zero('EUR'), podrucje?.iznos ?? zero('EUR')]),
+  }
+}
+
 /**
  * Застереження, які закон додає до цього розрахунку.
  *
@@ -310,22 +463,48 @@ const olaksicaZa = (
 const napomeneZa = ({
   mjesecnaBrutoPlaca,
   mjesecnaOsnovicaDoprinosa,
-  olaksica,
+  umanjenja,
   najnizaOsnovica,
   umanjenjePrvogStupa,
+  neoporeziviPrimici,
+  ustedaNaZo,
   pravila,
 }: {
   readonly mjesecnaBrutoPlaca: Money<'EUR'>
   readonly mjesecnaOsnovicaDoprinosa: Money<'EUR'>
-  readonly olaksica: OlaksicaZaMlade | undefined
+  readonly umanjenja: Umanjenja
   readonly najnizaOsnovica: NajnizaOsnovica
   readonly umanjenjePrvogStupa: Money<'EUR'>
+  readonly neoporeziviPrimici: Money<'EUR'>
+  /** Скільки ZO не нараховано за `prvo zaposlenje`; `undefined` — норма не діє. */
+  readonly ustedaNaZo: Money<'EUR'> | undefined
   readonly pravila: PlacaPravila
 }): readonly NapomenaRezima[] => {
   // Про прочитання слайдера цей модуль не знає нічого: він отримав місячну
   // плаћу й нічого не припускав. Застереження про вісь додає той режим, який
   // справді прирівняв одне до одного.
-  const napomene: NapomenaRezima[] = [{ kod: 'neoporezivi-primici-nisu-uracunati' }]
+  //
+  // Порожнє поле неоподаткованих і введений нуль — це те саме: жодних таких
+  // виплат у розрахунку немає. Але мовчати про них не можна, бо їх стелі
+  // закон таки дає, тож застереження стоїть завжди — тільки різними словами.
+  const napomene: NapomenaRezima[] = neoporeziviPrimici.amount.isZero()
+    ? [{ kod: 'neoporezivi-primici-nisu-uracunati', stavke: pravila.neoporeziviPrimici.stavke }]
+    : [
+        {
+          kod: 'neoporezivi-primici-uracunati',
+          iznos: neoporeziviPrimici,
+          stavke: pravila.neoporeziviPrimici.stavke,
+        },
+      ]
+
+  if (ustedaNaZo !== undefined) {
+    napomene.push({
+      kod: 'oslobodenje-za-prvo-zaposlenje',
+      usteda: ustedaNaZo,
+      izvor: pravila.prvoZaposlenje.izvorOslobodenja,
+      izvorDefinicije: pravila.prvoZaposlenje.izvorDefinicije,
+    })
+  }
 
   const minimalna = eur(pravila.minimalnaPlaca.value)
   if (isGreaterThan(minimalna, mjesecnaBrutoPlaca)) {
@@ -353,11 +532,29 @@ const napomeneZa = ({
     })
   }
 
-  if (olaksica !== undefined) {
+  if (umanjenja.olaksicaZaMlade !== undefined) {
     napomene.push({
       kod: 'olaksica-za-mlade-kao-povrat',
-      iznos: olaksica.iznos,
-      izvor: olaksica.izvor,
+      iznos: umanjenja.olaksicaZaMlade.iznos,
+      izvor: umanjenja.olaksicaZaMlade.izvor,
+    })
+  }
+
+  if (umanjenja.zaPodrucje !== undefined) {
+    napomene.push({
+      kod: 'umanjenje-za-podrucje',
+      iznos: umanjenja.zaPodrucje.iznos,
+      izvor: umanjenja.zaPodrucje.izvor,
+    })
+  }
+
+  if (umanjenja.zaPovratnika !== undefined) {
+    napomene.push({
+      kod: 'umanjenje-za-povratnika',
+      iznos: umanjenja.zaPovratnika.iznos,
+      godina: pravila.umanjenjaGodisnjegPoreza.trajanjePovratnikaGodina,
+      izvor: umanjenja.zaPovratnika.izvor,
+      izvorIskljucenja: pravila.umanjenjaGodisnjegPoreza.izvorIskljucenja,
     })
   }
 
@@ -395,7 +592,21 @@ export const izracunajPlacu = (
     umanjenjePrvogStupa,
     podloga,
     ulaz.vlastitiPoslodavac,
+    ulaz.prvoZaposlenje,
   )
+
+  // Скільки саме ZO не нараховано — рахується як різниця з тим самим внеском
+  // без пільги, а не множенням ставки на базу вдруге: інакше два місця знали
+  // б формулу внеску, і розійшлися б вони тихо.
+  const ustedaNaZo = ulaz.prvoZaposlenje
+    ? doprinosiZa(
+        mjesecnaOsnovicaDoprinosa,
+        umanjenjePrvogStupa,
+        podloga,
+        ulaz.vlastitiPoslodavac,
+        false,
+      ).zo.godisnjiIznos
+    : undefined
 
   // Утримується з плаће лише MO обох стовпів — незалежно від того, чия це
   // фірма. `ukupnoGodisnjeNaTeretOsobe` для власної фірми включає ще й ZO,
@@ -414,7 +625,14 @@ export const izracunajPlacu = (
   })
 
   const godisnjiPorez = add(poStopama.poNizojStopi, poStopama.poVisojStopi)
-  const olaksicaZaMlade = olaksicaZa(ulaz.dob, poStopama, pravila)
+  const umanjenja = umanjenjaZa({
+    dob: ulaz.dob,
+    poStopama,
+    godisnjiPorez,
+    umanjenjeZaPodrucje: ulaz.umanjenjeZaPodrucje,
+    povratnik: ulaz.povratnik,
+    pravila,
+  })
 
   const porez: Porez = {
     naziv: {
@@ -432,10 +650,15 @@ export const izracunajPlacu = (
   }
 
   const godisnjaBrutoPlaca = godisnje(ulaz.mjesecnaBrutoPlaca)
-  const trosakZaPoslodavca = add(
+  // Неоподатковані виплати входять сюди тією самою сумою, якою входять у «на
+  // руки»: податку з них немає, але гроші роботодавець таки віддав. Порахувати
+  // їх лише в «на руки» означало б показати найманого дешевшим за себе
+  // справжнього — і саме на цьому числі його порівнюють із обртом.
+  const trosakZaPoslodavca = sum('EUR', [
     godisnjaBrutoPlaca,
     subtract(doprinosi.ukupnoGodisnje, godisnjiDoprinosiIzPlace),
-  )
+    ulaz.neoporeziviPrimici,
+  ])
 
   return {
     mjesecnaBrutoPlaca: ulaz.mjesecnaBrutoPlaca,
@@ -443,21 +666,31 @@ export const izracunajPlacu = (
     mjesecnaOsnovicaDoprinosa,
     doprinosi,
     porez,
-    olaksicaZaMlade,
+    olaksicaZaMlade: umanjenja.olaksicaZaMlade,
+    umanjenjeZaPodrucje: umanjenja.zaPodrucje,
+    umanjenjeZaPovratnika: umanjenja.zaPovratnika,
+    ukupniPovrat: umanjenja.ukupno,
     // Повернення пільги входить у річний результат, хоч і надійде наступного
     // року: рік рахується цілком, а не за платіжками. Що гроші прийдуть
     // пізніше, каже окреме застереження.
-    godisnjiNeto: add(
+    //
+    // `neoporezivi primici` додаються тут востаннє й лише тут: у бази вони не
+    // входили, податку з них не було, внесків теж — тому вони не «зменшують
+    // навантаження», а просто приходять.
+    godisnjiNeto: sum('EUR', [
       subtract(subtract(godisnjaBrutoPlaca, godisnjiDoprinosiIzPlace), godisnjiPorez),
-      olaksicaZaMlade?.iznos ?? zero('EUR'),
-    ),
+      umanjenja.ukupno,
+      ulaz.neoporeziviPrimici,
+    ]),
     trosakZaPoslodavca,
     napomene: napomeneZa({
       mjesecnaBrutoPlaca: ulaz.mjesecnaBrutoPlaca,
       mjesecnaOsnovicaDoprinosa,
-      olaksica: olaksicaZaMlade,
+      umanjenja,
       najnizaOsnovica: ulaz.najnizaOsnovica,
       umanjenjePrvogStupa,
+      neoporeziviPrimici: ulaz.neoporeziviPrimici,
+      ustedaNaZo,
       pravila,
     }),
   }

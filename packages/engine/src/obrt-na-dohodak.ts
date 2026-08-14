@@ -81,6 +81,40 @@ export interface UzdrzavaniClanovi {
   readonly clanoviUzeObitelji: number
   /** `uzdržavana djeca` (утримувані діти / dependent children). */
   readonly djeca: number
+  /**
+   * Скільки людей у розрахунку мають установлену `invalidnost` чи
+   * `tjelesno oštećenje` (`čl. 14. st. 3. r. br. 12.`) — рахуючи й самого
+   * платника.
+   *
+   * Кількість осіб, а не прапорець: акт дає коефіцієнт кожному окремо, тож
+   * сім'я з двома дітьми з інвалідністю має вдвічі більший відрахунок за цим
+   * рядком, ніж сім'я з однією.
+   */
+  readonly sInvaliditetom: number
+  /**
+   * Скільки людей мають 100 % інвалідність по одній підставі або право на
+   * `doplatak za pomoć i njegu`, `osobna invalidnina` чи `inkluzivni dodatak`
+   * (`r. br. 13.`).
+   *
+   * Лічильник окремий, бо акт виключає ці два рядки один одним — але для
+   * тієї самої людини, а не для всієї сім'ї. Тому одна людина має стояти
+   * рівно в одному з лічильників, і розводить їх форма, а не рушій.
+   */
+  readonly sPotpunimInvaliditetom: number
+}
+
+/**
+ * Ніхто нікого не утримує й інвалідності ні в кого не встановлено.
+ *
+ * Одна константа на всі місця, де вхід не заданий: чотири нулі, набрані
+ * заново в кожному режимі, — це чотири місця, де можна забути дописати п'ятий
+ * лічильник, коли закон додасть ще один рядок до `čl. 14.`
+ */
+export const BEZ_UZDRZAVANIH: UzdrzavaniClanovi = {
+  clanoviUzeObitelji: 0,
+  djeca: 0,
+  sInvaliditetom: 0,
+  sPotpunimInvaliditetom: 0,
 }
 
 /** Вхід форми для цього режиму. */

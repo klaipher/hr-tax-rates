@@ -94,6 +94,25 @@ export const hr: Dictionary = {
     dobPrijevod: 'prazno — olakšica za mlade se ne računa',
     placaVlasnika: 'Vlastita mjesečna plaća u vlastitom d.o.o.-u, €',
     placaVlasnikaPrijevod: 'prazno — uzima se zakonska najniža osnovica',
+    sInvaliditetom: 'Koliko osoba s invaliditetom',
+    sInvaliditetomPrijevod:
+      'porezni obveznik, uzdržavani članovi i djeca zajedno — koeficijent 0,3 pripada svakome',
+    sPotpunimInvaliditetom: 'Od toga sa 100 % invalidnosti ili pravom na doplatak',
+    sPotpunimInvaliditetomPrijevod:
+      'koeficijent 1,0 umjesto 0,3; za istu osobu jedno isključuje drugo',
+    neoporeziviPrimici: 'Neoporezivi primici, € godišnje',
+    neoporeziviPrimiciPrijevod:
+      'prazno — nije dogovoreno. Granice za 2026.: nagrada za radne rezultate 1.200, prigodne ' +
+      'nagrade 700, prehrana 1.200 paušalno ili 1.800 uz dokumentaciju, usluge odmora 400, ' +
+      'dopunsko zdravstveno 500, rad od kuće 70 mjesečno, dar djetetu 140, prijevoz prema izdacima',
+    prvoZaposlenje: 'Prvo zaposlenje na neodređeno vrijeme',
+    prvoZaposlenjePrijevod:
+      'do godine dana poslodavac ne plaća ZO — plaća ga stoji 16,5 % manje, a neto se ne mijenja. ' +
+      'Dobno oslobođenje »do 30 godina« više ne postoji: ukinuto je od 2025.',
+    povratnik: 'Povratak iz inozemstva (čl. 46. st. 3.)',
+    povratnikPrijevod:
+      'državljanin RH koji je najmanje dvije godine neprekidno boravio u inozemstvu: pet godina ' +
+      'vraća se cijeli porez iz plaće. Zamjenjuje oba druga umanjenja, ne zbraja se s njima',
     pocetak: 'Mjesec otvaranja obrta',
     pocetakPrijevod: 'u godini otvaranja granice razreda razmjerno se umanjuju',
     punaGodina: 'puna godina',
@@ -254,6 +273,21 @@ export const hr: Dictionary = {
         `${iznos} tog poreza vratit će vam se kao olakšica za mlade — ali ne u platnoj listi. ` +
         'Tijekom godine predujam se ustegne u cijelosti, a olakšicu Porezna uprava utvrđuje ' +
         'godišnjim obračunom i vraća tek iduće kalendarske godine.',
+      'neoporezivi-primici-uracunati': (iznos: string) =>
+        `Uračunato je ${iznos} godišnje neoporezivih primitaka: ne ulaze ni u osnovicu doprinosa ` +
+        'ni u poreznu osnovicu, pa stižu cijeli — i za točno toliko poskupljuju poslodavcu.',
+      'oslobodenje-za-prvo-zaposlenje': (usteda: string) =>
+        `Za prvo zaposlenje na neodređeno vrijeme poslodavac do godine dana ne plaća ZO — ` +
+        `${usteda} godišnje. Na neto to ne utječe ni za cent: taj novac ionako nikad nije bio vaš. ` +
+        'Dobnog oslobođenja »do 30 godina« više nema — ukinuto je od 2025.',
+      'umanjenje-za-podrucje': (iznos: string) =>
+        `Polovica godišnjeg poreza — ${iznos} — vraća se prema prebivalištu: vaša je jedinica u ` +
+        'I. skupini po razvijenosti ili je riječ o Vukovaru. Stiže godišnjim obračunom, a ne ' +
+        'platnom listom, i računa se nakon olakšice za mlade, a ne zajedno s njom.',
+      'umanjenje-za-povratnika': (iznos: string, godina: string) =>
+        `Cijeli porez iz plaće — ${iznos} — vraća se kao povratniku iz inozemstva, i to ${godina} ` +
+        'godina zaredom. To je zamjena, a ne dodatak: zakon time izričito isključuje i olakšicu ' +
+        'za mlade i umanjenje prema prebivalištu.',
     },
   },
 

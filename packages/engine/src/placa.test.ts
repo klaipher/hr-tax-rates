@@ -1,6 +1,7 @@
 import { placa2026, pretpostavke2026, ruleset2026 } from '@hr-tax/data'
 import { describe, expect, it } from 'vitest'
-import { eur, type Money, toCentString } from './money.ts'
+import { eur, type Money, subtract, toCentString } from './money.ts'
+import { BEZ_UZDRZAVANIH } from './obrt-na-dohodak.ts'
 import { izracunajPlacu, type UlazPlace } from './placa.ts'
 import type { Podloga } from './types.ts'
 
@@ -25,15 +26,23 @@ const najnizaOsnovica = {
 const ulaz = (dopune: Partial<UlazPlace> = {}): UlazPlace => ({
   mjesecnaBrutoPlaca: eur(2000),
   stope: STOPE,
-  uzdrzavani: { clanoviUzeObitelji: 0, djeca: 0 },
+  uzdrzavani: BEZ_UZDRZAVANIH,
   dob: undefined,
   najnizaOsnovica,
   vlastitiPoslodavac: false,
+  neoporeziviPrimici: eur(0),
+  prvoZaposlenje: false,
+  umanjenjeZaPodrucje: false,
+  povratnik: false,
   ...dopune,
 })
 
 const izracunaj = (dopune: Partial<UlazPlace> = {}) =>
   izracunajPlacu(ulaz(dopune), podloga, placa2026)
+
+/** Коди застережень цього розрахунку — без сум, бо тут перевіряється склад. */
+const kodovi = (dopune: Partial<UlazPlace> = {}) =>
+  izracunaj(dopune).napomene.map((napomena) => napomena.kod)
 
 describe('plaća', () => {
   describe('дві сторони внеску', () => {
@@ -116,7 +125,9 @@ describe('plaća', () => {
 
     it('утриманці збільшують osobni odbitak і зменшують базу', () => {
       // Подружжя (0,5) і одна дитина (0,5) → 600 × 2 = 1 200 на місяць.
-      const { porez } = izracunaj({ uzdrzavani: { clanoviUzeObitelji: 1, djeca: 1 } })
+      const { porez } = izracunaj({
+        uzdrzavani: { ...BEZ_UZDRZAVANIH, clanoviUzeObitelji: 1, djeca: 1 },
+      })
 
       expect(toCentString(porez.poreznaOsnovica)).toBe('4800.00')
       expect(toCentString(porez.godisnjiIznos)).toBe('960.00')
@@ -215,7 +226,7 @@ describe('plaća', () => {
     })
   })
 
-  describe('umanjenje osnovice за čl. 20.a', () => {
+  describe('umanjenje osnovice за čl. 21.a', () => {
     /** Сама знижка, а не її наслідок: підлога бази інакше плутається під ногами. */
     const umanjenje = (mjesecnaBrutoPlaca: Money<'EUR'>): string => {
       const napomena = izracunaj({ mjesecnaBrutoPlaca }).napomene.find(
@@ -284,9 +295,6 @@ describe('plaća', () => {
   })
 
   describe('застереження', () => {
-    const kodovi = (dopune: Partial<UlazPlace> = {}) =>
-      izracunaj(dopune).napomene.map((napomena) => napomena.kod)
-
     it('завжди каже, що неоподатковувані виплати не враховані', () => {
       expect(kodovi()).toContain('neoporezivi-primici-nisu-uracunati')
     })
@@ -312,6 +320,174 @@ describe('plaća', () => {
     it('називає пільгу застереженням, бо гроші надійдуть наступного року', () => {
       expect(kodovi({ dob: 25 })).toContain('olaksica-za-mlade-kao-povrat')
       expect(kodovi()).not.toContain('olaksica-za-mlade-kao-povrat')
+    })
+  })
+
+  describe('osobni odbitak за інвалідністю', () => {
+    it('коефіцієнт 0,3 додається до основного відрахунку', () => {
+      // Відрахунок 600 × (1 + 0,3) = 780. База 2 000 − 400 внесків − 780 = 820,
+      // податок 164 на місяць проти 200 без інвалідності.
+      const { porez } = izracunaj({ uzdrzavani: { ...BEZ_UZDRZAVANIH, sInvaliditetom: 1 } })
+
+      expect(toCentString(porez.godisnjiIznos)).toBe('1968.00')
+    })
+
+    it('100 % інвалідність дає коефіцієнт 1,0, а не 0,3', () => {
+      // 600 × (1 + 1,0) = 1 200 відрахунку; база 400, податок 80 на місяць.
+      const { porez } = izracunaj({ uzdrzavani: { ...BEZ_UZDRZAVANIH, sPotpunimInvaliditetom: 1 } })
+
+      expect(toCentString(porez.godisnjiIznos)).toBe('960.00')
+    })
+
+    it('рахує кожну особу окремо, а не факт наявності', () => {
+      // Двоє дітей з інвалідністю — це 0,6, а не 0,3: акт дає коефіцієнт
+      // «на кожну утримувану дитину», і схлопнути їх в один означало б
+      // забрати відрахунок у другої.
+      // 4 000 брутто, а не типові 2 000: із двома дітьми відрахунок і так
+      // майже з'їдає базу, і на 2 000 другий коефіцієнт упирався б у нуль —
+      // тест міряв би обмеження бази, а не другий коефіцієнт.
+      const jedno = izracunaj({
+        mjesecnaBrutoPlaca: eur(4000),
+        uzdrzavani: { ...BEZ_UZDRZAVANIH, djeca: 2, sInvaliditetom: 1 },
+      })
+      const oboje = izracunaj({
+        mjesecnaBrutoPlaca: eur(4000),
+        uzdrzavani: { ...BEZ_UZDRZAVANIH, djeca: 2, sInvaliditetom: 2 },
+      })
+
+      // 0,3 × 600 × 12 × 20 % = 432 різниці податку за другу особу.
+      expect(toCentString(subtract(jedno.porez.godisnjiIznos, oboje.porez.godisnjiIznos))).toBe(
+        '432.00',
+      )
+    })
+  })
+
+  describe('prvo zaposlenje', () => {
+    it('знімає ZO цілком, лишаючи обидва стовпи MO', () => {
+      const { doprinosi } = izracunaj({ prvoZaposlenje: true })
+
+      expect(toCentString(doprinosi.zo.godisnjiIznos)).toBe('0.00')
+      // MO обох стовпів — 20 % від 24 000 — лишаються недоторканими.
+      expect(toCentString(doprinosi.ukupnoGodisnje)).toBe('4800.00')
+    })
+
+    it('здешевлює плаћу роботодавцю рівно на ZO', () => {
+      // 24 000 × 16,5 % = 3 960 — саме стільки роботодавець не платить.
+      const bez = izracunaj()
+      const zPravom = izracunaj({ prvoZaposlenje: true })
+
+      expect(toCentString(subtract(bez.trosakZaPoslodavca, zPravom.trosakZaPoslodavca))).toBe(
+        '3960.00',
+      )
+    })
+
+    it('на «на руки» не впливає ані на цент', () => {
+      // ZO ніколи не був грошима працівника, тож звільнення від нього не може
+      // додати йому нічого. Якби це число рушило — знак, що ZO десь відняли
+      // від плаће, якої він не торкався.
+      expect(toCentString(izracunaj({ prvoZaposlenje: true }).godisnjiNeto)).toBe(
+        toCentString(izracunaj().godisnjiNeto),
+      )
+    })
+
+    it('називає застереженням суму, якої роботодавець не заплатив', () => {
+      const napomena = izracunaj({ prvoZaposlenje: true }).napomene.find(
+        (n) => n.kod === 'oslobodenje-za-prvo-zaposlenje',
+      )
+
+      expect(napomena === undefined ? 'немає' : toCentString(napomena.usteda)).toBe('3960.00')
+      expect(kodovi()).not.toContain('oslobodenje-za-prvo-zaposlenje')
+    })
+  })
+
+  describe('umanjenje za područje — čl. 46. st. 1.', () => {
+    it('знімає половину річного податку мешканцеві I. skupine', () => {
+      const { umanjenjeZaPodrucje, godisnjiNeto } = izracunaj({ umanjenjeZaPodrucje: true })
+
+      expect(toCentString(umanjenjeZaPodrucje?.iznos ?? eur(0))).toBe('1200.00')
+      // 24 000 − 4 800 внесків − 2 400 податку + 1 200 повернення.
+      expect(toCentString(godisnjiNeto)).toBe('18000.00')
+    })
+
+    it('рахується від усього податку, а не лише від частини за нижчою ставкою', () => {
+      // 8 000 брутто: 12 000 за нижчою + 2 880 за вищою = 14 880 податку.
+      // Половина від усього — 7 440, а не 6 000.
+      const { umanjenjeZaPodrucje } = izracunaj({
+        mjesecnaBrutoPlaca: eur(8000),
+        umanjenjeZaPodrucje: true,
+      })
+
+      expect(toCentString(umanjenjeZaPodrucje?.iznos ?? eur(0))).toBe('7440.00')
+    })
+
+    it('застосовується після молодіжного, як вимагає st. 7.', () => {
+      // 8 000 брутто, 25 років: молодіжне забирає 12 000 за нижчою ставкою,
+      // і половина береться вже від залишку — 0,5 × 2 880 = 1 440.
+      // Зворотний порядок дав би 7 440 + 3 720 і завищив повернення вдвічі.
+      const { olaksicaZaMlade, umanjenjeZaPodrucje, ukupniPovrat } = izracunaj({
+        mjesecnaBrutoPlaca: eur(8000),
+        dob: 25,
+        umanjenjeZaPodrucje: true,
+      })
+
+      expect(toCentString(olaksicaZaMlade?.iznos ?? eur(0))).toBe('12000.00')
+      expect(toCentString(umanjenjeZaPodrucje?.iznos ?? eur(0))).toBe('1440.00')
+      expect(toCentString(ukupniPovrat)).toBe('13440.00')
+    })
+  })
+
+  describe('umanjenje za povratnika — čl. 46. st. 3.', () => {
+    it('повертає весь податок із плаће, а не частину за нижчою ставкою', () => {
+      const { umanjenjeZaPovratnika, ukupniPovrat } = izracunaj({
+        mjesecnaBrutoPlaca: eur(8000),
+        povratnik: true,
+      })
+
+      expect(toCentString(umanjenjeZaPovratnika?.iznos ?? eur(0))).toBe('14880.00')
+      expect(toCentString(ukupniPovrat)).toBe('14880.00')
+    })
+
+    it('виключає обидва інші зменшення, а не додається до них', () => {
+      // `st. 9.` каже прямо: це зменшення виключає st. 1. і st. 2. Тому
+      // навіть двадцятип'ятирічний мешканець Вуковара отримує одне, а не три.
+      const izracun = izracunaj({ povratnik: true, dob: 25, umanjenjeZaPodrucje: true })
+
+      expect(izracun.olaksicaZaMlade).toBeUndefined()
+      expect(izracun.umanjenjeZaPodrucje).toBeUndefined()
+      expect(toCentString(izracun.ukupniPovrat)).toBe('2400.00')
+    })
+  })
+
+  describe('neoporezivi primici', () => {
+    it('додаються і в «на руки», і у вартість для роботодавця — однаково', () => {
+      const bez = izracunaj()
+      const z = izracunaj({ neoporeziviPrimici: eur(1200) })
+
+      expect(toCentString(subtract(z.godisnjiNeto, bez.godisnjiNeto))).toBe('1200.00')
+      expect(toCentString(subtract(z.trosakZaPoslodavca, bez.trosakZaPoslodavca))).toBe('1200.00')
+    })
+
+    it('у жодну базу не входять: ні в податок, ні у внески', () => {
+      const z = izracunaj({ neoporeziviPrimici: eur(1200) })
+      const bez = izracunaj()
+
+      expect(toCentString(z.porez.godisnjiIznos)).toBe(toCentString(bez.porez.godisnjiIznos))
+      expect(toCentString(z.doprinosi.ukupnoGodisnje)).toBe(
+        toCentString(bez.doprinosi.ukupnoGodisnje),
+      )
+      expect(toCentString(z.mjesecnaOsnovicaDoprinosa)).toBe(
+        toCentString(bez.mjesecnaOsnovicaDoprinosa),
+      )
+    })
+
+    it('нуль і введена сума кажуть різне, але кажуть обидва', () => {
+      // Мовчати про стелі не можна: закон їх таки дає, і людина, яка бачить
+      // нуль, має знати, скільки могла б просити.
+      expect(kodovi()).toContain('neoporezivi-primici-nisu-uracunati')
+      expect(kodovi({ neoporeziviPrimici: eur(1200) })).toContain('neoporezivi-primici-uracunati')
+      expect(kodovi({ neoporeziviPrimici: eur(1200) })).not.toContain(
+        'neoporezivi-primici-nisu-uracunati',
+      )
     })
   })
 })

@@ -1,4 +1,5 @@
 import {
+  imaUmanjenjeZaPodrucje,
   jedinicaBySifra,
   KOMORSKI_DOPRINOS_PRIJEDLOG,
   prosjecnaPlacaZa,
@@ -149,6 +150,13 @@ export const App = () => {
       uzdrzavani: forma.uzdrzavani,
       noviObrt: forma.noviObrt,
       uzRadniOdnos: forma.uzRadniOdnos,
+      prvoZaposlenje: forma.prvoZaposlenje,
+      povratnik: forma.povratnik,
+      // Право на `umanjenje` з `čl. 46. st. 1.` вирішує не форма й не рушій:
+      // список одиниць друкує `Odluka` Влади. Тут лише запит до довідника про
+      // ту саму одиницю, з якої вже взято ставки.
+      umanjenjeZaPodrucje: jedinica !== undefined && imaUmanjenjeZaPodrucje(jedinica.ime),
+      neoporeziviPrimici: eur(forma.neoporeziviPrimici ?? 0),
       ...(forma.dob === undefined ? {} : { dob: forma.dob }),
       ...(forma.mjesecnaPlacaVlasnika === undefined
         ? {}

@@ -6,6 +6,7 @@
  */
 export * from './cities/directory.ts'
 export * from './cities/granice.ts'
+export * from './cities/razvijenost.ts'
 export * from './cities/types.ts'
 export * from './countries/home-country.ts'
 export * from './countries/registry.ts'

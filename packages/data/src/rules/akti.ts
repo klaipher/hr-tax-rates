@@ -14,6 +14,22 @@ export const PRAVILNIK_O_PAUSALNOM_OPOREZIVANJU = {
 } as const
 
 /**
+ * Підзаконний акт, що друкує таблицю `neoporezivi primici`.
+ *
+ * Сам закон стель не називає: `čl. 21. st. 1. t. 1. podt. b)` лише каже, що
+ * виплати понад приписані суми стають плаћом, а самі суми віддає міністрові.
+ * Тому кожне з цих чисел цитує правилник, а не закон.
+ */
+export const PRAVILNIK_O_POREZU_NA_DOHODAK = {
+  jurisdiction: 'HR',
+  act: 'Pravilnik o porezu na dohodak',
+  gazette:
+    'NN 10/17, 128/17, 106/18, 1/19, 80/19, 1/20, 74/20, 1/21, 102/22, 112/22, 156/22, 1/24, 16/25',
+  url: 'https://www.zakon.hr/c/podzakonski-propis/60043/pravilnik-o-porezu-na-dohodak-%E2%80%93-procisceni-tekst',
+  status: 'in-force',
+} as const
+
+/**
  * Поріг паушалу — це поріг обов'язкового входу в систему `PDV`. Сам закон про
  * `porez na dohodak` числа не називає, а посилається на цей акт.
  */

@@ -278,7 +278,7 @@ export type NapomenaRezima =
     }
   | {
       /**
-       * `čl. 20.a` знизив базу для MO I. stup — і тільки для нього.
+       * `čl. 21.a` знизив базу для MO I. stup — і тільки для нього.
        *
        * Застереження потрібне, бо саме тут ламається рівність «база × ставка
        * = сума» в рядку картки: ставка лишається законними 15%, а сума
@@ -295,6 +295,66 @@ export type NapomenaRezima =
        * означало б показати чужу щедрість як норму.
        */
       readonly kod: 'neoporezivi-primici-nisu-uracunati'
+      /**
+       * Стелі, які закон таки дає, — щоб «не враховано» читалося як «ось
+       * скільки можна просити», а не як «цього не буває».
+       */
+      readonly stavke: import('@hr-tax/data').Sourced<
+        readonly import('@hr-tax/data').NeoporeziviPrimitak[]
+      >
+    }
+  | {
+      /**
+       * `neoporezivi primici` враховані введеною сумою. Ні в базу внесків, ні
+       * в базу податку вони не входили — тільки в «на руки» й у вартість для
+       * роботодавця, і рівно однаково в обидва.
+       */
+      readonly kod: 'neoporezivi-primici-uracunati'
+      readonly iznos: Money<'EUR'>
+      readonly stavke: import('@hr-tax/data').Sourced<
+        readonly import('@hr-tax/data').NeoporeziviPrimitak[]
+      >
+    }
+  | {
+      /**
+       * За `prvo zaposlenje` роботодавець не платить ZO — до одного року.
+       *
+       * На «на руки» це не впливає ані на цент: ZO ніколи не був грошима
+       * працівника. Впливає воно на те, скільки плаћа коштує фірмі, — тобто
+       * рівно на число, з яким порівнюють обрт.
+       */
+      readonly kod: 'oslobodenje-za-prvo-zaposlenje'
+      readonly usteda: Money<'EUR'>
+      readonly izvor: LegalReference
+      /** Хто саме вважається таким, що вперше працевлаштовується. */
+      readonly izvorDefinicije: LegalReference
+    }
+  | {
+      /**
+       * Половина річного податку, яку `čl. 46. st. 1.` знімає мешканцеві
+       * одиниці з I. skupine розвиненості або Вуковара.
+       *
+       * Приходить тим самим шляхом, що й молодіжна пільга: річним звітом
+       * наступного року, а не меншою платіжкою.
+       */
+      readonly kod: 'umanjenje-za-podrucje'
+      readonly iznos: Money<'EUR'>
+      readonly izvor: LegalReference
+    }
+  | {
+      /**
+       * Увесь річний податок із плаће, який `čl. 46. st. 3.` знімає
+       * поверненцеві з-за кордону на п'ять років.
+       *
+       * `izvorIskljucenja` тут не для повноти: `st. 9.` робить це зменшення
+       * заміною двох інших, і людина, яка бачить у картці одне замість трьох,
+       * має бачити й чому.
+       */
+      readonly kod: 'umanjenje-za-povratnika'
+      readonly iznos: Money<'EUR'>
+      readonly godina: import('@hr-tax/data').Sourced<number>
+      readonly izvor: LegalReference
+      readonly izvorIskljucenja: LegalReference
     }
 
 /**

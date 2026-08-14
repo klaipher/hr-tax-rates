@@ -70,6 +70,18 @@ export interface StanjeForme {
    */
   readonly dob: number | undefined
   /**
+   * Річна сума `neoporezivi primici`, про яку домовлено з роботодавцем.
+   * `undefined` — не домовлено, і саме це типово.
+   *
+   * Порожньо, а не нуль: закон дає стелі, а не обіцянки, і підставити стелю
+   * означало б показати чужу щедрість як норму.
+   */
+  readonly neoporeziviPrimici: number | undefined
+  /** Чи це перше працевлаштування за договором на неозначений час. */
+  readonly prvoZaposlenje: boolean
+  /** Чи людина повернулася з-за кордону за `čl. 46. st. 3.` */
+  readonly povratnik: boolean
+  /**
    * Місячна брутто-плаћа, яку власник d.o.o. призначив собі сам.
    * `undefined` — береться законна підлога.
    */
@@ -104,8 +116,16 @@ export const POCETNO_STANJE: StanjeForme = {
   uzRadniOdnos: false,
   mjesecPocetka: undefined,
   noviObrt: false,
-  uzdrzavani: { clanoviUzeObitelji: 0, djeca: 0 },
+  uzdrzavani: {
+    clanoviUzeObitelji: 0,
+    djeca: 0,
+    sInvaliditetom: 0,
+    sPotpunimInvaliditetom: 0,
+  },
   dob: undefined,
+  neoporeziviPrimici: undefined,
+  prvoZaposlenje: false,
+  povratnik: false,
   mjesecnaPlacaVlasnika: undefined,
   nkd: '',
   // Обов'язок за `čl. 4. st. 1.` виникає на території місцевої `turistička
@@ -390,6 +410,24 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
           promijeni({ uzdrzavani: { ...stanje.uzdrzavani, djeca } })
         },
       )}
+      {brojOsoba(
+        'invalidnost',
+        t.unos.sInvaliditetom,
+        t.unos.sInvaliditetomPrijevod,
+        stanje.uzdrzavani.sInvaliditetom,
+        (sInvaliditetom) => {
+          promijeni({ uzdrzavani: { ...stanje.uzdrzavani, sInvaliditetom } })
+        },
+      )}
+      {brojOsoba(
+        'potpuna-invalidnost',
+        t.unos.sPotpunimInvaliditetom,
+        t.unos.sPotpunimInvaliditetomPrijevod,
+        stanje.uzdrzavani.sPotpunimInvaliditetom,
+        (sPotpunimInvaliditetom) => {
+          promijeni({ uzdrzavani: { ...stanje.uzdrzavani, sPotpunimInvaliditetom } })
+        },
+      )}
 
       <h2 className="forma__podnaslov">{t.unos.okolnostiNaslov}</h2>
       <p className="forma__prijevod">{t.unos.okolnostiPrijevod}</p>
@@ -564,6 +602,37 @@ export const Forma = ({ stanje, onPromjena }: Props) => {
       {neobvezniBroj('dob', t.unos.dob, t.unos.dobPrijevod, stanje.dob, (dob) => {
         promijeni({ dob })
       })}
+
+      {neobvezniBroj(
+        'neoporezivi-primici',
+        t.unos.neoporeziviPrimici,
+        t.unos.neoporeziviPrimiciPrijevod,
+        stanje.neoporeziviPrimici,
+        (neoporeziviPrimici) => {
+          promijeni({ neoporeziviPrimici })
+        },
+        100,
+      )}
+
+      {potvrda(
+        'prvo-zaposlenje',
+        t.unos.prvoZaposlenje,
+        stanje.prvoZaposlenje,
+        (prvoZaposlenje) => {
+          promijeni({ prvoZaposlenje })
+        },
+        t.unos.prvoZaposlenjePrijevod,
+      )}
+
+      {potvrda(
+        'povratnik',
+        t.unos.povratnik,
+        stanje.povratnik,
+        (povratnik) => {
+          promijeni({ povratnik })
+        },
+        t.unos.povratnikPrijevod,
+      )}
 
       {neobvezniBroj(
         'placa-vlasnika',

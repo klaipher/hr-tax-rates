@@ -97,7 +97,13 @@ const OKOLNOSTI: readonly Partial<UnosUsporedbe>[] = [
   {},
   { godisnjiIzdaci: IZDACI, stope: { niza: 2300, visa: 3300 } },
   { noviObrt: true },
-  { uzdrzavani: { clanoviUzeObitelji: 1, djeca: 10 } },
+  { prvoZaposlenje: true },
+  { povratnik: true },
+  { umanjenjeZaPodrucje: true },
+  { neoporeziviPrimici: eur(1200) },
+  {
+    uzdrzavani: { clanoviUzeObitelji: 1, djeca: 10, sInvaliditetom: 1, sPotpunimInvaliditetom: 1 },
+  },
   ...nkdDirektorij.map(
     (stavka): Partial<UnosUsporedbe> => ({
       djelatnost: {

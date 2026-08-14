@@ -94,6 +94,26 @@ export const en: Dictionary = {
     dobPrijevod: 'empty — the young-worker relief is not applied',
     placaVlasnika: 'Your own monthly salary in your own d.o.o., €',
     placaVlasnikaPrijevod: 'empty — the statutory floor is used',
+    sInvaliditetom: 'People with a disability',
+    sInvaliditetomPrijevod:
+      'taxpayer, dependants and children together — the 0.3 coefficient applies to each one',
+    sPotpunimInvaliditetom: 'Of those, with 100 % disability or a care allowance',
+    sPotpunimInvaliditetomPrijevod:
+      'coefficient 1.0 instead of 0.3; for the same person one excludes the other',
+    neoporeziviPrimici: 'Non-taxable payments, € per year',
+    neoporeziviPrimiciPrijevod:
+      'empty — nothing agreed. 2026 caps: performance award 1,200, occasional awards 700, meals ' +
+      '1,200 flat or 1,800 documented, holiday services 400, supplementary health cover 500, ' +
+      'remote work 70 monthly, gift to a child 140, commuting at actual cost',
+    prvoZaposlenje: 'First-ever permanent employment',
+    prvoZaposlenjePrijevod:
+      'for up to one year the employer pays no health contribution — the salary costs the firm ' +
+      '16.5 % less while take-home stays the same. The age-based »under 30« exemption is gone: ' +
+      'it was abolished in 2025',
+    povratnik: 'Returning from abroad (čl. 46. st. 3.)',
+    povratnikPrijevod:
+      'a Croatian citizen who lived abroad continuously for at least two years: for five years ' +
+      'the whole salary tax comes back. It replaces the other two reductions rather than adding to them',
     pocetak: 'Month the obrt opened',
     pocetakPrijevod: 'in the opening year the razred boundaries scale proportionally',
     punaGodina: 'full year',
@@ -258,6 +278,21 @@ export const en: Dictionary = {
         `${iznos} of this tax comes back to you as the young-worker relief — but not in your ` +
         'payslip. The advance is withheld in full during the year, and the tax authority grants ' +
         'the relief in the annual assessment, paying it out the following calendar year.',
+      'neoporezivi-primici-uracunati': (iznos: string) =>
+        `${iznos} a year of non-taxable payments is included: they enter neither the contribution ` +
+        'base nor the tax base, so they arrive whole — and cost the employer exactly as much.',
+      'oslobodenje-za-prvo-zaposlenje': (usteda: string) =>
+        `For a first-ever permanent contract the employer pays no health contribution for up to ` +
+        `a year — ${usteda} annually. Take-home does not move by a cent: that money was never ` +
+        'yours. The age-based »under 30« exemption no longer exists — it was abolished in 2025.',
+      'umanjenje-za-podrucje': (iznos: string) =>
+        `Half the annual tax — ${iznos} — comes back because of where you live: your unit is in ` +
+        'development group I, or it is Vukovar. It arrives with the annual assessment rather than ' +
+        'the payslip, and it is computed after the young-worker relief, not alongside it.',
+      'umanjenje-za-povratnika': (iznos: string, godina: string) =>
+        `The whole salary tax — ${iznos} — comes back as a returnee relief, for ${godina} years ` +
+        'running. It is a replacement, not an addition: the law explicitly rules out both the ' +
+        'young-worker relief and the residence-based reduction.',
     },
   },
 
