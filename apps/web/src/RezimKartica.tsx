@@ -97,8 +97,19 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
   */
   const neprimjenjiviPorezi = izracun.porezi.filter((porez) => porez.godisnjiIznos.amount.isZero())
   const primjenjiviPorezi = izracun.porezi.filter((porez) => !porez.godisnjiIznos.amount.isZero())
+  // Причини неплатності бувають двох різних сортів, і змішувати їх в один
+  // список — це те, чому «не застосовується: 5» висіло на кожній картці.
+  //
+  // Одні залежать від форми: NKD іще не введено, скупина не та, обрт молодший
+  // за два роки. Такий рядок варто тримати — заповниш поле, і платіж може
+  // з'явитися.
+  //
+  // Другі не залежать ні від чого. Найманий працівник ніколи не платитиме
+  // внеску до обртницької палати, а обрт — членського внеску Господарської:
+  // це не «поки що ні», а «не той, про кого норма». Показувати таке означає
+  // щоразу відповідати на питання, якого людина не ставила.
   const neprimjenjivaDavanja = izracun.obveznaDavanja.filter(
-    (davanje) => davanje.status !== 'obračunato',
+    (davanje) => davanje.status !== 'obračunato' && !NEMOGUCE_U_OVOM_OBLIKU.has(davanje.razlog.kod),
   )
   const primjenjivaDavanja = izracun.obveznaDavanja.filter(
     (davanje) => davanje.status === 'obračunato',
@@ -129,6 +140,20 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
             ? BEZ_VRIJEDNOSTI
             : t.kartica.efektivnaStopaKratko(format.percent(izracun.efektivnaStopa))}
         </span>
+        {/* Другий рядок — лише там, де сторін дві.
+            У кожного, хто веде діяльність сам, повне навантаження дорівнює
+            власному: він платить обидві сторони внеску. Показати там два
+            однакові відсотки означало б натякнути на різницю, якої немає. */}
+        {izracun.stopaOpterecenja !== undefined &&
+          !izracun.ukupnoOpterecenje.amount.equals(izracun.ukupnaObveznaPlacanja.amount) && (
+            <span className="odbitak__ukupno">
+              {t.kartica.ukupnoOpterecenje(
+                format.eur(izracun.ukupnoOpterecenje),
+                format.percent(izracun.stopaOpterecenja),
+                format.eur(izracun.ukupniTrosak),
+              )}
+            </span>
+          )}
       </p>
 
       {izracun.razred === undefined ? null : (
@@ -229,6 +254,20 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
     </>
   )
 }
+
+/**
+ * Причини, за якими платіж не виникає через саму правову форму, а не через
+ * незаповнене поле.
+ *
+ * Набір, а не список умов у фільтрі: код причини задає рушій, і перевіряти
+ * його треба проти явного переліку — інакше нова причина мовчки потрапить не
+ * в ту купу.
+ */
+const NEMOGUCE_U_OVOM_OBLIKU: ReadonlySet<string> = new Set([
+  'nije-obrt',
+  'nije-trgovacko-drustvo',
+  'nema-samostalne-djelatnosti',
+])
 
 /**
  * Картка режиму. Чистий показ результату рушія: жодного числа тут не

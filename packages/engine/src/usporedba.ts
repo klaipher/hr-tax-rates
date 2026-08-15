@@ -306,12 +306,30 @@ const uskladi = (
     scale(ukupnaObveznaPlacanja, -1),
   ])
 
+  // Частина внесків, якої людина не бачила ніколи. У кожного, хто веде
+  // діяльність сам, вона нульова — обидві сторони внеску платить він же.
+  const poslodavcevDio = subtract(
+    izracun.doprinosi.ukupnoGodisnje,
+    izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe,
+  )
+
+  // Скільки коштує цей режим тому, хто платить. Клієнт обрту платить рівно
+  // `primitak`; роботодавець найманого — ще й внески понад плаћу, і саме на цю
+  // різницю порівняння «навпростець» бреше.
+  const ukupniTrosak = sum('EUR', [unos.godisnjiPrimitak, neoporeziviPrimici, poslodavcevDio])
+  const ukupnoOpterecenje = add(ukupnaObveznaPlacanja, poslodavcevDio)
+
   return {
     ...izracun,
     obveznaDavanja,
     ukupnaDavanja,
     ukupniIzdaci,
     ukupnaObveznaPlacanja,
+    ukupniTrosak,
+    ukupnoOpterecenje,
+    stopaOpterecenja: ukupniTrosak.amount.isZero()
+      ? undefined
+      : ukupnoOpterecenje.amount.div(ukupniTrosak.amount),
     vrsteObveza: VRSTE_OBVEZA[id],
     mjesecniNeto: eur(netoZaOsobu.amount.div(MJESECI_U_GODINI)),
     // Одна формула на всі режими: надходження без витрат і без усіх
@@ -473,6 +491,11 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       // Обидва числа підставляє спільна ланка нижче: вони залежать від
       // витрат і надходжень, яких сам режим не бачить. Нулі — не результат.
       mjesecniNeto: eur(0),
+      // Три числа підставляє спільна ланка `usporedba`: вони залежать від витрат
+      // і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+      ukupniTrosak: eur(0),
+      ukupnoOpterecenje: eur(0),
+      stopaOpterecenja: undefined,
       ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
@@ -516,6 +539,11 @@ const kaoIzracun = ({
   // Обидва числа підставляє спільна ланка нижче: вони залежать від витрат
   // і надходжень, яких сам режим не бачить. Нулі — не результат.
   mjesecniNeto: eur(0),
+  // Три числа підставляє спільна ланка `usporedba`: вони залежать від витрат
+  // і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+  ukupniTrosak: eur(0),
+  ukupnoOpterecenje: eur(0),
+  stopaOpterecenja: undefined,
   ukupnaObveznaPlacanja: eur(0),
   efektivnaStopa,
 })
@@ -564,7 +592,14 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
   const napomene: readonly NapomenaRezima[] = [
     // Прирівнювання слайдера до брутто-плаће робить саме цей режим, тож і
     // називає його він, а не модуль плаће.
-    { kod: 'bruto-placa-nije-primitak', trosakZaPoslodavca: placa.trosakZaPoslodavca },
+    {
+      kod: 'bruto-placa-nije-primitak',
+      trosakZaPoslodavca: placa.trosakZaPoslodavca,
+      doprinosiPoslodavca: subtract(
+        placa.doprinosi.ukupnoGodisnje,
+        placa.doprinosi.ukupnoGodisnjeNaTeretOsobe,
+      ),
+    },
     ...placa.napomene,
     ...pragPlaveKarte(placa.mjesecnaBrutoPlaca, podloga),
   ]

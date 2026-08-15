@@ -71,7 +71,10 @@ export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezi
     case 'bruto-placa-nije-primitak':
       return (
         <p className="razlog">
-          {tekst['bruto-placa-nije-primitak'](format.eur(napomena.trosakZaPoslodavca))}
+          {tekst['bruto-placa-nije-primitak'](
+            format.eur(napomena.trosakZaPoslodavca),
+            format.eur(napomena.doprinosiPoslodavca),
+          )}
         </p>
       )
 

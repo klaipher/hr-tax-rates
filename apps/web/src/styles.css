@@ -1172,3 +1172,15 @@ body {
   font-weight: 600;
   margin-block: 0.6rem 0;
 }
+
+/* Повне навантаження — другим рядком під власним: різниця між ними і є те,
+   чого людина не бачить у платіжці. */
+.odbitak__ukupno {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--rub);
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}

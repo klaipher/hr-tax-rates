@@ -195,6 +195,9 @@ export const en: Dictionary = {
     ostaje: 'left over per year, before the actual izdatak',
     mjesecno: (iznos: string) => `≈ ${iznos} a month`,
     ukupnoObveze: 'taxes and contributions take',
+    ukupnoOpterecenje: (iznos: string, postotak: string, trosak: string) =>
+      `with the employer's contribution — ${iznos}, or ${postotak} of the ${trosak} you ` +
+      'cost the firm. This is the figure comparable with an obrt rate',
     efektivnaStopaKratko: (postotak: string) => `${postotak} of the primitak`,
     efektivnaStopa: 'effective rate',
     razredPrijevod: (gornjaGranica: string) => `bracket · cap ${gornjaGranica}`,
@@ -261,11 +264,12 @@ export const en: Dictionary = {
     },
 
     napomeneRezima: {
-      'bruto-placa-nije-primitak': (trosak: string) =>
+      'bruto-placa-nije-primitak': (trosak: string, doprinosi: string) =>
         `Here the figure you entered is read as a gross salary, not as a primitak. The ` +
-        `difference is not cosmetic: an obrt’s client pays exactly that sum, whereas an ` +
-        `employee costs their employer ${trosak} a year — for contributions paid on top of ` +
-        'the salary.',
+        `difference is not cosmetic: an obrt's client pays exactly that sum, while the ` +
+        `same person costs an employer ${trosak} a year — the salary itself plus ` +
+        `${doprinosi} of contributions paid on top of it. Those are the two prices worth ` +
+        'comparing.',
       'neoporezivi-primici-nisu-uracunati':
         'Christmas bonuses, meal and travel allowances and other tax-free payments are not ' +
         'included: they come from an employer’s discretion, not from the law. In practice they ' +
@@ -326,17 +330,6 @@ export const en: Dictionary = {
       `Contributions are recomputed ${mjeseci} months back. The koeficijent depends on the ` +
       'razred, so crossing the boundary in December rewrites the whole year, not December.',
     krajRezima: 'Past this boundary the paušalni regime does not exist at all — books follow.',
-  },
-
-  preokret: {
-    naslov: 'Where the regimes change places',
-    prijevod:
-      'The card says how much is left at this primitak. This says how far your choice stays ' +
-      'the cheapest one.',
-    doPrve: (primitak: string, rezim: string) => `Below ${primitak} the best is ${rezim}.`,
-    tocka: (primitak: string, dosadasnji: string, sljedeci: string) =>
-      `From ${primitak} the lead passes from ${dosadasnji} to ${sljedeci}.`,
-    nema: 'One regime stays the cheapest across the whole range — there is nowhere to switch.',
   },
 
   tablica: {
@@ -507,16 +500,16 @@ export const en: Dictionary = {
       'physically — it is published from January–August 2026 data — so the contribution ' +
       'figures here are a forecast, not a calculation.',
     samoPausal:
-      'Of the paušal razredi the package touches only the top two, from 40 000 €. But the same ' +
-      'package lowers the statutory ceiling of the komorski doprinos, and that concerns every ' +
-      'obrt at any primitak — which is why the cards move below 40 000 € too.',
+      'The package touches one card out of six — the flat-rate obrt, and within it only the ' +
+      'top two brackets, from €40,000. Every other regime is untouched. The one exception is ' +
+      'the statutory cap on the chamber contribution: it drops for every obrt at any primitak.',
     delta: (iznos: string) =>
-      `Paušal rules: ${iznos} a year of difference against the law in force. The change to the ` +
-      'komorski doprinos is not counted here — it is the same across the range and shows as its ' +
-      'own line on the card.',
+      `paušalni obrt: ${iznos} a year against the law in force. The other five cards do not ` +
+      'move. The chamber-contribution change is not included here — it is the same across the ' +
+      'whole range and shows as its own row on the card.',
     bezRazlike:
-      'At this primitak the paušal rules make no difference — it is below 40 000 €. The ' +
-      'komorski doprinos line on the card differs all the same.',
+      'No card changes: at this primitak the package touches nothing — it is below €40,000. ' +
+      'The chamber-contribution row on the obrt card differs anyway.',
   },
   izvor: {
     provjereno: (datum: string) => `checked on ${datum}`,

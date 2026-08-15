@@ -10,7 +10,6 @@ export * from './pdv.ts'
 // режимів, і виставити її назовні означало б пообіцяти сталість там, де ніхто
 // її не обіцяв. Форма ж має право спитати рівно одне — де стеля.
 export { steljaNeoporezivihPrimitaka } from './placa.ts'
-export * from './preokret.ts'
 export * from './tablica-razreda.ts'
 export * from './types.ts'
 export * from './usporedba.ts'

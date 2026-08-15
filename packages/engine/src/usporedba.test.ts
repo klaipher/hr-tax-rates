@@ -366,6 +366,34 @@ describe('усі три обртні режими в одному порівня
       ).toBe('4950.00')
     })
 
+    it('повне навантаження найманого більше за власне рівно на внесок роботодавця', () => {
+      const { ukupnaObveznaPlacanja, ukupnoOpterecenje, doprinosi } = izracun('zaposlenik')
+
+      expect(toCentString(subtract(ukupnoOpterecenje, ukupnaObveznaPlacanja))).toBe(
+        toCentString(subtract(doprinosi.ukupnoGodisnje, doprinosi.ukupnoGodisnjeNaTeretOsobe)),
+      )
+    })
+
+    it('вартість найманого для роботодавця — це плаћа разом із внеском понад неї', () => {
+      const { ukupniTrosak, doprinosi } = izracun('zaposlenik')
+
+      // 30 000 брутто + 16,5 % ZO, які роботодавець платить понад плаћу.
+      expect(toCentString(ukupniTrosak)).toBe(
+        toCentString(
+          add(eur(30000), subtract(doprinosi.ukupnoGodisnje, doprinosi.ukupnoGodisnjeNaTeretOsobe)),
+        ),
+      )
+    })
+
+    it('у того, хто веде діяльність сам, обидва навантаження збігаються', () => {
+      // Він платить обидві сторони внеску, тож другого числа в нього немає —
+      // і саме тому картка обртних режимів другого рядка не показує.
+      const { ukupnaObveznaPlacanja, ukupnoOpterecenje, ukupniTrosak } = izracun('pausalni-obrt')
+
+      expect(toCentString(ukupnoOpterecenje)).toBe(toCentString(ukupnaObveznaPlacanja))
+      expect(toCentString(ukupniTrosak)).toBe(toCentString(eur(30000)))
+    })
+
     it('місячне «на руки» — це річне на дванадцять, а не на місяці діяльності', () => {
       const { netoZaOsobu, mjesecniNeto } = izracun('zaposlenik')
 

@@ -290,6 +290,11 @@ export const izracunajPausalniObrtZaRazdoblje = (
       // Обидва числа підставляє спільна ланка `usporedba`: вони залежать від
       // витрат і надходжень, яких цей режим не бачить. Нулі тут — не результат.
       mjesecniNeto: eur(0),
+      // Три числа підставляє спільна ланка `usporedba`: вони залежать від витрат
+      // і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+      ukupniTrosak: eur(0),
+      ukupnoOpterecenje: eur(0),
+      stopaOpterecenja: undefined,
       ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: ukupniPrimitak.amount.isZero()
         ? undefined

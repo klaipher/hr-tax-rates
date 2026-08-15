@@ -193,6 +193,9 @@ export const hr: Dictionary = {
     ostaje: 'ostaje godišnje, prije stvarnog izdatka',
     mjesecno: (iznos: string) => `≈ ${iznos} mjesečno`,
     ukupnoObveze: 'odnose porezi i doprinosi',
+    ukupnoOpterecenje: (iznos: string, postotak: string, trosak: string) =>
+      `zajedno s doprinosom poslodavca — ${iznos}, odnosno ${postotak} od ${trosak} koliko ` +
+      'poslodavca stojite. Upravo je taj postotak usporediv sa stopom obrta',
     efektivnaStopaKratko: (postotak: string) => `${postotak} od primitka`,
     efektivnaStopa: 'efektivna stopa',
     razredPrijevod: (gornjaGranica: string) => `gornja granica ${gornjaGranica}`,
@@ -257,10 +260,11 @@ export const hr: Dictionary = {
     },
 
     napomeneRezima: {
-      'bruto-placa-nije-primitak': (trosak: string) =>
+      'bruto-placa-nije-primitak': (trosak: string, doprinosi: string) =>
         `Ovdje je uneseni iznos pročitan kao bruto plaća, a ne kao primitak. Razlika nije ` +
-        `kozmetička: klijent obrta plaća točno taj iznos, a poslodavca radnika košta ${trosak} ` +
-        'godišnje — za doprinose koje plaća povrh plaće.',
+        `kozmetička: klijent obrta isplaćuje točno taj iznos, a poslodavca ista osoba ` +
+        `stoji ${trosak} godišnje — sama plaća plus ${doprinosi} doprinosa koje plaća ` +
+        'povrh nje. Upravo te dvije cijene vrijedi usporediti međusobno.',
       'neoporezivi-primici-nisu-uracunati':
         'Božićnica, prehrana, prijevoz i ostali neoporezivi primici nisu uračunati: njih daje ' +
         'volja poslodavca, a ne zakon. U praksi dosežu nekoliko tisuća eura godišnje, pa ' +
@@ -321,16 +325,6 @@ export const hr: Dictionary = {
       `Doprinosi se preračunavaju za ${mjeseci} mjeseci unatrag. Koeficijent ovisi o razredu, ` +
       'pa prelazak granice u prosincu prepisuje cijelu godinu, a ne prosinac.',
     krajRezima: 'Iza te granice paušalnog režima nema uopće — dalje slijede poslovne knjige.',
-  },
-
-  preokret: {
-    naslov: 'Gdje režimi mijenjaju mjesta',
-    prijevod:
-      'Kartica kaže koliko ostaje uz ovaj primitak. Ovo kaže dokle vaš izbor ostaje najpovoljniji.',
-    doPrve: (primitak: string, rezim: string) => `Ispod ${primitak} najpovoljniji je ${rezim}.`,
-    tocka: (primitak: string, dosadasnji: string, sljedeci: string) =>
-      `Od ${primitak} mjesto najpovoljnijeg prelazi s ${dosadasnji} na ${sljedeci}.`,
-    nema: 'Na cijelom rasponu najpovoljniji ostaje jedan režim — nema kamo prijeći.',
   },
 
   tablica: {
@@ -495,15 +489,16 @@ export const hr: Dictionary = {
       'Najavljene izmjene još nisu donesene. Prosječna plaća za 2027. fizički ne postoji — ' +
       'objavljuje se za siječanj–kolovoz 2026. — pa su iznosi doprinosa ovdje prognoza.',
     samoPausal:
-      'Od razreda paušala paket dira samo dva najviša, od 40 000 €. No isti paket snižava ' +
-      'zakonsku gornju granicu komorskog doprinosa, a to se tiče svakog obrta na bilo kojem ' +
-      'primitku — zato se kartice mijenjaju i ispod 40 000 €.',
+      'Paket dira jednu karticu od šest — paušalni obrt, i u njemu samo dva gornja razreda, ' +
+      'od 40.000 €. Ostali se režimi ne mijenjaju uopće. Jedina iznimka je zakonska gornja ' +
+      'granica komorskog doprinosa: ona je niža za svaki obrt na bilo kojem primitku.',
     delta: (iznos: string) =>
-      `Pravila paušala: razlika prema zakonu na snazi ${iznos} godišnje. Promjena komorskog ` +
-      'doprinosa ovdje nije uračunata — jednaka je na cijelom rasponu i vidi se zasebnim retkom.',
+      `paušalni obrt: ${iznos} godišnje u odnosu na važeći zakon. Ostalih pet kartica miruje. ` +
+      'Promjena komorskog doprinosa nije uključena — jednaka je na cijelom rasponu i vidi se ' +
+      'zasebnim retkom na kartici.',
     bezRazlike:
-      'Na ovaj primitak pravila paušala ne mijenjaju ništa — niži je od 40 000 €. Redak ' +
-      'komorskog doprinosa na kartici ipak je drugačiji.',
+      'Nijedna se kartica ne mijenja: na ovom primitku paket ne dira ništa — niži je od ' +
+      '40.000 €. Redak komorskog doprinosa na kartici obrta ionako je drukčiji.',
   },
   izvor: {
     provjereno: (datum: string) => `provjereno ${datum}`,

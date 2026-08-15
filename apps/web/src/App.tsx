@@ -10,10 +10,9 @@ import {
   ZADANA_PROSJECNA_PLACA,
 } from '@hr-tax/data'
 import type { Money, PodlogaUsporedbe, UnosUsporedbe } from '@hr-tax/engine'
-import { eur, tockePreokreta, usporediRezime } from '@hr-tax/engine'
+import { eur, usporediRezime } from '@hr-tax/engine'
 import { useMemo, useState } from 'react'
 import { djelatnostIzForme, Forma, izdaciIzForme, POCETNO_STANJE } from './Forma.tsx'
-import { GrafOpterecenja } from './graf/GrafOpterecenja.tsx'
 import { IzvorStatistike } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
 import { LanguageSwitcher } from './i18n/LanguageSwitcher.tsx'
@@ -23,7 +22,6 @@ import { Kalendar } from './Kalendar.tsx'
 import { Obriv } from './Obriv.tsx'
 import { Pdv } from './Pdv.tsx'
 import { Pojasnjenje } from './Pojasnjenje.tsx'
-import { Preokret } from './Preokret.tsx'
 import { ProsjecnaPlaca } from './ProsjecnaPlaca.tsx'
 import { PODLOGA } from './podloga.ts'
 import { RezimKartica } from './RezimKartica.tsx'
@@ -71,15 +69,6 @@ const NAJVISI_PRIMITAK = 200_000
 const KORAK = 100
 const POCETNI_PRIMITAK = 20_000
 
-/**
- * Крок, яким шукаються точки перевороту.
- *
- * Дрібніший за найкоротший інтервал, на якому режим встигає побувати
- * найвигіднішим, і достатньо великий, щоб пошук лишався в межах кадру:
- * межу всередині кроку добирає половинне ділення до цента.
- */
-const KORAK_PREOKRETA = eur(250)
-
 /** Термін, що стоїть власним елементом, канонічно хорватський у кожній локалі. */
 const PROSJECNA_PLACA = 'prosječna plaća'
 
@@ -118,18 +107,6 @@ export const App = () => {
     return (primitak: Money<'EUR'>): PodlogaUsporedbe =>
       sPretpostavkama({ ...PODLOGA, ...odabrani.podlogaZa(primitak) }, prosjecnaPlacaUnos)
   }, [scenarij, prosjecnaPlacaUnos])
-
-  // Графік малює обидва сценарії водночас, і обидва — за тією самою
-  // `prosječna plaća`: інакше криві розходилися б ще й через статистику.
-  const scenarijiGrafa = useMemo(
-    () =>
-      SCENARIJI.map((s) => ({
-        ...s,
-        podlogaZa: (primitak: Money<'EUR'>) =>
-          sPretpostavkama({ ...PODLOGA, ...s.podlogaZa(primitak) }, prosjecnaPlacaUnos),
-      })),
-    [prosjecnaPlacaUnos],
-  )
 
   /**
    * Усе, що форма знає про платника, крім самого `primitak`.
@@ -196,23 +173,19 @@ export const App = () => {
     [godisnjiPrimitak, okolnosti, podlogaZa],
   )
 
-  // Не залежить від поточного `primitak`: пересування повзунка точок не рухає.
-  const preokreti = useMemo(
-    () =>
-      tockePreokreta({ ...okolnosti, godisnjiPrimitak: eur(0) }, podlogaZa, {
-        najvisiPrimitak: eur(NAJVISI_PRIMITAK),
-        korak: KORAK_PREOKRETA,
-      }),
-    [okolnosti, podlogaZa],
-  )
-
   // Дельта рахується тим самим рушієм на тому самому вході — різниця лише в
   // наборі правил. Це і є перевірка ADR-0001: нижче 40 000 € вона нульова,
   // бо реформа чіпає лише два верхні розряди.
   const delta = useMemo(() => {
     const zaPodlogu = (podloga: typeof PODLOGA) => {
-      const ishod = usporediRezime({ godisnjiPrimitak: eur(godisnjiPrimitak) }, podloga).rezimi[0]
-        ?.ishod
+      // Саме паушальний обрт, а не «перший режим у списку»: пакет 2027 чіпає
+      // лише його, і різниця, взята з будь-якої іншої картки, була б нульова
+      // за визначенням. Назване прямо, щоб перестановка режимів у списку не
+      // змінила тихо того, про що це число.
+      const ishod = usporediRezime(
+        { godisnjiPrimitak: eur(godisnjiPrimitak) },
+        podloga,
+      ).rezimi.find((r) => r.id === 'pausalni-obrt')?.ishod
       return ishod?.status === 'izracunato' ? ishod.izracun.netoZaOsobu.amount : undefined
     }
 
@@ -347,9 +320,6 @@ export const App = () => {
         </div>
 
         <div className="raspored__ishod">
-          {/* Точки перевороту стоять над картками: тут людина вибирає. */}
-          <Preokret tocke={preokreti} rezimi={usporedba.rezimi} />
-
           <section className="rezimi">
             {usporedba.rezimi.map((rezim) => (
               <RezimKartica key={rezim.id} rezim={rezim} />
@@ -363,13 +333,6 @@ export const App = () => {
           />
         </div>
       </div>
-
-      <GrafOpterecenja
-        scenariji={scenarijiGrafa}
-        godisnjiPrimitak={godisnjiPrimitak}
-        najvisiPrimitak={NAJVISI_PRIMITAK}
-        onOdabir={setGodisnjiPrimitak}
-      />
 
       <TablicaRazreda godisnjiPrimitak={godisnjiPrimitak} podlogaZa={podlogaZa} />
 
