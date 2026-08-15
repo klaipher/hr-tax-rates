@@ -1,4 +1,4 @@
-import type { Divergence, HokScenario, LegalReference, StatisticalReference } from '@hr-tax/data'
+import type { LegalReference, StatisticalReference } from '@hr-tax/data'
 import type { StavkaId } from './stavke.ts'
 
 /**
@@ -117,33 +117,6 @@ export const tekst = {
       published: 'опубліковано',
       forecast: 'прогноз',
     } satisfies Record<StatisticalReference['status'], string>,
-  },
-
-  registar: {
-    naslov: 'Реєстр розбіжностей із калькуляторами HOK',
-    opis:
-      'Excel-калькулятори Hrvatska obrtnička komora (HOK) узяті за еталон голден-тестів, але ' +
-      'оракулом є закон, а не HOK. Кожна розбіжність внесена сюди з посиланням на статтю й ' +
-      'поясненням, чия поведінка правильна. Мовчазних відхилень не буває: незареєстрована ' +
-      'розбіжність валить збірку, а запис, який більше не відтворюється, валить тести.',
-    ukupno: 'Записів у реєстрі',
-    vrste: {
-      formula: 'хибна формула',
-      value: 'інше значення',
-      omission: 'пропущений платіж',
-    } satisfies Record<Divergence['kind'], string>,
-    scenariji: {
-      'in-force-2026': 'чинні правила 2026',
-      'announced-2027': 'оголошені зміни 2027',
-    } satisfies Record<HokScenario, string>,
-    polja: {
-      scenarios: 'Файли HOK',
-      formulaContains: 'Фрагмент формули',
-      hokValue: 'У HOK',
-      ourValue: 'У нас',
-      absentPattern: 'Немає в жодній комірці',
-    },
-    temelj: 'Підстава',
   },
 
   napomena:
