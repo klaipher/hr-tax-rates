@@ -289,12 +289,31 @@ const uskladi = (
   const neoporeziviPrimici =
     pravniOblik === 'nesamostalni rad' ? (unos.neoporeziviPrimici ?? eur(0)) : eur(0)
 
+  // Усе, що виходить із кишені, — одним числом. Складається з тих самих
+  // доданків, які нижче віднімаються від «на руки», і саме тому стоїть поруч
+  // із ними: два місця, де ця сума збирається по-різному, розійшлися б тихо.
+  const ukupnaObveznaPlacanja = sum('EUR', [
+    izracun.ukupanPorez,
+    izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe,
+    ukupnaDavanja,
+    scale(izracun.povratPoreza, -1),
+  ])
+
+  const netoZaOsobu = sum('EUR', [
+    unos.godisnjiPrimitak,
+    neoporeziviPrimici,
+    scale(ukupniIzdaci, -1),
+    scale(ukupnaObveznaPlacanja, -1),
+  ])
+
   return {
     ...izracun,
     obveznaDavanja,
     ukupnaDavanja,
     ukupniIzdaci,
+    ukupnaObveznaPlacanja,
     vrsteObveza: VRSTE_OBVEZA[id],
+    mjesecniNeto: eur(netoZaOsobu.amount.div(MJESECI_U_GODINI)),
     // Одна формула на всі режими: надходження без витрат і без усіх
     // обов'язкових платежів. Режими рахували це по-різному — паушал брав
     // primitak без витрат, бо витрат не знав, — і сусідні картки порівнювали
@@ -303,18 +322,11 @@ const uskladi = (
     // Внески беруться не всі, а лише ті, що виходять із кишені самої людини.
     // Для кожного, хто веде діяльність сам, це те саме число; для найманого
     // працівника — ні, і саме тут різниця в 16,5% брутто перестає бути тихою.
-    netoZaOsobu: sum('EUR', [
-      unos.godisnjiPrimitak,
-      neoporeziviPrimici,
-      scale(ukupniIzdaci, -1),
-      scale(izracun.ukupanPorez, -1),
-      scale(izracun.doprinosi.ukupnoGodisnjeNaTeretOsobe, -1),
-      scale(ukupnaDavanja, -1),
-      // Повернення річного звіту надійде вже наступного року, але рік
-      // рахується цілком: інакше «на руки» молодого працівника було б
-      // меншим, ніж він справді отримає за цей рік.
-      izracun.povratPoreza,
-    ]),
+    //
+    // Повернення річного звіту вже враховане в `ukupnaObveznaPlacanja`: воно
+    // надійде наступного року, але рік рахується цілком, інакше «на руки»
+    // молодого працівника було б меншим, ніж він справді отримає за цей рік.
+    netoZaOsobu,
   }
 }
 
@@ -458,6 +470,10 @@ const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
       // Види обов'язків підставляє `uskladi`: там відомо, який це режим.
       vrsteObveza: VRSTE_OBVEZA['obrt-na-dobit'],
       netoZaOsobu: izracunDobiti.netoZaOsobu,
+      // Обидва числа підставляє спільна ланка нижче: вони залежать від
+      // витрат і надходжень, яких сам режим не бачить. Нулі — не результат.
+      mjesecniNeto: eur(0),
+      ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: izracunDobiti.efektivnaStopa,
     },
   }
@@ -497,6 +513,10 @@ const kaoIzracun = ({
   ukupniIzdaci: eur(0),
   vrsteObveza: ZAGLUSKA_OBVEZA,
   netoZaOsobu: eur(0),
+  // Обидва числа підставляє спільна ланка нижче: вони залежать від витрат
+  // і надходжень, яких сам режим не бачить. Нулі — не результат.
+  mjesecniNeto: eur(0),
+  ukupnaObveznaPlacanja: eur(0),
   efektivnaStopa,
 })
 

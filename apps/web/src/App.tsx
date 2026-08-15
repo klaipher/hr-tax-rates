@@ -147,7 +147,14 @@ export const App = () => {
 
     return {
       godisnjiIzdaci: izdaciIzForme(forma),
-      uzdrzavani: forma.uzdrzavani,
+      // Два лічильники рушія збираються тут зі списку людей у формі: у списку
+      // людина стоїть раз і має один ступінь, і саме тому подвійний облік — той,
+      // що дав би коефіцієнт 1,3 замість 1,0, — тут неможливий за побудовою.
+      uzdrzavani: {
+        ...forma.uzdrzavani,
+        sInvaliditetom: forma.osobeSInvaliditetom.filter((s) => s === 'djelomicna').length,
+        sPotpunimInvaliditetom: forma.osobeSInvaliditetom.filter((s) => s === 'potpuna').length,
+      },
       noviObrt: forma.noviObrt,
       uzRadniOdnos: forma.uzRadniOdnos,
       prvoZaposlenje: forma.prvoZaposlenje,
@@ -157,7 +164,12 @@ export const App = () => {
       // ту саму одиницю, з якої вже взято ставки.
       umanjenjeZaPodrucje: jedinica !== undefined && imaUmanjenjeZaPodrucje(jedinica.ime),
       neoporeziviPrimici: eur(forma.neoporeziviPrimici ?? 0),
-      ...(forma.dob === undefined ? {} : { dob: forma.dob }),
+      // Форма зберігає щабель, а не вік: закон питає саме щабель. Вік тут —
+      // представник щабля, найменший у ньому, і рушій за ним знайде той самий
+      // рядок `čl. 46. st. 2.`, який людина обрала в списку.
+      ...(forma.olaksicaMladih === 'nema'
+        ? {}
+        : { dob: forma.olaksicaMladih === 'do-25' ? 25 : 26 }),
       ...(forma.mjesecnaPlacaVlasnika === undefined
         ? {}
         : { mjesecnaPlacaVlasnika: eur(forma.mjesecnaPlacaVlasnika) }),

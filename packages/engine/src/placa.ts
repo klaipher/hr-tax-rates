@@ -391,6 +391,54 @@ const olaksicaZa = (
   }
 }
 
+/**
+ * Найбільше, що роботодавець може дати `neoporezivo` за рік, не переступивши
+ * жодної стелі.
+ *
+ * Не обіцянка й не типове значення: це верхня межа, і саме тому вона рахується
+ * на вимогу, а не підставляється в поле. Людині вона потрібна рівно для одного
+ * питання — скільки взагалі є сенс просити.
+ *
+ * Взаємно виключні рядки беруться найбільшим із них, а не сумою: `Pravilnik`
+ * дозволяє або паушальну наднадбавку на харчування, або документовані витрати
+ * на нього, і скласти обидва означало б назвати стелю, якої закон не дає.
+ * Рядки «за фактичними витратами» не входять узагалі — у них немає числа.
+ */
+export const steljaNeoporezivihPrimitaka = (pravila: PlacaPravila): Money<'EUR'> => {
+  const { stavke } = pravila.neoporeziviPrimici
+  const osnovni = eur(pravila.osobniOdbitak.osnovni.value)
+
+  const godisnjaGranica = (stavka: (typeof stavke.value)[number]): Money<'EUR'> => {
+    switch (stavka.granica.vrsta) {
+      case 'koeficijent':
+        return scale(osnovni, stavka.granica.koeficijent)
+      case 'godisnji-iznos':
+        return eur(stavka.granica.iznos)
+      case 'mjesecni-iznos':
+        return scale(eur(stavka.granica.iznos), MJESECI_U_GODINI)
+      case 'stvarni-izdaci':
+        return zero('EUR')
+    }
+  }
+
+  // Групу взаємно виключних задає сам акт полем `iskljucuje`, а не здогад про
+  // те, що на що схоже. З групи лишається найщедріший рядок.
+  const uzeto = new Set<number>()
+  const iznosi: Money<'EUR'>[] = []
+  for (const stavka of stavke.value) {
+    if (uzeto.has(stavka.redniBroj)) continue
+    const grupa = [stavka, ...stavke.value.filter((k) => stavka.iskljucuje.includes(k.redniBroj))]
+    for (const clan of grupa) uzeto.add(clan.redniBroj)
+    iznosi.push(
+      grupa
+        .map(godisnjaGranica)
+        .reduce((najvece, kandidat) => (isGreaterThan(kandidat, najvece) ? kandidat : najvece)),
+    )
+  }
+
+  return sum('EUR', iznosi)
+}
+
 /** Усі три зменшення річного податку разом із їхньою сумою. */
 interface Umanjenja {
   readonly olaksicaZaMlade: OlaksicaZaMlade | undefined

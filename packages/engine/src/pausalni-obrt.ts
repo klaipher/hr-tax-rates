@@ -102,6 +102,10 @@ export const izracunajPausalniObrt = (godisnjiPrimitak: Money<'EUR'>, podloga: P
         komorskiDoprinos: 'komorski doprinos',
       },
       netoZaOsobu: subtract(godisnjiPrimitak, obvezniPlacanja),
+      // Обидва числа підставляє спільна ланка `usporedba`: вони залежать від
+      // витрат і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+      mjesecniNeto: eur(0),
+      ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: godisnjiPrimitak.amount.isZero()
         ? undefined
         : obvezniPlacanja.amount.div(godisnjiPrimitak.amount),

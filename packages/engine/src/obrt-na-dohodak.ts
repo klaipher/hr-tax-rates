@@ -320,6 +320,10 @@ export const izracunajObrtNaDohodak = (
       // удруге їх віднімати не можна. У паушальній картці те саме число
       // рахується від `primitak`, бо той зріз фактичного `izdatak` не знає.
       netoZaOsobu: subtract(dohodak, porez.godisnjiIznos),
+      // Обидва числа підставляє спільна ланка `usporedba`: вони залежать від
+      // витрат і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+      mjesecniNeto: eur(0),
+      ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: unos.godisnjiPrimitak.amount.isZero()
         ? undefined
         : obvezniPlacanja.amount.div(unos.godisnjiPrimitak.amount),

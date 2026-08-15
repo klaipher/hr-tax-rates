@@ -110,14 +110,25 @@ const Izracunato = ({ izracun }: { readonly izracun: Izracun }) => {
       <p className="glavno">
         <output className="glavno__iznos">{format.eur(izracun.netoZaOsobu)}</output>
         <span className="glavno__oznaka">{t.kartica.ostaje}</span>
+        {/* Рік лишається головним — за нього рахують податок. Але планують
+            місяцями, і без цього рядка кожен ділив би на дванадцять сам. */}
+        <span className="glavno__mjesecno">
+          {t.kartica.mjesecno(format.eur(izracun.mjesecniNeto))}
+        </span>
       </p>
-      <p className="stopa">
-        {t.kartica.efektivnaStopa}{' '}
-        <strong>
+
+      {/* Скільки забирає держава — одним числом і поруч із тим, скільки
+          лишається. Досі ця сума існувала лише в голові того, хто складав
+          рядки розбивки: податок стояв окремо, внески окремо, а разом —
+          ніде. */}
+      <p className="odbitak">
+        <span className="odbitak__oznaka">{t.kartica.ukupnoObveze}</span>
+        <output className="odbitak__iznos">{format.eur(izracun.ukupnaObveznaPlacanja)}</output>
+        <span className="odbitak__stopa">
           {izracun.efektivnaStopa === undefined
             ? BEZ_VRIJEDNOSTI
-            : format.percent(izracun.efektivnaStopa)}
-        </strong>
+            : t.kartica.efektivnaStopaKratko(format.percent(izracun.efektivnaStopa))}
+        </span>
       </p>
 
       {izracun.razred === undefined ? null : (

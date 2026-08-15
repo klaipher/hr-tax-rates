@@ -90,16 +90,26 @@ export const en: Dictionary = {
       '15 August gives five months, not four.',
     uzRadniOdnos: 'I run the obrt alongside employment',
     uzRadniOdnosPrijevod: 'druga djelatnost — a different contribution rate and an annual base',
-    dob: 'Age you reach this year',
-    dobPrijevod: 'empty — the young-worker relief is not applied',
+    olaksicaMladih: 'Young-worker relief',
+    olaksicaMladihPrijevod:
+      'olakšica za mlade — refunded next year with the annual assessment, not in your payslip',
+    olaksicaMladihIzbor: {
+      nema: '30 and over — no relief',
+      'do-25': '25 or under — the whole lower-rate tax comes back',
+      'od-26-do-30': '26 to 30 — half comes back',
+    },
+    osobeSInvaliditetom: 'People with a disability',
+    osobeSInvaliditetomPrijevod:
+      'taxpayer, dependants and children — one entry per person; each appears exactly once',
+    stupanjInvaliditeta: (broj: string) => `Degree of disability, person ${broj}`,
+    stupanjDjelomicna: 'disability or bodily impairment — coefficient 0.3',
+    stupanjPotpuna: '100 % on one basis, or a care allowance — coefficient 1.0',
+    dodajOsobu: '+ add a person',
+    ukloniOsobu: 'remove',
+    podstaviStelju: (iznos: string) => `Use the statutory maximum — ${iznos}`,
+    razbivkaIzdataka: 'Items recognised only by half',
     placaVlasnika: 'Your own monthly salary in your own d.o.o., €',
     placaVlasnikaPrijevod: 'empty — the statutory floor is used',
-    sInvaliditetom: 'People with a disability',
-    sInvaliditetomPrijevod:
-      'taxpayer, dependants and children together — the 0.3 coefficient applies to each one',
-    sPotpunimInvaliditetom: 'Of those, with 100 % disability or a care allowance',
-    sPotpunimInvaliditetomPrijevod:
-      'coefficient 1.0 instead of 0.3; for the same person one excludes the other',
     neoporeziviPrimici: 'Non-taxable payments, € per year',
     neoporeziviPrimiciPrijevod:
       'empty — nothing agreed. 2026 caps: performance award 1,200, occasional awards 700, meals ' +
@@ -181,6 +191,9 @@ export const en: Dictionary = {
 
   kartica: {
     ostaje: 'left over per year, before the actual izdatak',
+    mjesecno: (iznos: string) => `≈ ${iznos} a month`,
+    ukupnoObveze: 'taxes and contributions take',
+    efektivnaStopaKratko: (postotak: string) => `${postotak} of the primitak`,
     efektivnaStopa: 'effective rate',
     razredPrijevod: (gornjaGranica: string) => `bracket · cap ${gornjaGranica}`,
     udioOsnovice: (stopa: string) => `${stopa} of the osnovica`,
@@ -410,6 +423,36 @@ export const en: Dictionary = {
       `Annual income exceeds the group-3 limit of ${limit} by ${nadlimit}. Above the ` +
       'limit a higher rate applies and the taxpayer moves to the general system — the ' +
       'calculator deliberately does not compute either, it only reports.',
+  },
+  sekcije: {
+    mjesto: 'Place and rates',
+    mjestoPrijevod: 'salary is taxed where you live, not where you work',
+    obitelj: 'Family and allowances',
+    obiteljPrijevod:
+      'osobni odbitak — lowers the tax base in every regime except the flat-rate obrt',
+    zaposlenik: 'If you are an employee',
+    zaposlenikPrijevod: 'affects the zaposlenik card only; it changes nothing for an obrt',
+    obrt: 'If you run an obrt',
+    obrtPrijevod: 'expenses, a partial year and the activity — everything employment does not have',
+    doo: 'If you are opening a d.o.o.',
+    dooPrijevod: 'what the owner assigns themselves — the rest leaves as dividends',
+    pdv: 'PDV',
+    nista: 'nothing entered',
+    utrimanih: (broj: string) => `${broj} dependants`,
+    djece: (broj: string) => `${broj} children`,
+    sInvaliditetom: (broj: string) => `${broj} with a disability`,
+    neoporezivi: (iznos: string) => `tax-free ${iznos}`,
+    prvoZaposlenje: 'first employment',
+    povratnik: 'returning from abroad',
+    punaGodina: 'full year',
+    mjeseci: (broj: string) => `${broj} months`,
+    izdaci: (iznos: string) => `expenses ${iznos}`,
+    bezIzdataka: 'no expenses',
+    nkdNije: 'NKD not chosen',
+    uzRadniOdnos: 'alongside employment',
+    placaPodloga: 'salary — statutory floor',
+    placaMjesecno: (iznos: string) => `${iznos} a month`,
+    inozemneUsluge: (iznos: string) => `foreign services ${iznos}`,
   },
   pdv: {
     tipKlijenta: 'Where your clients are',

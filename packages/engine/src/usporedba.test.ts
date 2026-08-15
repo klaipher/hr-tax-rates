@@ -14,7 +14,7 @@ import {
 import Decimal from 'decimal.js'
 import { describe, expect, it } from 'vitest'
 import type { Money } from './money.ts'
-import { add, eur, subtract, sum, toCentString } from './money.ts'
+import { add, eur, scale, subtract, sum, toCentString } from './money.ts'
 import { BEZ_UZDRZAVANIH } from './obrt-na-dohodak.ts'
 import type { Izracun, Podloga, RazlogNedostupnosti, Rezim, RezimId, Usporedba } from './types.ts'
 import { jediniPorez } from './types.ts'
@@ -364,6 +364,32 @@ describe('усі три обртні режими в одному порівня
       expect(
         toCentString(subtract(doprinosi.ukupnoGodisnje, doprinosi.ukupnoGodisnjeNaTeretOsobe)),
       ).toBe('4950.00')
+    })
+
+    it('місячне «на руки» — це річне на дванадцять, а не на місяці діяльності', () => {
+      const { netoZaOsobu, mjesecniNeto } = izracun('zaposlenik')
+
+      expect(toCentString(scale(mjesecniNeto, 12))).toBe(toCentString(netoZaOsobu))
+    })
+
+    it('сума обов’язкових платежів — це рівно те, чого бракує до «на руки»', () => {
+      // Рівність тримає всю картку: якщо підсумок зібрати іншими доданками,
+      // ніж ті, що віднімаються, людина побачить два числа, які не сходяться,
+      // і жодне з них не буде явно винним.
+      const { netoZaOsobu, ukupnaObveznaPlacanja, ukupniIzdaci } = izracun('pausalni-obrt')
+
+      expect(toCentString(sum('EUR', [netoZaOsobu, ukupnaObveznaPlacanja, ukupniIzdaci]))).toBe(
+        toCentString(eur(30000)),
+      )
+    })
+
+    it('повернення річного звіту зменшує підсумок платежів, а не збільшує', () => {
+      const bez = izracun('zaposlenik')
+      const zOlaksicom = izracun('zaposlenik', { dob: 25 })
+
+      expect(
+        toCentString(subtract(bez.ukupnaObveznaPlacanja, zOlaksicom.ukupnaObveznaPlacanja)),
+      ).toBe(toCentString(zOlaksicom.povratPoreza))
     })
 
     it('неоподатковані виплати доходять до головного числа картки, а не лише до застереження', () => {

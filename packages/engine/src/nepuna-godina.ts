@@ -287,6 +287,10 @@ export const izracunajPausalniObrtZaRazdoblje = (
         komorskiDoprinos: 'komorski doprinos',
       },
       netoZaOsobu: subtract(ukupniPrimitak, obvezniPlacanja),
+      // Обидва числа підставляє спільна ланка `usporedba`: вони залежать від
+      // витрат і надходжень, яких цей режим не бачить. Нулі тут — не результат.
+      mjesecniNeto: eur(0),
+      ukupnaObveznaPlacanja: eur(0),
       efektivnaStopa: ukupniPrimitak.amount.isZero()
         ? undefined
         : obvezniPlacanja.amount.div(ukupniPrimitak.amount),

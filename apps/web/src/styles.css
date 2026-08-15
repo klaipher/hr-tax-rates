@@ -958,3 +958,177 @@ body {
   color: var(--tekst);
   font-variant-numeric: tabular-nums;
 }
+
+/* Секції форми
+   ────────────
+   Згорнута секція мусить лишатися відповіддю, а не порожньою смугою: підсумок
+   у заголовку каже, що всередині вже введено. Без нього згортка ховала б не
+   зайве, а саме те, що людина набрала. */
+
+.sekcija {
+  border: 1px solid var(--rub);
+  border-radius: 0.5rem;
+  margin-block: 0.6rem;
+  background: var(--pozadina-kartice, transparent);
+}
+
+.sekcija[open] {
+  padding-bottom: 0.9rem;
+}
+
+.sekcija__zaglavlje {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.4rem 0.8rem;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Стрілку малює сам браузер по-різному в кожному рушії; своя — однакова. */
+.sekcija__zaglavlje::-webkit-details-marker {
+  display: none;
+}
+
+.sekcija__zaglavlje::after {
+  content: "▸";
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--tekst-prigušen);
+  transition: transform 0.12s ease;
+}
+
+.sekcija[open] > .sekcija__zaglavlje::after {
+  transform: rotate(90deg);
+}
+
+.sekcija__naslov {
+  font-weight: 600;
+}
+
+.sekcija__sazetak {
+  grid-column: 1;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+.sekcija[open] > .sekcija__zaglavlje .sekcija__sazetak {
+  /* Розкрита секція показує самі поля: підсумок тих самих чисел поруч із
+     ними був би не підказкою, а другим голосом. */
+  display: none;
+}
+
+.sekcija > *:not(.sekcija__zaglavlje) {
+  margin-inline: 0.9rem;
+}
+
+.sekcija .forma__prijevod {
+  margin-block: 0 0.9rem;
+}
+
+/* Список людей з інвалідністю */
+
+.popis-osoba {
+  margin-block: 1rem;
+}
+
+.popis-osoba__naslov {
+  font-weight: 600;
+  margin-block: 0 0.5rem;
+}
+
+.polje--redak {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gumb {
+  justify-self: start;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.9rem;
+  border: 1px solid var(--rub);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.gumb:hover {
+  border-color: var(--tekst-prigušen);
+}
+
+.gumb--tihi {
+  border-color: transparent;
+  color: var(--tekst-prigušen);
+  text-decoration: underline;
+}
+
+.polje__pomoc {
+  margin-block: 0.35rem 0.9rem;
+}
+
+.podrobnosti {
+  margin-block: 0.6rem 1rem;
+}
+
+.podrobnosti > summary {
+  cursor: pointer;
+  color: var(--tekst-prigušen);
+  font-size: 0.9rem;
+}
+
+/* Видиме лише екранному читачеві: мітка рядка в списку осіб потрібна йому,
+   а на екрані її замінює сам порядок рядків. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Скільки забирають податки — поруч із тим, скільки лишається */
+
+.glavno__mjesecno {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+.odbitak {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0 0.6rem;
+  margin: 0.9rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--rub);
+  border-radius: 0.4rem;
+}
+
+.odbitak__oznaka {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+.odbitak__iznos {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.odbitak__stopa {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}

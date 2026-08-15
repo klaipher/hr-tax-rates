@@ -113,16 +113,26 @@ export const uk = {
       '15 серпня дає п’ять місяців, а не чотири.',
     uzRadniOdnos: 'Веду обрт паралельно з роботою за наймом',
     uzRadniOdnosPrijevod: 'druga djelatnost — інша ставка внесків і річна база',
-    dob: 'Скільки вам виповнюється цього року',
-    dobPrijevod: 'порожньо — olakšica za mlade не рахується',
+    olaksicaMladih: 'Пільга для молоді',
+    olaksicaMladihPrijevod:
+      'olakšica za mlade — повертається наступного року річним звітом, а не в платіжці',
+    olaksicaMladihIzbor: {
+      nema: '30 і більше — знижки немає',
+      'do-25': 'до 25 включно — повертається весь податок за нижчою ставкою',
+      'od-26-do-30': 'від 26 до 30 — повертається половина',
+    },
+    osobeSInvaliditetom: 'Особи з інвалідністю',
+    osobeSInvaliditetomPrijevod:
+      'платник, утриманці й діти — по запису на людину; кожна стоїть у списку рівно раз',
+    stupanjInvaliditeta: (broj: string) => `Ступінь інвалідності, особа ${broj}`,
+    stupanjDjelomicna: 'інвалідність або тілесне ушкодження — коефіцієнт 0,3',
+    stupanjPotpuna: '100 % по одній підставі або doplatak za pomoć i njegu — коефіцієнт 1,0',
+    dodajOsobu: '+ додати особу',
+    ukloniOsobu: 'прибрати',
+    podstaviStelju: (iznos: string) => `Підставити законну стелю — ${iznos}`,
+    razbivkaIzdataka: 'Статті, які визнаються наполовину',
     placaVlasnika: 'Своя місячна плаћа у власному d.o.o., €',
     placaVlasnikaPrijevod: 'порожньо — береться законна підлога',
-    sInvaliditetom: 'Скільки осіб з інвалідністю',
-    sInvaliditetomPrijevod:
-      'платник, утриманці й діти разом — коефіцієнт 0,3 дається кожному окремо',
-    sPotpunimInvaliditetom: 'З них зі 100 % інвалідністю або правом на doplatak',
-    sPotpunimInvaliditetomPrijevod:
-      'коефіцієнт 1,0 замість 0,3; для тієї самої людини одне виключає інше',
     neoporeziviPrimici: 'Неоподатковані виплати, € на рік',
     neoporeziviPrimiciPrijevod:
       'порожньо — не домовлено. Стелі 2026: nagrada za radne rezultate 1 200, prigodne nagrade ' +
@@ -207,6 +217,9 @@ export const uk = {
 
   kartica: {
     ostaje: 'лишається за рік, до фактичного izdatak',
+    mjesecno: (iznos: string) => `≈ ${iznos} на місяць`,
+    ukupnoObveze: 'забирають податки і внески',
+    efektivnaStopaKratko: (postotak: string) => `${postotak} від primitak`,
     efektivnaStopa: 'ефективна ставка',
     razredPrijevod: (gornjaGranica: string) => `розряд · стеля ${gornjaGranica}`,
     udioOsnovice: (stopa: string) => `${stopa} від osnovica`,
@@ -454,6 +467,35 @@ export const uk = {
       `Річний дохід перевищує ліміт третьої групи ${limit} на ${nadlimit}. ` +
       'Понад ліміт настає підвищена ставка й перехід на загальну систему — ' +
       'калькулятор цього навмисно не рахує, а лише повідомляє.',
+  },
+  sekcije: {
+    mjesto: 'Місце й ставки',
+    mjestoPrijevod: 'plaća оподатковується за місцем проживання, а не за місцем роботи',
+    obitelj: 'Родина й відрахунки',
+    obiteljPrijevod: 'osobni odbitak — зменшує базу податку в усіх режимах, крім паушалу',
+    zaposlenik: 'Якщо ви найманий працівник',
+    zaposlenikPrijevod: 'чіпає лише картку zaposlenik; на обрт не впливає нічим',
+    obrt: 'Якщо ви ведете обрт',
+    obrtPrijevod: 'витрати, неповний рік і діяльність — усе, чого найм не має',
+    doo: 'Якщо ви відкриваєте d.o.o.',
+    dooPrijevod: 'скільки власник призначає собі сам — решта виходить дивідендами',
+    pdv: 'PDV',
+    nista: 'нічого не вказано',
+    utrimanih: (broj: string) => `${broj} утриманців`,
+    djece: (broj: string) => `${broj} дітей`,
+    sInvaliditetom: (broj: string) => `${broj} з інвалідністю`,
+    neoporezivi: (iznos: string) => `неоподатковані ${iznos}`,
+    prvoZaposlenje: 'перше працевлаштування',
+    povratnik: 'повернення з-за кордону',
+    punaGodina: 'повний рік',
+    mjeseci: (broj: string) => `${broj} місяців`,
+    izdaci: (iznos: string) => `витрати ${iznos}`,
+    bezIzdataka: 'витрат немає',
+    nkdNije: 'NKD не обрано',
+    uzRadniOdnos: 'поряд із наймом',
+    placaPodloga: 'плаћа — законна підлога',
+    placaMjesecno: (iznos: string) => `${iznos} на місяць`,
+    inozemneUsluge: (iznos: string) => `закордонні послуги ${iznos}`,
   },
   pdv: {
     tipKlijenta: 'Звідки клієнти',
