@@ -117,13 +117,15 @@ export const en: Dictionary = {
       'remote work 70 monthly, gift to a child 140, commuting at actual cost',
     prvoZaposlenje: 'First-ever permanent employment',
     prvoZaposlenjePrijevod:
-      'for up to one year the employer pays no health contribution — the salary costs the firm ' +
-      '16.5 % less while take-home stays the same. The age-based »under 30« exemption is gone: ' +
-      'it was abolished in 2025',
+      'you have never held a permanent contract before — fixed-term jobs, student work and ' +
+      'your own obrt do not disqualify you. Then for up to a year the employer pays no health ' +
+      'contribution: the salary costs the firm 16.5 % less and take-home does not move. The ' +
+      'age-based »under 30« relief is gone — abolished in 2025',
     povratnik: 'Returning from abroad (čl. 46. st. 3.)',
     povratnikPrijevod:
-      'a Croatian citizen who lived abroad continuously for at least two years: for five years ' +
-      'the whole salary tax comes back. It replaces the other two reductions rather than adding to them',
+      'Croatian citizenship plus at least two continuous years abroad. Then for five years the ' +
+      'whole salary tax comes back — but instead of the young-worker relief and the ' +
+      'residence-based reduction, not alongside them',
     pocetak: 'Month the obrt opened',
     pocetakPrijevod: 'in the opening year the razred boundaries scale proportionally',
     punaGodina: 'full year',
@@ -383,6 +385,7 @@ export const en: Dictionary = {
   },
 
   pretpostavke: {
+    objasnjenjeNaslov: 'Where this figure comes from, and why it sits apart from the rules',
     naslov: 'Assumptions',
     godina: (godina: string) => `The rules are those in force for ${godina}.`,
     objasnjenje:
@@ -490,6 +493,7 @@ export const en: Dictionary = {
       'an amount appears when the actual result diverges from the advances.',
   },
   scenarij: {
+    detaljiNaslov: 'What the package actually changes',
     naslov: 'Rule set',
     'na-snazi': 'law in force',
     najava: 'announced changes',

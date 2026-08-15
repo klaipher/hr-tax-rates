@@ -22,6 +22,7 @@ import { Izvori } from './izvori/index.ts'
 import { Kalendar } from './Kalendar.tsx'
 import { Obriv } from './Obriv.tsx'
 import { Pdv } from './Pdv.tsx'
+import { Pojasnjenje } from './Pojasnjenje.tsx'
 import { Preokret } from './Preokret.tsx'
 import { ProsjecnaPlaca } from './ProsjecnaPlaca.tsx'
 import { PODLOGA } from './podloga.ts'
@@ -324,14 +325,18 @@ export const App = () => {
                 </label>
               ))}
             </fieldset>
-            {/* Реформа чіпає лише паушал — і в ньому лише два верхні розряди. */}
-            <p className="razlog">{t.scenarij.samoPausal}</p>
-            {scenarij === 'najava' && <p className="razlog">{t.scenarij.prognoza}</p>}
+            {/* Спершу число, потім пояснення: різниця в грошах — це те, заради
+                чого перемикач узагалі чіпають, а «що саме змінює пакет» читають
+                один раз. */}
             <p className="scenarij__delta">
               {delta === undefined || delta.isZero()
                 ? t.scenarij.bezRazlike
                 : t.scenarij.delta(format.eur(eur(delta)))}
             </p>
+            <Pojasnjenje naslov={t.scenarij.detaljiNaslov}>
+              <p>{t.scenarij.samoPausal}</p>
+              {scenarij === 'najava' && <p>{t.scenarij.prognoza}</p>}
+            </Pojasnjenje>
           </section>
 
           {/* Одразу під перемикачем: тут видно, що правила й статистика — два

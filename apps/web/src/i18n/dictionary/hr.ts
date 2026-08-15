@@ -116,12 +116,15 @@ export const hr: Dictionary = {
       'dopunsko zdravstveno 500, rad od kuće 70 mjesečno, dar djetetu 140, prijevoz prema izdacima',
     prvoZaposlenje: 'Prvo zaposlenje na neodređeno vrijeme',
     prvoZaposlenjePrijevod:
-      'do godine dana poslodavac ne plaća ZO — plaća ga stoji 16,5 % manje, a neto se ne mijenja. ' +
-      'Dobno oslobođenje »do 30 godina« više ne postoji: ukinuto je od 2025.',
+      'nikada prije niste imali ugovor o radu na neodređeno — ugovori na određeno, studentski ' +
+      'poslovi i vlastiti obrt tome ne smetaju. Tada poslodavac do godine dana ne plaća ZO: ' +
+      'plaća ga stoji 16,5 % manje, a neto se ne mijenja. Dobne olakšice »do 30« više nema — ' +
+      'ukinuta je od 2025.',
     povratnik: 'Povratak iz inozemstva (čl. 46. st. 3.)',
     povratnikPrijevod:
-      'državljanin RH koji je najmanje dvije godine neprekidno boravio u inozemstvu: pet godina ' +
-      'vraća se cijeli porez iz plaće. Zamjenjuje oba druga umanjenja, ne zbraja se s njima',
+      'državljanstvo RH plus najmanje dvije godine neprekidno u inozemstvu. Tada se pet godina ' +
+      'vraća cijeli porez iz plaće — ali umjesto olakšice za mlade i umanjenja prema ' +
+      'prebivalištu, a ne zajedno s njima',
     pocetak: 'Mjesec otvaranja obrta',
     pocetakPrijevod: 'u godini otvaranja granice razreda razmjerno se umanjuju',
     punaGodina: 'puna godina',
@@ -374,6 +377,7 @@ export const hr: Dictionary = {
   },
 
   pretpostavke: {
+    objasnjenjeNaslov: 'Odakle taj iznos i zašto stoji odvojeno od pravila',
     naslov: 'Pretpostavke',
     godina: (godina: string) => `Pravila su na snazi za ${godina}. godinu.`,
     objasnjenje:
@@ -478,6 +482,7 @@ export const hr: Dictionary = {
       'iznos se pojavljuje kad stvarni rezultat odstupi od predujmova.',
   },
   scenarij: {
+    detaljiNaslov: 'Što točno mijenja paket',
     naslov: 'Skup pravila',
     'na-snazi': 'zakon na snazi',
     najava: 'najavljene izmjene',

@@ -2,6 +2,7 @@ import { prosjecnaPlacaZa, SLUZBENE_PROSJECNE_PLACE } from '@hr-tax/data'
 import { eur } from '@hr-tax/engine'
 import { IzvorStatistike } from './Izvor.tsx'
 import { useI18n } from './i18n/context.tsx'
+import { Pojasnjenje } from './Pojasnjenje.tsx'
 
 /**
  * `prosječna plaća` як вхід, а не як частина сценарію.
@@ -82,9 +83,9 @@ export const ProsjecnaPlaca = ({
         })}
       </p>
 
-      <p className="forma__primjer" id="prosjecna-placa-opis">
-        {t.pretpostavke.objasnjenje}
-      </p>
+      <Pojasnjenje naslov={t.pretpostavke.objasnjenjeNaslov}>
+        <p id="prosjecna-placa-opis">{t.pretpostavke.objasnjenje}</p>
+      </Pojasnjenje>
     </section>
   )
 }
