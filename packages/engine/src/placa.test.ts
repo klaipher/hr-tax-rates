@@ -193,6 +193,23 @@ describe('plaća', () => {
       expect(toCentString(olaksicaZaMlade?.iznos ?? eur(0))).toBe('12000.00')
     })
 
+    it('називає суму, яку пільга не забере, — але лише коли вища ставка спрацювала', () => {
+      // Нижче за поріг застереження мовчить: там повертається справді весь
+      // податок, і рядок «а це не повернуть — 0,00 €» посіяв би сумнів на
+      // порожньому місці.
+      const nizak = izracunaj({ dob: 25 }).napomene.find(
+        (n) => n.kod === 'olaksica-za-mlade-kao-povrat',
+      )
+      expect(nizak?.nepovratniDio).toBeUndefined()
+
+      // 8 000 брутто: 12 000 за нижчою ставкою повертається, 2 880 за вищою —
+      // ні, і саме це число мусить бути назване.
+      const visok = izracunaj({ mjesecnaBrutoPlaca: eur(8000), dob: 25 }).napomene.find(
+        (n) => n.kod === 'olaksica-za-mlade-kao-povrat',
+      )
+      expect(toCentString(visok?.nepovratniDio ?? eur(0))).toBe('2880.00')
+    })
+
     it('податок лишається податком: повернення не зменшує ані суми, ані ставки', () => {
       // Гроші повертаються — ставка ні. Сховати це означало б показати меншу
       // ставку, ніж застосував закон.

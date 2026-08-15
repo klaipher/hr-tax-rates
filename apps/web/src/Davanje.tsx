@@ -116,6 +116,11 @@ export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezi
       return (
         <p className="razlog">
           {tekst['olaksica-za-mlade-kao-povrat'](format.eur(napomena.iznos))}
+          {/* Друге речення з'являється лише тому, кого межа справді зачепила:
+              нижче 7 000 € брутто вищої ставки немає, і застереження про неї
+              сіяло б сумнів там, де пільга таки повертає весь податок. */}
+          {napomena.nepovratniDio !== undefined &&
+            ` ${tekst['olaksica-za-mlade-nepovratni-dio'](format.eur(napomena.nepovratniDio))}`}
           <Izvor izvor={napomena.izvor} />
         </p>
       )

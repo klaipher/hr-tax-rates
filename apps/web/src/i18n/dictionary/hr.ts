@@ -288,6 +288,11 @@ export const hr: Dictionary = {
         `${iznos} tog poreza vratit će vam se kao olakšica za mlade — ali ne u platnoj listi. ` +
         'Tijekom godine predujam se ustegne u cijelosti, a olakšicu Porezna uprava utvrđuje ' +
         'godišnjim obračunom i vraća tek iduće kalendarske godine.',
+      'olaksica-za-mlade-nepovratni-dio': (nepovratno: string) =>
+        `Ali ne iz cijelog poreza: olakšica uzima samo ono što je obračunato po nižoj ` +
+        `stopi. Zarada koja je dosegnula višu stopu ne vraća se uopće — ove godine to je ` +
+        `${nepovratno}. Ispod 7.000 € bruto mjesečno više stope nema, pa se tada doista ` +
+        'vraća cijeli porez.',
       'neoporezivi-primici-uracunati': (iznos: string) =>
         `Uračunato je ${iznos} godišnje neoporezivih primitaka: ne ulaze ni u osnovicu doprinosa ` +
         'ni u poreznu osnovicu, pa stižu cijeli — i za točno toliko poskupljuju poslodavcu.',

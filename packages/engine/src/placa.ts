@@ -516,11 +516,14 @@ const napomeneZa = ({
   umanjenjePrvogStupa,
   neoporeziviPrimici,
   ustedaNaZo,
+  poVisojStopi,
   pravila,
 }: {
   readonly mjesecnaBrutoPlaca: Money<'EUR'>
   readonly mjesecnaOsnovicaDoprinosa: Money<'EUR'>
   readonly umanjenja: Umanjenja
+  /** Річний податок, нарахований вищою ставкою: саме його пільга не бере. */
+  readonly poVisojStopi: Money<'EUR'>
   readonly najnizaOsnovica: NajnizaOsnovica
   readonly umanjenjePrvogStupa: Money<'EUR'>
   readonly neoporeziviPrimici: Money<'EUR'>
@@ -584,6 +587,10 @@ const napomeneZa = ({
     napomene.push({
       kod: 'olaksica-za-mlade-kao-povrat',
       iznos: umanjenja.olaksicaZaMlade.iznos,
+      // Пільга бере лише податок за нижчою ставкою, тож усе, що нарахувала
+      // вища, лишається сплаченим назавжди. Нижче 7 000 € брутто на місяць
+      // вищої ставки немає взагалі, і тоді сказати про неї нічого.
+      nepovratniDio: poVisojStopi.amount.isZero() ? undefined : poVisojStopi,
       izvor: umanjenja.olaksicaZaMlade.izvor,
     })
   }
@@ -739,6 +746,7 @@ export const izracunajPlacu = (
       umanjenjePrvogStupa,
       neoporeziviPrimici: ulaz.neoporeziviPrimici,
       ustedaNaZo,
+      poVisojStopi: poStopama.poVisojStopi,
       pravila,
     }),
   }

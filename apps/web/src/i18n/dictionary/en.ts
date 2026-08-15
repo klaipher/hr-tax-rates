@@ -293,6 +293,11 @@ export const en: Dictionary = {
         `${iznos} of this tax comes back to you as the young-worker relief — but not in your ` +
         'payslip. The advance is withheld in full during the year, and the tax authority grants ' +
         'the relief in the annual assessment, paying it out the following calendar year.',
+      'olaksica-za-mlade-nepovratni-dio': (nepovratno: string) =>
+        `But not from the whole tax: the relief only takes what was charged at the lower ` +
+        `rate. Earnings that reached the higher rate come back not at all — this year ` +
+        `that is ${nepovratno}. Below €7,000 gross a month there is no higher rate, and ` +
+        'then the whole tax really does come back.',
       'neoporezivi-primici-uracunati': (iznos: string) =>
         `${iznos} a year of non-taxable payments is included: they enter neither the contribution ` +
         'base nor the tax base, so they arrive whole — and cost the employer exactly as much.',
