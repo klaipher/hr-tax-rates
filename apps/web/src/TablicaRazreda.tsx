@@ -31,8 +31,16 @@ export const TablicaRazreda = ({
   const izvor = redci[0]?.izvor
 
   return (
-    <section className="tablica">
-      <h2>{t.tablica.naslov}</h2>
+    // Згорнута, і в заголовку названий режим.
+    //
+    // Драбина розрядів існує лише в паушального обрту — з шести карток вона
+    // стосується однієї. Розгорнутою на всю ширину вона читалася як головний
+    // зміст сторінки й робила калькулятор схожим на калькулятор паушалу.
+    <details className="tablica">
+      <summary className="tablica__zaglavlje">
+        <span className="tablica__naslov">{t.tablica.naslov}</span>
+        <span className="tablica__opseg">{t.tablica.samoPausal}</span>
+      </summary>
       <p className="tablica__prijevod">{t.tablica.prijevod}</p>
 
       <div className="tablica__okvir">
@@ -71,6 +79,6 @@ export const TablicaRazreda = ({
       </div>
 
       {izvor !== undefined && <Izvor izvor={izvor} />}
-    </section>
+    </details>
   )
 }

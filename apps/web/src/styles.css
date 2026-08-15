@@ -1184,3 +1184,35 @@ body {
   color: var(--tekst-prigušen);
   font-variant-numeric: tabular-nums;
 }
+
+/* Драбина розрядів — згорнута й підписана режимом: із шести карток вона
+   стосується однієї, і на всю ширину читалася як головний зміст сторінки. */
+
+.tablica__zaglavlje {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.tablica__naslov {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.tablica__opseg {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Коробка межі розряду теж підписана режимом: межі має лише паушал. */
+.obriv__opseg {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tekst-prigušen);
+}

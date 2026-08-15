@@ -38,7 +38,13 @@ export const Obriv = ({
 
   return (
     <section className={blizuObriva(obriv) ? 'obriv obriv--blizu' : 'obriv'}>
-      <h2 className="obriv__naslov">{t.obriv.naslov}</h2>
+      {/* Заголовок називає режим: межі розрядів має лише паушальний обрт, і
+          без цієї підпису коробка над картками читалася так, ніби межа
+          стосується всіх шести. */}
+      <h2 className="obriv__naslov">
+        {t.obriv.naslov}
+        <span className="obriv__opseg">{t.obriv.samoPausal}</span>
+      </h2>
       <p className="obriv__odstup">
         {t.obriv.doGranice(format.eur(obriv.doGranice), format.eur(obriv.granica))}
         <Izvor izvor={obriv.izvor} />

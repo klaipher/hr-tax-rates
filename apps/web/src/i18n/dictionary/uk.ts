@@ -66,7 +66,9 @@ export const uk = {
 
   zaglavlje: {
     naslov: 'Податкові режими Хорватії',
-    podnaslov: 'Один річний primitak — усі режими одразу, з посиланням на статтю за кожним числом.',
+    podnaslov:
+      'Один річний primitak (надходження) — усі режими одразу, з посиланням на статтю за ' +
+      'кожним числом.',
   },
 
   jezik: {
@@ -75,8 +77,11 @@ export const uk = {
   },
 
   unos: {
-    oznaka: 'Річний primitak',
-    prijevod: 'надходження від діяльності за касовим методом',
+    oznaka: 'Річна сума',
+    prijevod:
+      'кожен режим читає її по-своєму: обрт — як primitak (надходження за касовим методом), ' +
+      'найм — як брутто-плаћу, d.o.o. — як прихід фірми. Що саме прочитала картка, написано ' +
+      'на ній самій',
     izdaciNaslov: 'Витрати за рік',
     okolnostiNaslov: 'Ваші обставини',
     okolnostiPrijevod: 'від цього залежать ставки й пільги',
@@ -219,22 +224,23 @@ export const uk = {
   },
 
   kartica: {
-    ostaje: 'лишається за рік, до фактичного izdatak',
+    ostaje: 'лишається за рік, до фактичних izdatak (витрат)',
     mjesecno: (iznos: string) => `≈ ${iznos} на місяць`,
     ukupnoObveze: 'забирають податки і внески',
     ukupnoOpterecenje: (iznos: string, postotak: string, trosak: string) =>
       `разом із внеском роботодавця — ${iznos}, тобто ${postotak} від ${trosak}, у які ви ` +
       'обходитесь фірмі. Саме це число зіставне зі ставкою обрту',
-    efektivnaStopaKratko: (postotak: string) => `${postotak} від primitak`,
+    efektivnaStopaKratko: (postotak: string) => `${postotak} від primitak (надходжень)`,
     efektivnaStopa: 'ефективна ставка',
     razredPrijevod: (gornjaGranica: string) => `розряд · стеля ${gornjaGranica}`,
-    udioOsnovice: (stopa: string) => `${stopa} від osnovica`,
+    udioOsnovice: (stopa: string) => `${stopa} від osnovica (бази внесків)`,
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} від ${poreznaOsnovica}`,
     davanja: 'Обов’язкові платежі',
     davanjaNema: 'не застосовується',
     neprimjenjivo: (koliko: string) => `не застосовується: ${koliko}`,
-    doprinosiUkupno: 'doprinosi разом',
-    doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} на місяць`,
+    doprinosiUkupno: 'doprinosi (внески) разом',
+    doprinosiOsnovica: (mjesecnaOsnovica: string) =>
+      `osnovica (база, з якої їх рахують) ${mjesecnaOsnovica} на місяць`,
     ustedaUzRadniOdnos: (usteda: string) => `на ${usteda} менше, ніж без найму`,
     naTeretOsobe: (svoje: string, tude: string) =>
       `з ваших грошей — ${svoje}; решту ${tude} платить роботодавець понад плаћу, тож у ` +
@@ -319,7 +325,8 @@ export const uk = {
         'встановлена на повний робочий час, тож така сума означає неповний.',
       'placa-podignuta-na-najnizu-osnovicu': (trazena: string, primijenjena: string) =>
         `Ви задали ${trazena} на місяць, але внески нараховані з ${primijenjena}: нижче за цю ` +
-        'osnovica закон рахувати не дозволяє. Саме тому «поставлю собі мінімальну зарплату, ' +
+        'osnovica (бази внесків) закон рахувати не дозволяє. Саме тому «поставлю собі мінімальну ' +
+        'зарплату, ' +
         'решту виведу дивідендами» працює гірше, ніж здається.',
       'prag-plave-karte-dosegnut': (prag: string) =>
         `Для EU plava karta потрібна брутто-plaća від ${prag} на місяць — ця сума поріг ` +
@@ -358,6 +365,7 @@ export const uk = {
 
   obriv: {
     naslov: 'Межа розряду попереду',
+    samoPausal: 'паушальний обрт',
     doGranice: (doGranice: string, granica: string) =>
       `До межі ${granica} лишилося ${doGranice} річного primitak.`,
     skok: (ukupno: string, porez: string, doprinosi: string) =>
@@ -373,10 +381,11 @@ export const uk = {
     prijevod:
       'Усередині розряду сума фіксована — тому на межі платіж стрибає без стрибка primitak. ' +
       'Драбина стосується лише паушального обрту: решта режимів розрядів не знає.',
-    granica: 'стеля primitak',
-    osnovica: 'paušalni dohodak',
+    samoPausal: 'лише паушальний обрт — 1 картка з 6',
+    granica: 'стеля primitak (надходжень)',
+    osnovica: 'paušalni dohodak (умовний дохід)',
     porez: 'paušalni porez',
-    doprinosi: 'doprinosi',
+    doprinosi: 'doprinosi (внески)',
     ukupno: 'разом за рік',
     vas: 'ваш розряд',
   },
@@ -428,12 +437,15 @@ export const uk = {
     naslov: 'Припущення',
     godina: (godina: string) => `Правила чинні на ${godina} рік.`,
     objasnjenje:
-      'Внески рахуються з цієї величини: osnovica = prosječna plaća × koeficijent, і далі з ' +
+      'Внески рахуються з цієї величини: osnovica (база внесків) = prosječna plaća × ' +
+      'koeficijent, і далі з ' +
       'неї 36,5 %. Закон її не встановлює, а лише на неї посилається, тому вона лежить окремим ' +
       'шаром від правил — перемикач сценарію її не чіпає. Саме через неї два офіційні ' +
       'розрахунки на 2027 рік дають різні суми внесків за однакових ставок: обґрунтування ' +
       'законопроєкту рахує від чинних 1 993 €, калькулятор HOK — від прогнозних 2 180 €.',
-    placaPrijevod: 'середня місячна брутто-зарплата, з якої закон виводить osnovica',
+    placaPrijevod:
+      'середня місячна брутто-зарплата, з якої закон виводить osnovica — базу, з якої всім ' +
+      'нараховують внески',
     mjesecno: '€ на місяць',
     objavljena: 'опубліковано',
     prognoza: 'прогноз',

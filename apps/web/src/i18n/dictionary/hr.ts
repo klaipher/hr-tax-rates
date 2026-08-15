@@ -54,8 +54,11 @@ export const hr: Dictionary = {
   },
 
   unos: {
-    oznaka: 'Godišnji primitak',
-    prijevod: 'primici od djelatnosti po načelu blagajne',
+    oznaka: 'Godišnji iznos',
+    prijevod:
+      'svaki režim čita je na svoj način: obrt kao primitak (po načelu blagajne), radni ' +
+      'odnos kao bruto plaću, d.o.o. kao prihod društva. Što je koja kartica pročitala, ' +
+      'piše na njoj samoj',
     izdaciNaslov: 'Izdaci godišnje',
     okolnostiNaslov: 'Vaše okolnosti',
     okolnostiPrijevod: 'o njima ovise stope i olakšice',
@@ -317,6 +320,7 @@ export const hr: Dictionary = {
 
   obriv: {
     naslov: 'Granica razreda je pred vama',
+    samoPausal: 'paušalni obrt',
     doGranice: (doGranice: string, granica: string) =>
       `Do granice ${granica} ostalo je ${doGranice} godišnjeg primitka.`,
     skok: (ukupno: string, porez: string, doprinosi: string) =>
@@ -332,6 +336,7 @@ export const hr: Dictionary = {
     prijevod:
       'Unutar razreda iznos je nepromjenjiv — zato na granici plaćanje skoči bez skoka ' +
       'primitka. Ljestvica se tiče samo paušalnog obrta: ostali režimi razrede ne poznaju.',
+    samoPausal: 'samo paušalni obrt — 1 kartica od 6',
     granica: 'gornja granica primitka',
     osnovica: 'paušalni dohodak',
     porez: 'paušalni porez',

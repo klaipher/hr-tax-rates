@@ -44,7 +44,8 @@ export const en: Dictionary = {
   zaglavlje: {
     naslov: 'Croatian tax regimes',
     podnaslov:
-      'One annual primitak — every regime at once, with a link to the article of law behind ' +
+      'One annual primitak (receipts) — every regime at once, with a link to the article of ' +
+      'law behind ' +
       'each number.',
   },
 
@@ -54,8 +55,11 @@ export const en: Dictionary = {
   },
 
   unos: {
-    oznaka: 'Annual primitak',
-    prijevod: 'receipts from the activity, on a cash basis',
+    oznaka: 'Annual amount',
+    prijevod:
+      'each regime reads it differently: an obrt as primitak (receipts on a cash basis), ' +
+      'employment as a gross salary, a d.o.o. as company revenue. What each card read is ' +
+      'stated on the card itself',
     izdaciNaslov: 'Expenses per year',
     okolnostiNaslov: 'Your circumstances',
     okolnostiPrijevod: 'these decide the rates and reliefs that apply',
@@ -192,22 +196,23 @@ export const en: Dictionary = {
   },
 
   kartica: {
-    ostaje: 'left over per year, before the actual izdatak',
+    ostaje: 'left over per year, before the actual izdatak (business expenses)',
     mjesecno: (iznos: string) => `≈ ${iznos} a month`,
     ukupnoObveze: 'taxes and contributions take',
     ukupnoOpterecenje: (iznos: string, postotak: string, trosak: string) =>
       `with the employer's contribution — ${iznos}, or ${postotak} of the ${trosak} you ` +
       'cost the firm. This is the figure comparable with an obrt rate',
-    efektivnaStopaKratko: (postotak: string) => `${postotak} of the primitak`,
+    efektivnaStopaKratko: (postotak: string) => `${postotak} of the primitak (receipts)`,
     efektivnaStopa: 'effective rate',
     razredPrijevod: (gornjaGranica: string) => `bracket · cap ${gornjaGranica}`,
-    udioOsnovice: (stopa: string) => `${stopa} of the osnovica`,
+    udioOsnovice: (stopa: string) => `${stopa} of the osnovica (contribution base)`,
     udioPoreza: (stopa: string, poreznaOsnovica: string) => `${stopa} of ${poreznaOsnovica}`,
     davanja: 'Mandatory levies',
     davanjaNema: 'not applicable',
     neprimjenjivo: (koliko: string) => `not applicable: ${koliko}`,
-    doprinosiUkupno: 'doprinosi in total',
-    doprinosiOsnovica: (mjesecnaOsnovica: string) => `osnovica ${mjesecnaOsnovica} per month`,
+    doprinosiUkupno: 'doprinosi (contributions) in total',
+    doprinosiOsnovica: (mjesecnaOsnovica: string) =>
+      `osnovica (the base they are charged on) ${mjesecnaOsnovica} per month`,
     ustedaUzRadniOdnos: (usteda: string) => `${usteda} less than without employment`,
     naTeretOsobe: (svoje: string, tude: string) =>
       `${svoje} out of your own money; the remaining ${tude} the employer pays on top of the ` +
@@ -283,7 +288,8 @@ export const en: Dictionary = {
         'the minimum is set for full-time work, so such a figure means part-time.',
       'placa-podignuta-na-najnizu-osnovicu': (trazena: string, primijenjena: string) =>
         `You set ${trazena} a month, but contributions were computed from ${primijenjena}: the ` +
-        'law does not allow a lower osnovica. That is why “pay myself the minimum wage and take ' +
+        'law does not allow a lower osnovica (contribution base). That is why “pay myself the ' +
+        'minimum wage and take ' +
         'the rest as dividends” works far less well than it sounds.',
       'prag-plave-karte-dosegnut': (prag: string) =>
         `An EU Blue Card requires a gross salary from ${prag} a month — this figure clears it. ` +
@@ -322,6 +328,7 @@ export const en: Dictionary = {
 
   obriv: {
     naslov: 'A razred boundary lies ahead',
+    samoPausal: 'flat-rate obrt',
     doGranice: (doGranice: string, granica: string) =>
       `${doGranice} of annual primitak left before the ${granica} boundary.`,
     skok: (ukupno: string, porez: string, doprinosi: string) =>
@@ -338,10 +345,11 @@ export const en: Dictionary = {
       'Inside a razred the amount is fixed — which is why the payment jumps at the boundary ' +
       'without a jump in primitak. The ladder concerns paušalni obrt only: the other regimes ' +
       'know no razredi.',
+    samoPausal: 'flat-rate obrt only — 1 card out of 6',
     granica: 'primitak cap',
-    osnovica: 'paušalni dohodak',
+    osnovica: 'paušalni dohodak (deemed income)',
     porez: 'paušalni porez',
-    doprinosi: 'doprinosi',
+    doprinosi: 'doprinosi (contributions)',
     ukupno: 'total per year',
     vas: 'your razred',
   },
@@ -387,13 +395,16 @@ export const en: Dictionary = {
     naslov: 'Assumptions',
     godina: (godina: string) => `The rules are those in force for ${godina}.`,
     objasnjenje:
-      'Contributions are computed from this figure: osnovica = prosječna plaća × koeficijent, ' +
+      'Contributions are computed from this figure: osnovica (the contribution base) = ' +
+      'prosječna plaća × koeficijent, ' +
       'then 36.5% of that. The law does not set it, it only refers to it, so it sits in a layer ' +
       'separate from the rules — the scenario switch leaves it alone. It is also why the two ' +
       'official 2027 calculations differ on contributions while agreeing on the rates: the ' +
       'bill’s impact assessment works from the current 1 993 €, the HOK calculator from a ' +
       'forecast 2 180 €.',
-    placaPrijevod: 'the average monthly gross salary the law derives the osnovica from',
+    placaPrijevod:
+      'the average monthly gross salary the law derives the osnovica from — the base everyone’s ' +
+      'contributions are charged on',
     mjesecno: '€ per month',
     objavljena: 'published',
     prognoza: 'forecast',
