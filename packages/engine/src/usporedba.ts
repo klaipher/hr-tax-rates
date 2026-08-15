@@ -438,12 +438,51 @@ const obrtNaDohodak = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod =>
     },
     { ...podloga, obrtNaDohodak: pravila },
   )
-  if (ishod.status !== 'izracunato' || unos.uzRadniOdnos !== true) return ishod
+  if (ishod.status !== 'izracunato') return ishod
+
+  // Поріг переступають раз і назавжди: `čl. 2. st. 4.` дивиться на
+  // **попередній** період, тож цьогорічний розрахунок лишається правильним, а
+  // наступного року вибір робить уже не людина.
+  const sPragom: Ishod = {
+    status: 'izracunato',
+    izracun: {
+      ...ishod.izracun,
+      napomene: [...ishod.izracun.napomene, ...napomenaOPrelaskuNaDobit(unos, podloga)],
+    },
+  }
+
+  if (unos.uzRadniOdnos !== true) return sPragom
 
   return {
     status: 'izracunato',
-    izracun: uzRadniOdnos(ishod.izracun, podloga, unos.godisnjiPrimitak),
+    izracun: uzRadniOdnos(sPragom.izracun, podloga, unos.godisnjiPrimitak),
   }
+}
+
+/**
+ * Застереження про обов'язковий перехід у систему `porez na dobit`.
+ *
+ * Порожньо, коли правил цього режиму немає або поріг не переступлено: закон
+ * каже «veći od», тож рівно на мільйоні ще нічого не сталося.
+ */
+const napomenaOPrelaskuNaDobit = (
+  unos: UnosUsporedbe,
+  podloga: PodlogaUsporedbe,
+): readonly NapomenaRezima[] => {
+  const pravila = podloga.obrtNaDobit
+  if (pravila === undefined) return []
+
+  const prag = eur(pravila.ulazakUSustav.pragPrimitka.value)
+  if (!isGreaterThan(unos.godisnjiPrimitak, prag)) return []
+
+  return [
+    {
+      kod: 'porez-na-dobit-postaje-obvezan',
+      prag,
+      izvor: pravila.ulazakUSustav.pragPrimitka.source,
+      izvorDobrovoljnog: pravila.ulazakUSustav.izvorDobrovoljnogUlaska,
+    },
+  ]
 }
 
 const obrtNaDobit = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {

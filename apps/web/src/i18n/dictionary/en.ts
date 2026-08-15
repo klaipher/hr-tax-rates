@@ -275,6 +275,12 @@ export const en: Dictionary = {
         `same person costs an employer ${trosak} a year — the salary itself plus ` +
         `${doprinosi} of contributions paid on top of it. Those are the two prices worth ` +
         'comparing.',
+      'porez-na-dobit-postaje-obvezan': (prag: string) =>
+        `This year's figures are right, but ${prag} of annual primitak is the threshold at ` +
+        'which the porez na dobit system becomes mandatory from the next tax period. The law ' +
+        'looks at the previous year, so the choice you are weighing now will be made for you ' +
+        'next year. You may also enter that system voluntarily, by declaration, without ' +
+        'crossing any threshold.',
       'neoporezivi-primici-nisu-uracunati':
         'Christmas bonuses, meal and travel allowances and other tax-free payments are not ' +
         'included: they come from an employer’s discretion, not from the law. In practice they ' +

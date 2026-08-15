@@ -21,6 +21,15 @@ import { MJESECNI_PRAG_VISE_STOPE, OSNOVNI_OSOBNI_ODBITAK } from './zajednicke-v
 const CHECKED_ON = '2026-08-04' as const
 
 /**
+ * Дата, коли `čl. 2.` перечитано на тексті акта.
+ *
+ * Окремо, бо решта чисел цього файлу цією звіркою не перевірялася. NN 151/25
+ * переписав саме цю статтю — залишити її під старою датою означало б
+ * засвідчити перевірку редакції, якої тоді ще не існувало.
+ */
+const CHECKED_ON_ULAZAK = '2026-08-15' as const
+
+/**
  * `Zakon o porezu na dobit` — акт, якого ще немає в спільному `legal.ts`.
  *
  * Константа живе тут, а не там: спільний файл посилань належить іншому
@@ -51,6 +60,34 @@ export interface PorezNaDobitPravila {
    * Закон каже «jednaki ili veći», тож рівно на порозі діє вже вища.
    */
   readonly pragPrihoda: Sourced<Decimal>
+}
+
+/**
+ * Коли обрт потрапляє в систему `porez na dobit` — і як із неї не вийти.
+ *
+ * Число тут те саме, що в `pragPrihoda`, — мільйон, — але це інший мільйон.
+ * `čl. 28.` міряє `prihodi` **поточного** періоду й вирішує ставку; `čl. 2.
+ * st. 4.` міряє `ukupni primitak` **попереднього** й вирішує, чи ти взагалі
+ * в цій системі. Обрт може мати мільйонний `primitak` торік і нульові
+ * `prihodi` цього року — і все одно бути обов'язковим платником. Тримати
+ * одне поле на два поняття означало б втратити саме цю різницю.
+ *
+ * Історична пастка: до NN 151/25 критеріїв обов'язкового входу було кілька —
+ * ще й вартість активів, і кількість працівників. Лишився один, і всі старі
+ * пояснення в мережі досі перелічують три.
+ */
+export interface UlazakUSustavPravila {
+  /**
+   * `ukupni primitak` попереднього податкового періоду, понад який система
+   * стає обов'язковою. Закон каже «veći od», тож рівно на мільйоні — ще ні.
+   */
+  readonly pragPrimitka: Sourced<Decimal>
+  /**
+   * Стаття про добровільний вхід: обрт може заявити, що платитиме
+   * `porez na dobit` замість `porez na dohodak`, не переступивши жодного
+   * порога.
+   */
+  readonly izvorDobrovoljnogUlaska: LegalReference
 }
 
 /**
@@ -97,6 +134,7 @@ export interface PoduzetnickaPlacaPravila {
 /** Усе, що потрібно, щоб порахувати `obrt na dobit`. */
 export interface ObrtNaDobitPravila {
   readonly porezNaDobit: PorezNaDobitPravila
+  readonly ulazakUSustav: UlazakUSustavPravila
   readonly poduzetnickaPlaca: PoduzetnickaPlacaPravila
   /**
    * Ставка `porez na dohodak od kapitala` на виплату `dobit` власнику.
@@ -128,6 +166,18 @@ export const obrtNaDobit2026: ObrtNaDobitPravila = {
       article: 'čl. 28.',
       checkedOn: CHECKED_ON,
     }),
+  },
+  ulazakUSustav: {
+    pragPrimitka: sourced(new Decimal('1000000'), {
+      ...ZAKON_O_POREZU_NA_DOBIT,
+      article: 'čl. 2. st. 4.',
+      checkedOn: CHECKED_ON_ULAZAK,
+    }),
+    izvorDobrovoljnogUlaska: {
+      ...ZAKON_O_POREZU_NA_DOBIT,
+      article: 'čl. 2. st. 3.',
+      checkedOn: CHECKED_ON_ULAZAK,
+    },
   },
   poduzetnickaPlaca: {
     // Naredba o iznosima osnovica za obračun doprinosa za 2026. (NN 150/25,

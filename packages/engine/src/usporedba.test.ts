@@ -439,6 +439,17 @@ describe('усі три обртні режими в одному порівня
       expect(toCentString(z.netoZaOsobu)).toBe(toCentString(bez.netoZaOsobu))
     })
 
+    it('поріг входу в систему porez na dobit називається до того, як стане обов’язком', () => {
+      // `čl. 2. st. 4.` дивиться на **попередній** період, тож цьогорічний
+      // розрахунок лишається правильним — застереження, а не недоступність.
+      const kodovi = (primitak: number) =>
+        izracun('obrt-na-dohodak', { godisnjiPrimitak: eur(primitak) }).napomene.map((n) => n.kod)
+
+      // Закон каже «veći od», тож рівно на мільйоні ще нічого не сталося.
+      expect(kodovi(1_000_000)).not.toContain('porez-na-dobit-postaje-obvezan')
+      expect(kodovi(1_000_001)).toContain('porez-na-dobit-postaje-obvezan')
+    })
+
     it('витрати форми не віднімаються від плаће: у найманого їх немає', () => {
       // Обртні режими віднімають витрати форми, найм — ні: це витрати
       // діяльності, а не людини. Найманий працівник не орендує офісу.

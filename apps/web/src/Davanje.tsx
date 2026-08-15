@@ -128,6 +128,15 @@ export const NapomenaIzracuna = ({ napomena }: { readonly napomena: NapomenaRezi
         </p>
       )
 
+    case 'porez-na-dobit-postaje-obvezan':
+      return (
+        <p className="razlog razlog--upozorenje">
+          {tekst['porez-na-dobit-postaje-obvezan'](format.eur(napomena.prag))}
+          <Izvor izvor={napomena.izvor} />
+          <Izvor izvor={napomena.izvorDobrovoljnog} />
+        </p>
+      )
+
     case 'neoporezivi-primici-uracunati':
       return (
         <p className="razlog">

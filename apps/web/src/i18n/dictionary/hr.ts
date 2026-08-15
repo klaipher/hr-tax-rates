@@ -268,6 +268,11 @@ export const hr: Dictionary = {
         `kozmetička: klijent obrta isplaćuje točno taj iznos, a poslodavca ista osoba ` +
         `stoji ${trosak} godišnje — sama plaća plus ${doprinosi} doprinosa koje plaća ` +
         'povrh nje. Upravo te dvije cijene vrijedi usporediti međusobno.',
+      'porez-na-dobit-postaje-obvezan': (prag: string) =>
+        `Ovogodišnji je izračun točan, ali ${prag} godišnjeg primitka prag je od kojega ` +
+        'sustav poreza na dobit postaje obvezan od sljedećeg poreznog razdoblja. Zakon gleda ' +
+        'prethodnu godinu, pa će izbor koji sada razmatrate sljedeće godine napraviti on. U ' +
+        'taj se sustav može ući i samostalno, izjavom, bez prelaska ijednog praga.',
       'neoporezivi-primici-nisu-uracunati':
         'Božićnica, prehrana, prijevoz i ostali neoporezivi primici nisu uračunati: njih daje ' +
         'volja poslodavca, a ne zakon. U praksi dosežu nekoliko tisuća eura godišnje, pa ' +
