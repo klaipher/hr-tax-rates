@@ -58,3 +58,32 @@ export const sProsjecnomPlacom = (
   pretpostavke: Pretpostavke,
   iznos: Decimal.Value,
 ): Pretpostavke => ({ ...pretpostavke, prosjecnaPlaca: prosjecnaPlacaZa(iznos) })
+
+/**
+ * Величина разом із походженням — для середньої за **повний попередній рік**.
+ *
+ * Окрема функція, а не другий аргумент до `prosjecnaPlacaZa`: офіційне
+ * значення тут інше (2 016 € проти 1 993 €), публікує його DZS окремим
+ * повідомленням і в інший строк, і збіг із чужим пресетом не мав би зберігати
+ * його джерело. Дві статистики, два списки офіційних значень.
+ */
+export const prosjecnaPlacaPrethodneGodineZa = (iznos: Decimal.Value): Pretpostavka<Decimal> => {
+  const sluzbena = pretpostavke2026.prosjecnaPlacaPrethodneGodine
+  if (sluzbena?.value.equals(iznos) === true) return sluzbena
+
+  return { value: new Decimal(iznos), source: { status: 'rucno' } }
+}
+
+/**
+ * Той самий набір припущень, але з іншою середньою за повний попередній рік.
+ *
+ * Пара до `sProsjecnomPlacom` і з тієї самої причини: складати `pretpostavke`
+ * літералом у шарі показу означає одного дня тихо загубити сусіднє поле.
+ */
+export const sProsjecnomPlacomPrethodneGodine = (
+  pretpostavke: Pretpostavke,
+  iznos: Decimal.Value,
+): Pretpostavke => ({
+  ...pretpostavke,
+  prosjecnaPlacaPrethodneGodine: prosjecnaPlacaPrethodneGodineZa(iznos),
+})

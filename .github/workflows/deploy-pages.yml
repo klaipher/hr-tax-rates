@@ -38,13 +38,36 @@ jobs:
       # Той самий гейт, що й у CI: на main не публікується неперевірена збірка.
       - run: pnpm run check
 
-      # Pages віддає сайт із /<repo>/, тож базовий шлях приходить від configure-pages.
-      - run: pnpm run build
+      # Pages віддає сайт із /<repo>/, тож базовий шлях приходить від
+      # configure-pages. Застосунки збираються нарізно, бо базові шляхи в них
+      # різні: порівняння живе в корені сайту, розрахунок другої діяльності —
+      # у підкаталозі. Спільна `pnpm -r build` дала б обом один шлях, і
+      # вкладений застосунок шукав би своє добро в корені.
+      - run: pnpm --filter @hr-tax/web build
         env:
           BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
+      # Слеш на стику доклеюється тут, а не в рядку нижче: `configure-pages`
+      # віддає `base_path` без кінцевого слеша, і склеєний навпростець шлях
+      # дав би `/hr-tax-ratesdruga-djelatnost/`. Помилка тиха — збірка
+      # проходить, а сторінка на Pages лишається білою.
+      - name: Базовий шлях підкаталогу
+        id: pod
+        run: |
+          base='${{ steps.pages.outputs.base_path }}'
+          printf 'base=%s\n' "${base%/}/druga-djelatnost/" >> "$GITHUB_OUTPUT"
+
+      - run: pnpm --filter @hr-tax/druga-djelatnost build
+        env:
+          BASE_PATH: ${{ steps.pod.outputs.base }}
+
       # SPA-фолбек: без цього глибокі посилання дають 404 від Pages.
       - run: cp apps/web/dist/index.html apps/web/dist/404.html
+
+      # Другий застосунок стає підкаталогом того самого сайту: Pages дає один
+      # сайт на репозиторій, а два калькулятори з одного рушія не мають
+      # роз'їжджатися по різних адресах.
+      - run: cp -R apps/druga-djelatnost/dist apps/web/dist/druga-djelatnost
 
       - uses: actions/upload-pages-artifact@v5
         with:

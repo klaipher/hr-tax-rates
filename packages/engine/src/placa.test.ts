@@ -46,13 +46,13 @@ const kodovi = (dopune: Partial<UlazPlace> = {}) =>
 
 describe('plaća', () => {
   describe('дві сторони внеску', () => {
-    it('утримує з плаће лише MO, а ZO залишає роботодавцю', () => {
+    it('утримує з plaća лише MO, а ZO залишає роботодавцю', () => {
       const { doprinosi } = izracunaj()
 
       // 2 000 × 15 % × 12 = 3 600; 2 000 × 5 % × 12 = 1 200.
       expect(toCentString(doprinosi.moPrviStup.godisnjiIznos)).toBe('3600.00')
       expect(toCentString(doprinosi.moDrugiStup.godisnjiIznos)).toBe('1200.00')
-      // 2 000 × 16,5 % × 12 = 3 960 — понад плаћу, а не з неї.
+      // 2 000 × 16,5 % × 12 = 3 960 — понад plaća, а не з неї.
       expect(toCentString(doprinosi.zo.godisnjiIznos)).toBe('3960.00')
 
       expect(toCentString(doprinosi.ukupnoGodisnje)).toBe('8760.00')
@@ -80,8 +80,8 @@ describe('plaća', () => {
       expect(vlastita.doprinosi.zo.teretiOsobu).toBe(true)
       expect(toCentString(vlastita.doprinosi.ukupnoGodisnjeNaTeretOsobe)).toBe('8760.00')
 
-      // «На руки» з самої плаће при цьому не змінюється: ZO як не утримували
-      // з плаће, так і не утримують — він лише зменшує dobit у сусідньому
+      // «На руки» з самої plaća при цьому не змінюється: ZO як не утримували
+      // з plaća, так і не утримують — він лише зменшує dobit у сусідньому
       // розрахунку.
       expect(toCentString(vlastita.godisnjiNeto)).toBe(toCentString(tudja.godisnjiNeto))
     })
@@ -224,9 +224,9 @@ describe('plaća', () => {
   })
 
   describe('законна підлога бази', () => {
-    it('піднімає базу внесків, не чіпаючи самої плаће', () => {
+    it('піднімає базу внесків, не чіпаючи самої plaća', () => {
       // 600 брутто — законна робота на пів ставки. Внески закон однаково
-      // нарахує з 757,34, а плаћа лишається 600.
+      // нарахує з 757,34, а plaća лишається 600.
       const { doprinosi, mjesecnaOsnovicaDoprinosa, godisnjaBrutoPlaca } = izracunaj({
         mjesecnaBrutoPlaca: eur(600),
       })
@@ -238,7 +238,7 @@ describe('plaća', () => {
       expect(toCentString(doprinosi.ukupnoGodisnjeNaTeretOsobe)).toBe('1277.62')
     })
 
-    it('вища плаћа підлоги не помічає', () => {
+    it('вища plaća підлоги не помічає', () => {
       expect(toCentString(izracunaj().mjesecnaOsnovicaDoprinosa)).toBe('2000.00')
     })
   })
@@ -252,12 +252,12 @@ describe('plaća', () => {
       return napomena === undefined ? 'немає' : toCentString(napomena.umanjenje)
     }
 
-    it('до 700 € знижка стала — 300 €, скільки б плаћа не падала', () => {
+    it('до 700 € знижка стала — 300 €, скільки б plaća не падала', () => {
       expect(umanjenje(eur(700))).toBe('300.00')
       expect(umanjenje(eur(400))).toBe('300.00')
     })
 
-    it('між 700 і 1 300 спадає вдвічі повільніше за плаћу', () => {
+    it('між 700 і 1 300 спадає вдвічі повільніше за plaća', () => {
       // 1 000 €: знижка 0,5 × (1 300 − 1 000) = 150.
       // MO I: (1 000 − 150) × 15 % × 12 = 1 530.
       const { doprinosi } = izracunaj({ mjesecnaBrutoPlaca: eur(1000) })
@@ -285,9 +285,9 @@ describe('plaća', () => {
       expect(toCentString(doprinosi.zo.godisnjiIznos)).toBe('1980.00')
     })
 
-    it('поріг міряється по фактичній плаћі, а не по піднятій базі', () => {
-      // 600 € плаће: база піднята до 757,34 законною підлогою, але знижку
-      // закон дає за плаћею — і дає повні 300, а не 0,5 × (1 300 − 757,34).
+    it('поріг міряється по фактичній plaća, а не по піднятій базі', () => {
+      // 600 € plaća: база піднята до 757,34 законною підлогою, але знижку
+      // закон дає за plaća — і дає повні 300, а не 0,5 × (1 300 − 757,34).
       const { doprinosi } = izracunaj({ mjesecnaBrutoPlaca: eur(600) })
 
       // (757,34 − 300) × 15 % × 12 = 823,212.
@@ -321,7 +321,7 @@ describe('plaća', () => {
       expect(kodovi({ mjesecnaBrutoPlaca: eur(1050) })).not.toContain('ispod-minimalne-place')
     })
 
-    it('каже, коли закон підняв базу вище за задану плаћу', () => {
+    it('каже, коли закон підняв базу вище за задану plaća', () => {
       expect(kodovi({ mjesecnaBrutoPlaca: eur(600) })).toContain(
         'placa-podignuta-na-najnizu-osnovicu',
       )
@@ -329,8 +329,8 @@ describe('plaća', () => {
     })
 
     it('про вісь слайдера мовчить: цього припущення модуль не робив', () => {
-      // Прирівнювання введеного числа до брутто-плаће робить режим, а не цей
-      // модуль — він дістав місячну плаћу й нічого не припускав.
+      // Прирівнювання введеного числа до bruto plaća робить режим, а не цей
+      // модуль — він дістав місячну plaća й нічого не припускав.
       expect(kodovi()).not.toContain('bruto-placa-nije-primitak')
     })
 
@@ -388,7 +388,7 @@ describe('plaća', () => {
       expect(toCentString(doprinosi.ukupnoGodisnje)).toBe('4800.00')
     })
 
-    it('здешевлює плаћу роботодавцю рівно на ZO', () => {
+    it('здешевлює plaća роботодавцю рівно на ZO', () => {
       // 24 000 × 16,5 % = 3 960 — саме стільки роботодавець не платить.
       const bez = izracunaj()
       const zPravom = izracunaj({ prvoZaposlenje: true })
@@ -401,7 +401,7 @@ describe('plaća', () => {
     it('на «на руки» не впливає ані на цент', () => {
       // ZO ніколи не був грошима працівника, тож звільнення від нього не може
       // додати йому нічого. Якби це число рушило — знак, що ZO десь відняли
-      // від плаће, якої він не торкався.
+      // від plaća, якої він не торкався.
       expect(toCentString(izracunaj({ prvoZaposlenje: true }).godisnjiNeto)).toBe(
         toCentString(izracunaj().godisnjiNeto),
       )
@@ -454,7 +454,7 @@ describe('plaća', () => {
   })
 
   describe('umanjenje za povratnika — čl. 46. st. 3.', () => {
-    it('повертає весь податок із плаће, а не частину за нижчою ставкою', () => {
+    it('повертає весь податок із plaća, а не частину за нижчою ставкою', () => {
       const { umanjenjeZaPovratnika, ukupniPovrat } = izracunaj({
         mjesecnaBrutoPlaca: eur(8000),
         povratnik: true,

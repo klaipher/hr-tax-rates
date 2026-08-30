@@ -1,0 +1,24 @@
+{
+  "name": "@hr-tax/druga-djelatnost",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Вебзастосунок: паушальний обрт поряд із роботою за наймом.",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@hr-tax/data": "workspace:*",
+    "@hr-tax/engine": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "vite": "catalog:"
+  }
+}

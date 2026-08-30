@@ -358,6 +358,13 @@ export const App = () => {
         <p>
           <IzvorStatistike izvor={prosjecnaPlaca.source} />
         </p>
+        {/* Сусідній калькулятор на тому самому сайті. Питання в нього інше:
+            не «який режим обрати», а «скільки я віддаю з кожного джерела»,
+            коли джерел двоє одночасно (ADR-0006). */}
+        <p>
+          {t.pretpostavke.susjedniKalkulator}{' '}
+          <a href="druga-djelatnost/">{t.pretpostavke.susjedniKalkulatorPoveznica}</a>
+        </p>
       </footer>
     </main>
   )

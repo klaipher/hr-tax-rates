@@ -20,13 +20,13 @@ import type { Doprinosi, Podloga, Porez } from './types.ts'
  *
  * 1. `poduzetnička plaća` — власник призначає собі зарплату. З неї
  *    утримуються внески (`čl. 81. t. 1.` ZoD), понад неї обрт платить ZO
- *    (`t. 2.`), а сама плаћа оподатковується як плаћа за законом про
+ *    (`t. 2.`), а сама plaća оподатковується як plaća за законом про
  *    `porez na dohodak` і водночас іде у витрати (`čl. 21. st. 1. t. 2.`).
- * 2. `porez na dobit` — з того, що лишилося після витрат разом із плаћою.
+ * 2. `porez na dobit` — з того, що лишилося після витрат разом із plaća.
  * 3. `porez na dohodak od kapitala` — коли власник забирає `dobit` собі.
  *
  * Три податки, два закони, і в розбивці вони не зливаються: перший
- * рахується з плаће, другий із `dobit` за методом нарахування, третій — із
+ * рахується з plaća, другий із `dobit` за методом нарахування, третій — із
  * залишку після другого.
  */
 
@@ -83,24 +83,24 @@ export interface PoduzetnickaPlaca {
   readonly godisnjiIznos: Money<'EUR'>
   /**
    * Внески «з osnovica» (`čl. 81. t. 1.`) — MO обох стовпів. Утримуються
-   * з самої плаће, тобто зменшують те, що власник отримає на руки.
+   * з самої plaća, тобто зменшують те, що власник отримає на руки.
    */
   readonly doprinosiIzPlace: Money<'EUR'>
   /**
    * Внески «на osnovicu» (`čl. 81. t. 2.`) — ZO. Обрт платить їх понад
-   * плаћу, тож на руки вони не впливають, зате збільшують витрати.
+   * plaća, тож на руки вони не впливають, зате збільшують витрати.
    */
   readonly doprinosiNaPlacu: Money<'EUR'>
-  /** `porez na dohodak` із плаће — перший із трьох податків режиму. */
+  /** `porez na dohodak` із plaća — перший із трьох податків режиму. */
   readonly porez: Porez
-  /** Скільки з плаће справді дійде до власника за рік. */
+  /** Скільки з plaća справді дійде до власника за рік. */
   readonly godisnjiNeto: Money<'EUR'>
   /**
-   * Скільки плаћа коштує обрту: брутто разом із внесками на неї. Рівно на
+   * Скільки plaća коштує обрту: брутто разом із внесками на неї. Рівно на
    * цю суму зменшується база `porez na dobit`.
    */
   readonly trosakZaObrt: Money<'EUR'>
-  /** Стаття, що робить плаћу `osnovica` внесків. */
+  /** Стаття, що робить plaća `osnovica` внесків. */
   readonly izvor: LegalReference
 }
 
@@ -113,10 +113,10 @@ export interface PoduzetnickaPlaca {
  */
 export interface IzracunObrtNaDobit {
   readonly poduzetnickaPlaca: PoduzetnickaPlaca
-  /** `dobit` до оподаткування: `prihod − rashod −` вартість плаће. */
+  /** `dobit` до оподаткування: `prihod − rashod −` вартість plaća. */
   readonly dobitPrijeOporezivanja: Money<'EUR'>
   /**
-   * Три податки в порядку, у якому вони настають: із плаће, з `dobit`, з
+   * Три податки в порядку, у якому вони настають: із plaća, з `dobit`, з
    * виплати власнику. Перший — той самий об'єкт, що `poduzetnickaPlaca.porez`.
    */
   readonly porezi: readonly Porez[]
@@ -136,7 +136,7 @@ export interface IzracunObrtNaDobit {
  * Внески з `poduzetnička plaća`.
  *
  * Ставки ті самі, що й у решти режимів, — різниця в `osnovica`: тут вона
- * дорівнює самій плаћі (`čl. 82. st. 1.`), а не добутку `prosječna plaća`
+ * дорівнює самій plaća (`čl. 82. st. 1.`), а не добутку `prosječna plaća`
  * і коефіцієнта розряду.
  */
 const doprinosiZa = (mjesecnaOsnovica: Money<'EUR'>, { ruleset }: Podloga): Doprinosi =>
@@ -145,7 +145,7 @@ const doprinosiZa = (mjesecnaOsnovica: Money<'EUR'>, { ruleset }: Podloga): Dopr
 /**
  * `porez na dohodak` із `poduzetnička plaća`.
  *
- * Рахується помісячно, як `predujam` (`čl. 24.`): з плаће віднімаються
+ * Рахується помісячно, як `predujam` (`čl. 24.`): з plaća віднімаються
  * внески, утримані з неї, і місячний `osobni odbitak`, а далі нижча
  * ставка діє до 5 000 € бази на місяць і вища — понад них.
  *
@@ -256,12 +256,12 @@ export const porezNaIsplatuDobiti = (
 /**
  * `poduzetnička plaća` разом із внесками з неї та податком із неї.
  *
- * Плаћа не може бути нижчою за `prosječna plaća × koeficijent`: закон
+ * Plaća не може бути нижчою за `prosječna plaća × koeficijent`: закон
  * рахує внески від тієї суми незалежно від того, скільки власник собі
  * виплатив, тож нижче за неї розрахунок і не спускається.
  *
  * Внески повертаються поруч, а не всередині: `Doprinosi` розбиває їх за
- * видами страхування (MO, ZO), а плаћа — за тим, чия це кишеня («з
+ * видами страхування (MO, ZO), а plaća — за тим, чия це кишеня («з
  * osnovica» чи «на osnovicu»). Два різні розрізи тих самих грошей, і
  * підсумок в обох однаковий.
  */

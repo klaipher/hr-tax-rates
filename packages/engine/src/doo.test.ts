@@ -51,7 +51,7 @@ const porezPoNazivu = (izlaz: { readonly porezi: readonly Porez[] }, hr: string)
 
 describe('d.o.o.', () => {
   describe('vlasnik u radnom odnosu', () => {
-    it('бере законну підлогу плаће, а не мінімальну зарплату', () => {
+    it('бере законну підлогу plaća, а не мінімальну зарплату', () => {
       // 1 993 × 0,65 = 1 295,45 — підлога члена правління в трудовому
       // відношенні (`čl. 19.` Naredbe), а не minimalna plaća 1 050.
       expect(toCentString(sPlacom().doprinosi.mjesecnaOsnovica ?? eur(0))).toBe('1295.45')
@@ -66,7 +66,7 @@ describe('d.o.o.', () => {
       expect(zadano.napomene.map((n) => n.kod)).toContain('placa-podignuta-na-najnizu-osnovicu')
     })
 
-    it('вища за підлогу плаћа береться як є, без застереження', () => {
+    it('вища за підлогу plaća береться як є, без застереження', () => {
       const zadano = sPlacom({ mjesecnaPlacaVlasnika: eur(3000) })
 
       expect(toCentString(zadano.doprinosi.mjesecnaOsnovica ?? eur(0))).toBe('3000.00')
@@ -87,7 +87,7 @@ describe('d.o.o.', () => {
       expect(toCentString(doprinosi.ukupnoGodisnjeNaTeretOsobe)).toBe('5669.98')
     })
 
-    it('платить три податки: з плаће, з dobit і з виплати власнику', () => {
+    it('платить три податки: з plaća, з dobit і з виплати власнику', () => {
       const izlaz = sPlacom()
 
       expect(izlaz.porezi.map((porez) => porez.naziv.hr)).toEqual([
@@ -110,12 +110,12 @@ describe('d.o.o.', () => {
       ).toBe('8844.08')
     })
 
-    it('плаћа разом із внеском понад неї зменшує базу porez na dobit', () => {
+    it('plaća разом із внеском понад неї зменшує базу porez na dobit', () => {
       // 15 545,40 брутто + 2 564,99 ZO. Обидва — витрата фірми.
       expect(toCentString(sPlacom().ukupniTrosakPlace)).toBe('18110.39')
     })
 
-    it('olakšica za mlade доходить і сюди, бо плаћа лишається плаћою', () => {
+    it('olakšica za mlade доходить і сюди, бо plaća лишається plaća', () => {
       const mlad = sPlacom({ dob: 25 })
 
       expect(toCentString(mlad.povratPoreza)).toBe('1048.08')
@@ -124,14 +124,14 @@ describe('d.o.o.', () => {
   })
 
   describe('vlasnik član uprave', () => {
-    it('нараховує внески з приписаної osnovica, а не з плаће', () => {
+    it('нараховує внески з приписаної osnovica, а не з plaća', () => {
       // 1 993 × 1,0 — коефіцієнт члена правління без трудового договору.
       expect(toCentString(clanUprave().doprinosi.mjesecnaOsnovica ?? eur(0))).toBe('1993.00')
       // 23 916 × 36,5 %.
       expect(toCentString(clanUprave().doprinosi.ukupnoGodisnje)).toBe('8729.34')
     })
 
-    it('платить два податки, а не три: плаће немає, тож немає й податку з неї', () => {
+    it('платить два податки, а не три: plaća немає, тож немає й податку з неї', () => {
       expect(clanUprave().porezi.map((porez) => porez.naziv.hr)).toEqual([
         'porez na dobit',
         'porez na dohodak od kapitala pri isplati dobiti',

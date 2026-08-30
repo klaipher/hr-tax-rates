@@ -80,10 +80,10 @@ export interface UnosUsporedbe extends Unos {
    */
   readonly dob?: number | undefined
   /**
-   * Місячна брутто-плаћа, яку власник d.o.o. призначив собі сам. Не задано —
+   * Місячна bruto plaća, яку власник d.o.o. призначив собі сам. Не задано —
    * береться законна підлога.
    *
-   * Вільна змінна, а не вхід задля повноти: усе, що не пішло в плаћу, виходить
+   * Вільна змінна, а не вхід задля повноти: усе, що не пішло в plaća, виходить
    * дивідендами під іншу ставку, тож саме це число вирішує, скільки лишиться.
    */
   readonly mjesecnaPlacaVlasnika?: Money<'EUR'> | undefined
@@ -272,20 +272,20 @@ const uskladi = (
   const ukupnaDavanja = zbrojDavanja(obveznaDavanja)
 
   // Найманий працівник `izdatak` не має взагалі: витрати з форми належать
-  // діяльності, а не людині. Відняти їх від плаће означало б покарати найм за
+  // діяльності, а не людині. Відняти їх від plaća означало б покарати найм за
   // оренду офісу, якого в нього немає.
   const ukupniIzdaci =
     pravniOblik === 'nesamostalni rad' || unos.godisnjiIzdaci === undefined
       ? eur(0)
       : zbrojIzdataka(unos.godisnjiIzdaci)
 
-  // `neoporezivi primici` не входять у слайдер: він читається як брутто-плаћа,
+  // `neoporezivi primici` не входять у слайдер: він читається як bruto plaća,
   // а вони приходять понад неї. Спільна формула бачить лише `godisnjiPrimitak`,
   // тож без цього доданка введена сума показувалася б у застереженні й тихо
   // зникала з головного числа картки.
   //
   // Лише найманому: в обртних режимах такої статті немає взагалі, а власник
-  // d.o.o. передає в плаћу нуль — його ревізія не покривала.
+  // d.o.o. передає в plaća нуль — його ревізія не покривала.
   const neoporeziviPrimici =
     pravniOblik === 'nesamostalni rad' ? (unos.neoporeziviPrimici ?? eur(0)) : eur(0)
 
@@ -314,7 +314,7 @@ const uskladi = (
   )
 
   // Скільки коштує цей режим тому, хто платить. Клієнт обрту платить рівно
-  // `primitak`; роботодавець найманого — ще й внески понад плаћу, і саме на цю
+  // `primitak`; роботодавець найманого — ще й внески понад plaća, і саме на цю
   // різницю порівняння «навпростець» бреше.
   const ukupniTrosak = sum('EUR', [unos.godisnjiPrimitak, neoporeziviPrimici, poslodavcevDio])
   const ukupnoOpterecenje = add(ukupnaObveznaPlacanja, poslodavcevDio)
@@ -590,9 +590,9 @@ const kaoIzracun = ({
 /**
  * `zaposlenik` — найм як альтернатива діяльності, а не додаток до неї.
  *
- * Слайдер тут читається як річна брутто-плаћа, і це прирівнювання назване на
+ * Слайдер тут читається як річна bruto plaća, і це прирівнювання назване на
  * картці: клієнт обрту платить рівно введену суму, роботодавець найманого —
- * більше на внески, які він несе понад плаћу.
+ * більше на внески, які він несе понад plaća.
  */
 const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
   const { stope } = unos
@@ -629,8 +629,8 @@ const zaposlenik = (unos: UnosUsporedbe, podloga: PodlogaUsporedbe): Ishod => {
   )
 
   const napomene: readonly NapomenaRezima[] = [
-    // Прирівнювання слайдера до брутто-плаће робить саме цей режим, тож і
-    // називає його він, а не модуль плаће.
+    // Прирівнювання слайдера до bruto plaća робить саме цей режим, тож і
+    // називає його він, а не модуль plaća.
     {
       kod: 'bruto-placa-nije-primitak',
       trosakZaPoslodavca: placa.trosakZaPoslodavca,

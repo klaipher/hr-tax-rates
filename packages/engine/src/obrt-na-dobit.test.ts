@@ -34,7 +34,7 @@ const mjesecnaOsnovicaIliPad = (doprinosi: { mjesecnaOsnovica: Money<'EUR'> | un
  * `obrt na dobit` — режим із трьома різними податками під двома законами.
  *
  * Тест тримає їх нарізно навмисно: `porez na dobit` рахується з `dobit` за
- * методом нарахування, податок із `poduzetnička plaća` — із плаће за
+ * методом нарахування, податок із `poduzetnička plaća` — із plaća за
  * законом про `porez na dohodak`, а податок на виплату — з того, що
  * лишилося після перших двох. Зведені в одну суму, вони перестають
  * пояснювати, звідки взялися.
@@ -65,7 +65,7 @@ const porez = (izracun: ReturnType<typeof izracunaj>, hr: string) => {
 
 describe('izracunajObrtNaDobit', () => {
   describe('poduzetnička plaća', () => {
-    it('бере osnovica з prosječna plaća та koeficijent 1,1, коли плаћу не задано', () => {
+    it('бере osnovica з prosječna plaća та koeficijent 1,1, коли plaća не задано', () => {
       // 1 993,00 × 1,1 = 2 192,30 — та сама сума, що її друкує Naredba.
       const { poduzetnickaPlaca } = izracunaj()
 
@@ -81,15 +81,15 @@ describe('izracunajObrtNaDobit', () => {
       expect(toCentString(poduzetnickaPlaca.mjesecniIznos)).toBe('2192.30')
     })
 
-    it('приймає вищу плаћу, коли власник її призначив', () => {
+    it('приймає вищу plaća, коли власник її призначив', () => {
       const { poduzetnickaPlaca } = izracunaj({ mjesecnaPoduzetnickaPlaca: eur('5000') })
 
       expect(toCentString(poduzetnickaPlaca.mjesecniIznos)).toBe('5000.00')
       expect(toCentString(poduzetnickaPlaca.godisnjiIznos)).toBe('60000.00')
     })
 
-    it('розводить внески з плаће і на плаћу — це різні кишені', () => {
-      // 20% MO утримуються з плаће самого власника, 16,5% ZO обрт платить
+    it('розводить внески з plaća і на plaća — це різні кишені', () => {
+      // 20% MO утримуються з plaća самого власника, 16,5% ZO обрт платить
       // понад неї. Разом ті самі 36,5%, але зменшують вони різне.
       const { poduzetnickaPlaca } = izracunaj()
 
@@ -111,11 +111,11 @@ describe('izracunajObrtNaDobit', () => {
       expect(poKisenjama.toFixed(2)).toBe(toCentString(doprinosi.ukupnoGodisnje))
     })
 
-    it('веде плаћу до статті, що робить її osnovica внесків', () => {
+    it('веде plaća до статті, що робить її osnovica внесків', () => {
       expect(izracunaj().poduzetnickaPlaca.izvor.article).toBe('čl. 82.')
     })
 
-    it('оподатковує плаћу як плаћу: мінус внески з неї, мінус osobni odbitak', () => {
+    it('оподатковує plaća як plaća: мінус внески з неї, мінус osobni odbitak', () => {
       // (2 192,30 − 438,46 − 600,00) × 23% × 12.
       const porezPlace = izracunaj().poduzetnickaPlaca.porez
 
@@ -135,15 +135,15 @@ describe('izracunajObrtNaDobit', () => {
       expect(porezPlace.stopa.toFixed(6)).toBe('0.237407')
     })
 
-    it('лишає власнику нето плаће після внесків із неї та податку', () => {
+    it('лишає власнику нето plaća після внесків із неї та податку', () => {
       // 26 307,60 − 5 261,52 − 3 184,5984.
       expect(toCentString(izracunaj().poduzetnickaPlaca.godisnjiNeto)).toBe('17861.48')
     })
 
-    it('зменшує базу porez na dobit на брутто плаћу разом із внесками на неї', () => {
+    it('зменшує базу porez na dobit на bruto plaća разом із внесками на неї', () => {
       const { poduzetnickaPlaca, dobitPrijeOporezivanja } = izracunaj()
 
-      // 26 307,60 + 4 340,754 — податок і внески з плаће вже всередині брутто.
+      // 26 307,60 + 4 340,754 — податок і внески з plaća вже всередині брутто.
       expect(toCentString(poduzetnickaPlaca.trosakZaObrt)).toBe('30648.35')
       // 60 000 − 10 000 − 30 648,354.
       expect(toCentString(dobitPrijeOporezivanja)).toBe('19351.65')
@@ -240,7 +240,7 @@ describe('izracunajObrtNaDobit', () => {
       ])
     })
 
-    it('розбиває внески на MO I. stup, MO II. stup і ZO від osnovica плаће', () => {
+    it('розбиває внески на MO I. stup, MO II. stup і ZO від osnovica plaća', () => {
       const { doprinosi } = izracunaj()
 
       expect(toCentString(mjesecnaOsnovicaIliPad(doprinosi))).toBe('2192.30')
@@ -257,8 +257,8 @@ describe('izracunajObrtNaDobit', () => {
       expect(toCentString(izracunaj().netoZaOsobu)).toBe('33187.99')
     })
 
-    it('те саме число виходить і з розбивки: dobit плюс нето плаће мінус податки', () => {
-      // Сторож від подвійного рахунку: брутто плаће вже сидить у витратах,
+    it('те саме число виходить і з розбивки: dobit плюс нето plaća мінус податки', () => {
+      // Сторож від подвійного рахунку: bruto plaća вже сидить у витратах,
       // тож додати її ще раз означало б показати людині чужі гроші.
       const { dobitPrijeOporezivanja, poduzetnickaPlaca, porezi, netoZaOsobu } = izracunaj()
       const porezNaDobitIIsplata = porezi
@@ -419,7 +419,7 @@ describe('izracunajObrtNaDobit', () => {
       expect(uHok('D7', izracun.poduzetnickaPlaca.porez.godisnjiIznos.amount).status).toBe('match')
     })
 
-    it('нето плаће за рік сходиться (D8)', () => {
+    it('нето plaća за рік сходиться (D8)', () => {
       expect(uHok('D8', izracun.poduzetnickaPlaca.godisnjiNeto.amount).status).toBe('match')
     })
 
@@ -443,7 +443,7 @@ describe('izracunajObrtNaDobit', () => {
 
     it('річна податкова повинність режиму сходиться (D19)', () => {
       // D19 в HOK — це porez na dobit разом із податком на виплату; податок
-      // із плаће туди не входить, він уже врахований у витратах.
+      // із plaća туди не входить, він уже врахований у витратах.
       const ukupno = izracun.porezi
         .filter(({ naziv }) => naziv.hr !== 'porez na dohodak iz poduzetničke plaće')
         .reduce((zbroj, { godisnjiIznos }) => zbroj.plus(godisnjiIznos.amount), new Decimal(0))

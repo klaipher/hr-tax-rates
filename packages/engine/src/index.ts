@@ -1,4 +1,5 @@
 export * from './davanja.ts'
+export * from './druga-djelatnost.ts'
 export * from './format.ts'
 export * from './money.ts'
 export * from './nepuna-godina.ts'
@@ -9,7 +10,7 @@ export * from './pdv.ts'
 // Точково, а не цілим модулем: решта `placa.ts` — внутрішня кухня двох
 // режимів, і виставити її назовні означало б пообіцяти сталість там, де ніхто
 // її не обіцяв. Форма ж має право спитати рівно одне — де стеля.
-export { steljaNeoporezivihPrimitaka } from './placa.ts'
+export { type RaspodjelaPoStopama, steljaNeoporezivihPrimitaka, type TrakaStope } from './placa.ts'
 export * from './tablica-razreda.ts'
 export * from './types.ts'
 export * from './usporedba.ts'

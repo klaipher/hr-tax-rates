@@ -1,0 +1,1752 @@
+:root {
+  --tlo: #fbfaf7;
+  --tlo-kartica: #ffffff;
+  --tekst: #1b1a17;
+  --tekst-prigušen: #6a675e;
+  --rub: #e3e0d7;
+  --naglasak: #7a4b2a;
+  --naglasak-tlo: #f1e9e1;
+  --stednja: #2f6b4f;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tlo: #16161a;
+    --tlo-kartica: #1e1e23;
+    --tekst: #ecebe6;
+    --tekst-prigušen: #a09d94;
+    --rub: #32323a;
+    --naglasak: #d99f72;
+    --naglasak-tlo: #2b2320;
+    --stednja: #7fc0a0;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--tlo);
+  color: var(--tekst);
+  font-family: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-text-size-adjust: 100%;
+}
+
+.stranica {
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.zaglavlje {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+}
+
+.zaglavlje h1 {
+  margin: 0;
+  font-size: clamp(1.6rem, 1.1rem + 2vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.zaglavlje p {
+  margin: 0.4rem 0 0;
+  color: var(--tekst-prigušen);
+  max-width: 46rem;
+}
+
+/* Перемикач мови */
+
+.jezik {
+  flex: 0 0 auto;
+}
+
+.jezik__oznaka {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+
+.jezik__izbor {
+  margin-top: 0.25rem;
+  padding: 0.3rem 0.5rem;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--tekst);
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.6rem;
+}
+
+.jezik__izbor:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 2px;
+}
+
+/* Видиме лише читалці екрана */
+
+.vizualno-skriveno {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Ввід */
+
+.unos {
+  margin: 2rem 0 2.5rem;
+  padding: 1.25rem 1.5rem 1rem;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+
+.unos label {
+  display: block;
+  font-weight: 600;
+}
+
+.unos__iznos {
+  display: block;
+  margin: 0.15rem 0 0.6rem;
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 2.9rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+
+.unos input[type="range"] {
+  display: block;
+  width: 100%;
+  accent-color: var(--naglasak);
+}
+
+.unos__skala {
+  display: flex;
+  justify-content: space-between;
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Переклад поруч із хорватським терміном */
+
+.prijevod {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+}
+
+/* Посилання від числа до статті акта */
+
+.izvor {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--tekst-prigušen);
+  text-decoration-color: var(--rub);
+  text-underline-offset: 0.15em;
+  overflow-wrap: anywhere;
+}
+
+.izvor:hover,
+.izvor:focus-visible {
+  color: var(--naglasak);
+}
+
+/* Сітка карток */
+
+.rezimi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.kartica {
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+  padding: 1.25rem 1.4rem 1.4rem;
+}
+
+.kartica--nedostupna {
+  background: transparent;
+  border-style: dashed;
+}
+
+.kartica__zaglavlje h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+
+.kartica__zaglavlje .prijevod {
+  margin: 0.1rem 0 0;
+}
+
+/* Головне число картки */
+
+.glavno {
+  margin: 1.1rem 0 0.2rem;
+}
+
+.glavno__iznos {
+  display: block;
+  font-size: clamp(1.7rem, 1.2rem + 2vw, 2.2rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.glavno__oznaka {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+}
+
+.stopa {
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tekst-prigušen);
+}
+
+.stopa strong {
+  color: var(--tekst);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Розбивка платежів */
+
+/* Застосований розряд */
+
+.razred {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  margin: 0.9rem 0 0;
+  padding: 0.5rem 0.7rem;
+  background: var(--naglasak-tlo);
+  border-radius: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.razred .prijevod {
+  display: inline;
+}
+
+.razred .izvor {
+  flex-basis: 100%;
+}
+
+/* Розбивка платежів */
+
+.rozbivka {
+  margin: 1rem 0 0;
+  border-top: 1px solid var(--rub);
+}
+
+.redak {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--rub);
+}
+
+.redak:last-child {
+  border-bottom: none;
+}
+
+.redak--zbroj {
+  font-weight: 600;
+}
+
+.redak dt {
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.redak dd {
+  margin: 0;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.redak__naziv {
+  display: block;
+}
+
+.udio {
+  margin-left: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+  white-space: nowrap;
+}
+
+.znak-stednje {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  font-size: 0.72rem;
+  color: var(--stednja);
+  border: 1px solid currentcolor;
+  border-radius: 0.6rem;
+}
+
+/* Недоступні режими */
+
+.oznaka-nedostupno {
+  display: inline-block;
+  margin: 1rem 0 0;
+  padding: 0.1rem 0.5rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+  background: var(--naglasak-tlo);
+  border-radius: 0.6rem;
+}
+
+.razlog {
+  margin: 0.6rem 0 0;
+  font-size: 0.88rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Припущення */
+
+.pretpostavke {
+  margin: 2.5rem 0 0;
+  padding: 1.1rem 1.4rem 1.3rem;
+  border: 1px dashed var(--rub);
+  border-radius: 0.9rem;
+  max-width: 52rem;
+}
+
+.pretpostavke h2 {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+
+.pretpostavke p {
+  margin: 0.5rem 0 0;
+  font-size: 0.88rem;
+}
+
+.pretpostavke strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Хорватський термін, величина і пояснення поруч */
+
+.pretpostavke__velicina {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+}
+
+.pretpostavke__velicina .prijevod {
+  display: inline;
+}
+
+.pojam {
+  font-weight: 600;
+}
+
+/* --- форма входів ------------------------------------------------------- */
+.forma {
+  margin-block: 2rem;
+}
+.polje {
+  display: grid;
+  gap: 0.25rem;
+  margin-block: 0.75rem;
+  max-width: 34rem;
+}
+.polje input[type="number"],
+.polje input[type="text"],
+.polje select {
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  border: 1px solid var(--rub);
+  border-radius: 4px;
+  /* Тло картки, а не білий: у темній темі біле поле випалює очі. */
+  background: var(--tlo-kartica);
+  color: var(--tekst);
+}
+
+.polje input:focus-visible,
+.polje select:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
+}
+.polje--potvrda label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+.polje--potvrda .prijevod {
+  grid-column: 2;
+}
+/* Джерело під позначкою: число в підписі теж юридичне (ADR-0002). */
+.polje__izvor {
+  margin-block: -0.5rem 0.75rem;
+  padding-inline-start: 1.6rem;
+}
+
+/* --- порівняння з рідною країною ---------------------------------------- */
+.krajina {
+  margin-block: 2rem;
+  border-top: 1px solid var(--rub);
+  padding-top: 1rem;
+}
+.krajina__prekidac {
+  font: inherit;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+}
+.krajina__prekidac::before {
+  content: "▸ ";
+}
+.krajina__prekidac[aria-expanded="true"]::before {
+  content: "▾ ";
+}
+.krajina__rezidentnost {
+  border-inline-start: 3px solid var(--naglasak);
+  padding-inline-start: 0.75rem;
+  margin-block: 1rem;
+}
+
+/* --- ПДВ і календар ------------------------------------------------------ */
+.pdv,
+.kalendar {
+  margin-block: 2rem;
+}
+.pdv__inverzija {
+  border-inline-start: 3px solid var(--naglasak);
+  padding-inline-start: 0.75rem;
+}
+.kalendar__popis {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.kalendar__obrok {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr auto;
+  gap: 0.5rem 1rem;
+  padding-block: 0.4rem;
+  border-bottom: 1px solid var(--rub);
+}
+.kalendar__datum {
+  font-variant-numeric: tabular-nums;
+}
+.kalendar__iznos {
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+}
+.kalendar__obrok .prijevod {
+  grid-column: 2 / -1;
+}
+@media (max-width: 32rem) {
+  .kalendar__obrok {
+    grid-template-columns: 1fr auto;
+  }
+  .kalendar__datum {
+    grid-column: 1 / -1;
+  }
+  /*
+    Застереження теж на весь рядок, а не «з другої колонки до кінця».
+    На широкому екрані колонок три, і `2 / -1` розтягує його на дві останні.
+    Тут їх дві, тож те саме правило кладе довге речення цілком у колонку
+    суми — а вона `auto`, тобто росте під вміст. Колонка з назвою при цьому
+    здається без опору (`min-width: 0`) і сплющувалася до 34px, ламаючи
+    посилання на акт посеред слова.
+  */
+  .kalendar__obrok .prijevod {
+    grid-column: 1 / -1;
+  }
+}
+
+/* --- перемикач сценаріїв ------------------------------------------------ */
+.scenarij {
+  margin-block: 1.5rem;
+}
+.scenarij fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.scenarij legend {
+  padding: 0;
+  font-weight: 600;
+}
+.scenarij__izbor {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+.scenarij__delta {
+  margin-block-start: 0.5rem;
+  font-weight: 600;
+}
+
+.forma__podnaslov {
+  margin-block: 2rem 0;
+  font-size: 1.05rem;
+}
+.forma__prijevod {
+  color: var(--tekst-prigušen);
+  margin-block: 0.25rem 1rem;
+}
+.polje label {
+  font-weight: 600;
+}
+.polje .prijevod {
+  display: block;
+  font-weight: 400;
+  color: var(--tekst-prigušen);
+  font-size: 0.9rem;
+}
+/* Посилання всередині підпису не успадковує його жирність: воно супровід
+   числа, а не сам підпис. */
+.polje label .izvor {
+  font-weight: 400;
+}
+
+.unos__redak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-block: 0.35rem 0.75rem;
+}
+.unos__polje {
+  /* Не стискається: у двох стовпцях поруч із відформатованою сумою поле
+     втрачало останню цифру, і головне число сторінки читалося обрізаним. */
+  flex: 0 0 auto;
+  width: 100%;
+  max-width: 8ch;
+  padding: 0.2rem 0.4rem;
+  font: inherit;
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 2.6rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  border: 1px solid transparent;
+  border-bottom-color: var(--rub);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--tekst);
+}
+.unos__valuta {
+  font-size: clamp(1.9rem, 1.2rem + 3vw, 2.6rem);
+  letter-spacing: -0.02em;
+  color: var(--tekst-prigušen);
+}
+.unos__polje:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
+}
+.unos__redak .unos__iznos {
+  margin: 0;
+}
+.unos__klizac {
+  display: block;
+  width: 100%;
+  accent-color: var(--naglasak);
+}
+
+.kalendar__izbor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+  border: 0;
+  padding: 0;
+  margin: 0 0 1rem;
+}
+
+/* --- дві колонки: входи зліва, результати справа --------------------------- */
+.raspored {
+  display: grid;
+  gap: 1.5rem 2rem;
+  align-items: start;
+  margin-block: 2rem;
+}
+
+/*
+  Без цього колонка не стискається вужче за свій найширший вміст: у грід-сітці
+  елементи мають `min-width: auto`, а список із 556 міст задає дуже широкий
+  min-content. На вузькому екрані це виштовхувало сторінку за край, і суми
+  на картках обрізалися.
+*/
+.raspored__unos,
+.raspored__ishod {
+  min-width: 0;
+}
+
+/*
+  `<select>` міст ширшає під найдовшу назву зі списку, і разом із ним ширшають
+  усі його предки. Обмежити треба весь ланцюг, а не лише сам елемент.
+*/
+.polje,
+.polje label {
+  min-width: 0;
+}
+
+.polje select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.polje .prijevod {
+  overflow-wrap: anywhere;
+}
+@media (min-width: 62rem) {
+  .raspored {
+    grid-template-columns: minmax(20rem, 26rem) minmax(0, 1fr);
+  }
+  .raspored__unos {
+    position: sticky;
+    top: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    overflow-y: auto;
+    padding-right: 0.5rem;
+  }
+}
+.raspored__unos .unos,
+.raspored__unos .forma,
+.raspored__unos .scenarij {
+  margin-block: 0 1.5rem;
+}
+.raspored__unos .polje {
+  max-width: none;
+}
+.raspored__ishod .rezimi {
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+}
+
+.zaglavlje__tekst {
+  min-width: 0;
+}
+.pdv__status {
+  margin-block: 1rem 0.5rem;
+}
+.kalendar__vrsta {
+  min-width: 0;
+}
+.krajina__sadrzaj {
+  margin-block-start: 1rem;
+}
+
+.forma__primjer {
+  margin-block: 0 1.25rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.88rem;
+  color: var(--tekst-prigušen);
+  background: var(--naglasak-tlo);
+  border-radius: 0.6rem;
+}
+/* Пояснення під самим полем: тримається його ширини й тулиться до нього. */
+.forma__primjer--polje {
+  max-width: 34rem;
+  margin-block-start: -0.35rem;
+}
+
+/* Скільки одиниць лишилося після пошуку — єдиний видимий знак, що він працює. */
+.polje__brojac {
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+}
+
+/* --- prosječna plaća: величина, до якої застосовують правила -------------- */
+.placa {
+  margin-block: 1.5rem;
+}
+.placa__redak {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+.placa__redak input {
+  /* Не тягнеться на всю ширину: інакше «€ на місяць» відлітає від числа так
+     далеко, що перестає читатися як його одиниця виміру. */
+  flex: 0 0 auto;
+  max-width: 9ch;
+}
+.placa__mjera {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+.placa__preseti {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block: 0.5rem 0.75rem;
+}
+.placa__preset {
+  padding: 0.4rem 0.7rem;
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  color: var(--tekst);
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.6rem;
+  cursor: pointer;
+}
+.placa__preset:hover {
+  border-color: var(--naglasak);
+}
+.placa__preset:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 1px;
+}
+/* Обране видно не лише кольором: рамка й тло разом, щоб різниця лишалася
+   помітною і в монохромі. */
+.placa__preset--odabran {
+  background: var(--naglasak-tlo);
+  border-color: var(--naglasak);
+  font-weight: 600;
+}
+.placa__preset .prijevod {
+  font-weight: 400;
+}
+
+/* Що не застосовується — під згорткою: у розбивці лишаються самі суми. */
+.neprimjenjivo {
+  margin-block-start: 0.75rem;
+  font-size: 0.85rem;
+}
+.neprimjenjivo > summary {
+  cursor: pointer;
+  color: var(--tekst-prigušen);
+}
+.neprimjenjivo > summary:focus-visible {
+  outline: 2px solid var(--naglasak);
+  outline-offset: 2px;
+  border-radius: 0.3rem;
+}
+.neprimjenjivo .rozbivka {
+  margin-block-start: 0.4rem;
+}
+
+.pdv__tablica {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 1rem;
+}
+.pdv__tablica th,
+.pdv__tablica td {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--rub);
+  vertical-align: baseline;
+}
+.pdv__tablica thead th {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tekst-prigušen);
+  text-align: right;
+}
+.pdv__tablica tbody th {
+  text-align: left;
+  font-weight: 400;
+  font-size: 0.9rem;
+}
+.pdv__tablica td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pdv__stupac {
+  text-align: right;
+}
+.pdv__stupac--obvezni {
+  background: var(--naglasak-tlo);
+}
+.pdv__oznaka {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+}
+
+/* --- попередження, яке не мусить загубитися серед пояснень ---------------- */
+.razlog--upozorenje {
+  border-inline-start: 3px solid var(--naglasak);
+  padding-inline-start: 0.75rem;
+  color: var(--tekst);
+}
+
+/* --- обрив розряду -------------------------------------------------------- */
+.obriv {
+  margin-block: 0 1.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+/* Близько до межі — виділяємо рамкою, а не самим лише кольором: різниця має
+   лишатися видимою й тим, хто кольору не розрізняє. */
+.obriv--blizu {
+  border-color: var(--naglasak);
+  background: var(--naglasak-tlo);
+}
+.obriv__naslov {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+.obriv--blizu .obriv__naslov {
+  color: var(--naglasak);
+}
+.obriv__odstup {
+  margin: 0.4rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.obriv__skok {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+.obriv .razlog {
+  margin-top: 0.35rem;
+}
+
+/* --- точки перевороту ----------------------------------------------------- */
+.preokret {
+  margin-block: 0 1.25rem;
+  padding: 0.85rem 1rem 1rem;
+  border: 1px dashed var(--rub);
+  border-radius: 0.9rem;
+}
+.preokret__naslov {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tekst-prigušen);
+}
+.preokret__prijevod {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+.preokret__popis {
+  margin: 0.6rem 0 0;
+  padding-inline-start: 1.2rem;
+  font-size: 0.92rem;
+}
+.preokret__popis li + li {
+  margin-top: 0.3rem;
+}
+
+/* --- драбина розрядів ----------------------------------------------------- */
+.tablica {
+  margin-block: 2rem;
+}
+.tablica h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.tablica__prijevod {
+  margin: 0.3rem 0 0.9rem;
+  color: var(--tekst-prigušen);
+  max-width: 52rem;
+}
+/* Таблиця широка — гортається сама, а не тягне за собою всю сторінку. */
+.tablica__okvir {
+  overflow-x: auto;
+}
+.tablica__mreza {
+  width: 100%;
+  min-width: 40rem;
+  border-collapse: collapse;
+}
+.tablica__mreza th,
+.tablica__mreza td {
+  padding: 0.5rem 0.6rem;
+  border-bottom: 1px solid var(--rub);
+  vertical-align: baseline;
+}
+.tablica__mreza thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--tekst-prigušen);
+  text-align: right;
+  white-space: nowrap;
+}
+.tablica__mreza thead th:first-child,
+.tablica__mreza tbody th {
+  text-align: left;
+}
+.tablica__mreza tbody th {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tablica__mreza td {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.tablica__redak--vas {
+  background: var(--naglasak-tlo);
+}
+.tablica__oznaka {
+  margin-left: 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--naglasak);
+}
+
+/* --- курс, за яким зроблено перерахунок ----------------------------------- */
+.krajina__tecaj {
+  margin-block: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--tekst-prigušen);
+}
+.krajina__tecaj strong {
+  color: var(--tekst);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Секції форми
+   ────────────
+   Згорнута секція мусить лишатися відповіддю, а не порожньою смугою: підсумок
+   у заголовку каже, що всередині вже введено. Без нього згортка ховала б не
+   зайве, а саме те, що людина набрала. */
+
+.sekcija {
+  border: 1px solid var(--rub);
+  border-radius: 0.5rem;
+  margin-block: 0.6rem;
+  background: var(--pozadina-kartice, transparent);
+}
+
+.sekcija[open] {
+  padding-bottom: 0.9rem;
+}
+
+.sekcija__zaglavlje {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0.4rem 0.8rem;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* Стрілку малює сам браузер по-різному в кожному рушії; своя — однакова. */
+.sekcija__zaglavlje::-webkit-details-marker {
+  display: none;
+}
+
+.sekcija__zaglavlje::after {
+  content: "▸";
+  grid-column: 2;
+  grid-row: 1;
+  color: var(--tekst-prigušen);
+  transition: transform 0.12s ease;
+}
+
+.sekcija[open] > .sekcija__zaglavlje::after {
+  transform: rotate(90deg);
+}
+
+.sekcija__naslov {
+  font-weight: 600;
+}
+
+.sekcija__sazetak {
+  grid-column: 1;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+.sekcija[open] > .sekcija__zaglavlje .sekcija__sazetak {
+  /* Розкрита секція показує самі поля: підсумок тих самих чисел поруч із
+     ними був би не підказкою, а другим голосом. */
+  display: none;
+}
+
+.sekcija > *:not(.sekcija__zaglavlje) {
+  margin-inline: 0.9rem;
+}
+
+.sekcija .forma__prijevod {
+  margin-block: 0 0.9rem;
+}
+
+/* Список людей з інвалідністю */
+
+.popis-osoba {
+  margin-block: 1rem;
+}
+
+.popis-osoba__naslov {
+  font-weight: 600;
+  margin-block: 0 0.5rem;
+}
+
+.polje--redak {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gumb {
+  justify-self: start;
+  padding: 0.35rem 0.7rem;
+  font: inherit;
+  font-size: 0.9rem;
+  border: 1px solid var(--rub);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.gumb:hover {
+  border-color: var(--tekst-prigušen);
+}
+
+.gumb--tihi {
+  border-color: transparent;
+  color: var(--tekst-prigušen);
+  text-decoration: underline;
+}
+
+.polje__pomoc {
+  margin-block: 0.35rem 0.9rem;
+}
+
+.podrobnosti {
+  margin-block: 0.6rem 1rem;
+}
+
+.podrobnosti > summary {
+  cursor: pointer;
+  color: var(--tekst-prigušen);
+  font-size: 0.9rem;
+}
+
+/* Видиме лише екранному читачеві: мітка рядка в списку осіб потрібна йому,
+   а на екрані її замінює сам порядок рядків. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Скільки забирають податки — поруч із тим, скільки лишається */
+
+.glavno__mjesecno {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+.odbitak {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 0 0.6rem;
+  margin: 0.9rem 0 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--rub);
+  border-radius: 0.4rem;
+}
+
+.odbitak__oznaka {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+.odbitak__iznos {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.odbitak__stopa {
+  grid-column: 1 / -1;
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Пояснення під згорткою
+   ──────────────────────
+   Текст лишається слово в слово; згорнутим стоїть питання, на яке він
+   відповідає. Хто питання не має, той не витрачає на нього екран. */
+
+.pojasnjenje {
+  margin-block: 0.6rem;
+}
+
+.pojasnjenje__naslov {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+.pojasnjenje__naslov:hover {
+  color: var(--tekst);
+}
+
+.pojasnjenje__tijelo {
+  margin-block: 0.5rem 0;
+  padding: 0.6rem 0.8rem;
+  border-left: 2px solid var(--rub);
+  color: var(--tekst-prigušen);
+}
+
+.pojasnjenje__tijelo > p {
+  margin-block: 0 0.6rem;
+}
+
+.pojasnjenje__tijelo > p:last-child {
+  margin-bottom: 0;
+}
+
+/* Різниця сценаріїв — головне число перемикача, тож воно й помітне. */
+.scenarij__delta {
+  font-weight: 600;
+  margin-block: 0.6rem 0;
+}
+
+/* Повне навантаження — другим рядком під власним: різниця між ними і є те,
+   чого людина не бачить у платіжці. */
+.odbitak__ukupno {
+  grid-column: 1 / -1;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--rub);
+  font-size: 0.8rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Драбина розрядів — згорнута й підписана режимом: із шести карток вона
+   стосується однієї, і на всю ширину читалася як головний зміст сторінки. */
+
+.tablica__zaglavlje {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+
+.tablica__naslov {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.tablica__opseg {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+/* Коробка межі розряду теж підписана режимом: межі має лише паушал. */
+.obriv__opseg {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--tekst-prigušen);
+}
+
+/* ========================================================================
+   Друга діяльність: підсумок над колонками, дві картки, вибір міста.
+   ======================================================================== */
+
+/* --- підсумок ------------------------------------------------------------ */
+
+.sazetak {
+  margin-block: 1.75rem;
+  padding: 1.25rem 1.4rem;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.9rem;
+}
+
+/*
+  Два числа поруч, коли є місце, і одне під одним, коли немає. `auto-fit` із
+  мінімумом, а не медіазапит: ширина тут залежить не від екрана, а від того,
+  скільки лишила колонка, — а це різні речі на планшеті.
+*/
+.sazetak__brojevi {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem 2rem;
+}
+
+.sazetak .glavno {
+  margin: 0;
+}
+
+.sazetak .stopa {
+  margin-block: 0.9rem 0;
+  padding-block-start: 0.9rem;
+  border-top: 1px solid var(--rub);
+}
+
+/*
+  На телефоні підсумок липне до верху: калькулятор крутять знизу, у формі, а
+  дивляться на число вгорі. Без цього кожна правда вимагала б гортання туди й
+  назад. На широкому екрані липнути нема потреби — там форма й число видно
+  одночасно.
+*/
+/*
+  Липким робиться підсумок, а не стовпець форми.
+
+  Успадкований від сусіднього застосунку прийом — липка колонка з власною
+  прокруткою — тут не працює: форма має 1705px проти 893px висоти вікна, тож
+  половина полів опинялася за вкладеною смугою, про яку ніщо не натякає.
+  Крутити треба саме форму, а бачити весь час — число; тому прокручується
+  сторінка цілком, а вгорі лишається те, заради чого поля й чіпають.
+*/
+.raspored__unos {
+  position: static;
+  max-height: none;
+  overflow: visible;
+  padding-right: 0;
+}
+
+/*
+  Підсумок стоїть під картками як висновок, а не над ними як заголовок: спершу
+  видно, скільки лишається з кожного джерела, і аж потім — скільки разом.
+  Тому й не липне: липкий висновок перекривав би те, з чого його зроблено.
+*/
+.sazetak {
+  border-color: var(--tekst-prigušen);
+}
+
+@media (max-width: 61.99rem) {
+  .sazetak .glavno__iznos {
+    font-size: clamp(1.5rem, 1.1rem + 2.2vw, 2rem);
+  }
+}
+
+/* --- дві картки джерел --------------------------------------------------- */
+
+/*
+  Контейнерний запит, а не медіа: картки стоять усередині правої колонки, і
+  вирішує їхню розкладку її ширина, а не ширина вікна. На 1280px вікні колонка
+  має ~48rem — двом карткам тісно; медіазапит цього не бачить.
+*/
+.raspored__ishod {
+  container-type: inline-size;
+}
+
+.kartice {
+  display: grid;
+  gap: 1rem;
+  align-items: start;
+}
+
+@container (min-width: 46rem) {
+  .kartice {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Без контейнерних запитів картки лишаються одна під одною — це робочий стан,
+   а не поламаний. */
+@supports not (container-type: inline-size) {
+  @media (min-width: 80rem) {
+    .kartice {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}
+
+/* --- поріг EU plava karta в картці plaća --------------------------------- */
+
+.prag {
+  display: grid;
+  gap: 0.15rem;
+  margin-block: 0.9rem 0;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.88rem;
+  border-radius: 0.6rem;
+  border-left: 3px solid var(--rub);
+  background: var(--naglasak-tlo);
+}
+
+.prag__oznaka {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.prag--dosegnut {
+  border-left-color: var(--stednja);
+}
+
+.prag--nedosegnut {
+  border-left-color: var(--naglasak);
+}
+
+/* --- вибір міста: один combobox ------------------------------------------ */
+
+.grad {
+  position: relative;
+}
+
+/*
+  Обгортка позиціонує список відносно поля, а не відносно `.polje`: у `.polje`
+  живуть ще підпис і рядок про ставки, і список ліг би поверх них.
+*/
+.grad__okvir {
+  position: relative;
+}
+
+.grad__okvir input {
+  width: 100%;
+  /* 16px мінімум: менший шрифт змушує Safari на iOS збільшувати сторінку при
+     фокусі, і після набору назви міста верстка лишається зумленою. */
+  font-size: max(1rem, 16px);
+  min-height: 2.75rem;
+}
+
+.grad__popis {
+  position: absolute;
+  z-index: 3;
+  inset-inline: 0;
+  top: calc(100% + 0.25rem);
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  max-height: min(20rem, 50vh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  background: var(--tlo-kartica);
+  border: 1px solid var(--rub);
+  border-radius: 0.6rem;
+  box-shadow: 0 0.75rem 1.5rem -0.75rem rgb(0 0 0 / 30%);
+}
+
+.grad__stavka {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.5rem;
+  align-items: baseline;
+  width: 100%;
+  /* 2,75rem — мінімальна ціль для пальця; на миші це просто зручний рядок. */
+  min-height: 2.75rem;
+  padding: 0.45rem 0.6rem;
+  font: inherit;
+  text-align: start;
+  color: inherit;
+  background: none;
+  border: 0;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
+
+.grad__stavka--istaknuta {
+  background: var(--naglasak-tlo);
+}
+
+.grad__ime {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.grad__stavka[aria-selected="true"] .grad__ime {
+  font-weight: 600;
+}
+
+.grad__stope {
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.grad__prazno {
+  padding: 0.5rem 0.6rem;
+  font-size: 0.85rem;
+  color: var(--tekst-prigušen);
+}
+
+/* --- телефон ------------------------------------------------------------- */
+
+@media (max-width: 40rem) {
+  .stranica {
+    padding: 1.25rem 0.9rem 3rem;
+  }
+
+  /* Числові поля теж не менші за 16px — та сама причина, що й у пошуку міста. */
+  .polje input,
+  .polje select {
+    font-size: max(1rem, 16px);
+    min-height: 2.75rem;
+  }
+
+  .kartica {
+    padding: 1rem 1.05rem 1.15rem;
+  }
+
+  /*
+    Рядок розбивки стає двоповерховим: назва внеску з перекладом і ставкою не
+    вміщається в одну колонку поруч із сумою, і на 360px сума з'їжджала на
+    другий рядок сама, розриваючи вирівнювання.
+  */
+  .redak {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.15rem;
+  }
+  .redak dd {
+    justify-self: start;
+    font-weight: 600;
+  }
+
+  .forma__podnaslov {
+    margin-block: 1.5rem 0;
+  }
+}
+
+/*
+  Липкий стовпець форми не має ховати власного низу: у високій формі й
+  невисокому вікні остання секція інакше лишається за краєм екрана без
+  прокрутки. Обмеження вже стоїть вище — тут лише прибирається смуга там, де
+  вона не потрібна.
+*/
+@media (min-width: 62rem) {
+  .raspored__unos {
+    scrollbar-width: thin;
+  }
+}
+
+/*
+  Лічильники утриманців: два в ряд, коли є ширина, один — коли немає.
+  `auto-fit` замість медіазапиту, бо форма живе то на всю сторінку, то у
+  вузькій колонці, і вирішує тут не екран.
+*/
+.brojaci {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0 1rem;
+}
+
+.brojaci .polje {
+  max-width: none;
+}
+
+/* Поле на одну-дві цифри не має тягтися на пів рядка. */
+.brojaci input {
+  max-width: 6rem;
+}
+
+/*
+  Успадковане `max-width: none` для полів має сенс лише у вузькому стовпці
+  двоколонкової розкладки. В одноколонковій — на планшеті — воно розтягувало
+  підписи на всю ширину сторінки: рядок на 90 знаків читати важче, ніж на 60.
+  Тому обмеження знімається саме там, де є друга колонка.
+*/
+.raspored__unos .polje {
+  max-width: 34rem;
+}
+
+@media (min-width: 62rem) {
+  .raspored__unos .polje {
+    max-width: none;
+  }
+}
+
+.raspored__unos .forma__prijevod,
+.raspored__unos .razlog {
+  max-width: 34rem;
+}
+
+/*
+  Порогу за шириною картки тут навмисно немає.
+
+  Він був — і ламав те, що працювало: двоколонкова розкладка ставить картки
+  по 357px, і рядок «назва — сума» в них уміщається в один рядок. Поріг на
+  21rem спрацьовував саме там і робив двоповерховим те, що не тісне. Вузькі
+  картки бувають лише на телефоні, а там їх бере медіазапит вище.
+
+  Уточнення на майбутнє: картки стають по дві лише коли стовпець результату
+  має 46rem, тобто кожна отримує щонайменше ~315px вмісту. Нижче за це вони
+  стоять одна під одною на всю ширину.
+*/
+
+/* --- два головні поля над картками --------------------------------------- */
+
+/*
+  Не частина бічної форми: це єдині два входи, які крутять, дивлячись на
+  відповідь. Решту задають раз, і вона живе в стовпці налаштувань.
+*/
+.izvori-unos {
+  margin-block: 0 1.25rem;
+}
+
+.izvori-unos__polja {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  gap: 1rem 1.5rem;
+}
+
+/*
+  Кожен головний вхід — власна панель із полем і повзунком.
+
+  Легша за картки результату навмисно: це орган керування, а не відповідь.
+  Тому рамки немає, а тло лише трохи темніше за сторінку — рівно стільки,
+  щоб панель читалася як одне ціле й не сперечалася з тим, що під нею.
+
+  Щільна навмисно: панель нічого не пояснює, вона приймає число. Кожен зайвий
+  рядок тут відсуває вниз саму відповідь, заради якої сторінку й відкрили.
+*/
+.glavni-unos {
+  margin: 0;
+  padding: 0.75rem 0.9rem 0.8rem;
+  background: var(--naglasak-tlo);
+  border: 0;
+  border-radius: 0.7rem;
+}
+
+.glavni-unos > label {
+  display: block;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.glavni-unos .prijevod {
+  margin-block: 0;
+  font-size: 0.82rem;
+}
+
+.glavni-unos .unos__redak {
+  margin-block: 0.35rem 0.15rem;
+  gap: 0.4rem;
+}
+
+/*
+  Стрілки браузера тут зайві — і шкідливі.
+
+  Крок задає повзунок просто під полем, а стрілки з'їдають два останні знаки
+  у вузького поля: «120000» показувалося як «12000C» із наїханим на цифру
+  бігунком. Прибрати їх треба в обох рушіях: WebKit ховає псевдоелемент,
+  Firefox слухає `appearance`.
+*/
+.glavni-unos .unos__polje::-webkit-outer-spin-button,
+.glavni-unos .unos__polje::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.glavni-unos .unos__polje {
+  appearance: textfield;
+  /*
+    Ширина під зміст, а не під найдовше можливе число: інакше між «30000» і
+    знаком валюти зяяв порожній хвіст на два знаки. Де `field-sizing` не
+    підтримано, лишається стала ширина під шість цифр — гірше, але не зламано.
+  */
+  width: 7ch;
+  field-sizing: content;
+  min-width: 4ch;
+  max-width: 7ch;
+  padding: 0 0.1rem 0.1rem;
+  font-size: clamp(1.35rem, 1.15rem + 0.9vw, 1.7rem);
+  background: transparent;
+}
+
+.glavni-unos__valuta {
+  color: var(--tekst-prigušen);
+  font-size: 0.85rem;
+}
+
+.glavni-unos .unos__skala {
+  margin-block: 0.2rem 0;
+  font-size: 0.75rem;
+}
+
+/* Виноска під повзунком — найтихіший рядок панелі: вона пояснює межу, а не число. */
+.glavni-unos .razlog {
+  margin-block: 0.3rem 0;
+  font-size: 0.76rem;
+}
+
+/*
+  Повзунок стає вхопним пальцем лише там, де є палець.
+
+  На миші смуга в 4px — точна ціль, і зайва висота тут просто розсуває панель.
+  На дотику 4px — це промах, тож ціль виростає разом із рештою полів.
+*/
+@media (pointer: coarse) {
+  .unos__klizac {
+    min-height: 2.75rem;
+  }
+}
+
+/*
+  Ліворуч ставить `order`, а не порядок розмітки.
+
+  Розмітка йде результатом уперед навмисно: на телефоні колонки лягають у її
+  порядку, і людина бачить поля, картки й підсумок раніше за налаштування,
+  які задають один раз. На широкому екрані обидві колонки видно одночасно,
+  тож перестановка нічого не ховає.
+*/
+@media (min-width: 62rem) {
+  .raspored__unos {
+    order: -1;
+  }
+}
+
+/*
+  Ані сума, ані ставка не розриваються на рядках.
+
+  `formatEur` відділяє тисячі звичайним пробілом, тож «30 600,00 €» браузер
+  має повне право розламати між «30» і «600,00» — і в вузькій картці таки
+  ламав. Те саме зі ставкою: «6,77» лишалося вгорі, а «%» з'їжджав униз.
+  Виправляється тут, а не в рушії: той самий рядок їде і в тести, і в
+  сусідній застосунок.
+*/
+.stopa strong,
+.iznos {
+  white-space: nowrap;
+}
+
+/*
+  Місячне середнє під річним числом.
+
+  Помітно менше за нього й помітно більше за підпис: воно похідне від року, а
+  не друга відповідь. Той самий колір, що й головне число, — бо це гроші, а не
+  пояснення.
+*/
+.glavno__mjesecno {
+  display: block;
+  margin-block: 0.1rem 0.15rem;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--tekst-prigušen);
+}
+
+.glavno__mjesecno .iznos {
+  font-weight: 600;
+  color: var(--tekst);
+}
+
+/*
+  Економія від паралельності — єдиний зелений акцент на сторінці.
+
+  Колір той самий, що позначає II. stup у розбивці внесків: у палітрі він
+  означає «гроші, які лишилися твоїми», і тут значить рівно те саме. Другого
+  такого блоку немає навмисно — підсвічене все дорівнює непідсвіченому нічому.
+*/
+.usteda {
+  display: grid;
+  gap: 0.15rem;
+  margin-block: 1rem 0;
+  padding: 0.7rem 0.9rem 0.8rem;
+  border-radius: 0.6rem;
+  border-left: 3px solid var(--stednja);
+  background: color-mix(in srgb, var(--stednja) 10%, transparent);
+}
+
+.usteda__oznaka {
+  font-size: 0.82rem;
+  color: var(--tekst-prigušen);
+}
+
+.usteda__iznos {
+  font-size: clamp(1.2rem, 1rem + 0.8vw, 1.5rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.usteda__objasnjenje {
+  margin-block-start: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--tekst-prigušen);
+}
+
+/*
+  Одиниця виміру одразу за полем.
+
+  «2016» без неї читається як рік — і читалося. Поле лишається під зміст, а
+  знак стає поруч, а не всередині: усередині його довелося б віднімати перед
+  розбором числа.
+*/
+.polje__vrijednost {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.polje__vrijednost input {
+  field-sizing: content;
+  min-width: 5ch;
+  max-width: 100%;
+}
+
+.polje__jedinica {
+  color: var(--tekst-prigušen);
+  font-size: 0.85rem;
+  font-weight: 400;
+  white-space: nowrap;
+}

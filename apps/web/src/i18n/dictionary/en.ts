@@ -397,6 +397,9 @@ export const en: Dictionary = {
   },
 
   pretpostavke: {
+    susjedniKalkulator:
+      'Employed and running an obrt alongside? That is druga djelatnost — a different contribution base and half the rates. Separate calculator:',
+    susjedniKalkulatorPoveznica: 'obrt alongside employment',
     objasnjenjeNaslov: 'Where this figure comes from, and why it sits apart from the rules',
     naslov: 'Assumptions',
     godina: (godina: string) => `The rules are those in force for ${godina}.`,

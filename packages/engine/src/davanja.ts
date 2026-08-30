@@ -84,7 +84,15 @@ export interface UlazDavanja {
   readonly pravniOblik: PravniOblik
 }
 
-const NAZIVI = {
+/**
+ * Назви обов'язкових платежів — канонічна хорватська форма й переклад поруч.
+ *
+ * Експортовані, бо перелік — не єдиний, хто їх називає: розрахунок другої
+ * діяльності бере звідси і `komorski doprinos`, який рахує, і три платежі,
+ * яких навмисно не рахує. Другий набір тих самих назв розійшовся б із цим
+ * тихо — і саме в тому рядку, де людині кажуть, чого в сумі немає.
+ */
+export const NAZIVI_DAVANJA = {
   komorski: { hr: 'komorski doprinos', uk: 'внесок до обртницької палати' },
   clanarinaHgk: { hr: 'članarina HGK', uk: 'членський внесок Господарської палати' },
   clanarina: { hr: 'turistička članarina', uk: 'туристичний членський внесок' },
@@ -99,7 +107,7 @@ const NAZIVI = {
  * формою результату, і повторювати це перетворення чотири рази означало б
  * чотири місця, де воно може розійтися.
  */
-const kaoDavanje = (naziv: Naziv, rezultat: LevyResult): ObveznoDavanje =>
+export const kaoDavanje = (naziv: Naziv, rezultat: LevyResult): ObveznoDavanje =>
   rezultat.kind === 'due'
     ? {
         status: 'obračunato',
@@ -157,11 +165,11 @@ export const obveznaDavanjaZa = (
   const komorski =
     pravniOblik === 'obrt'
       ? kaoDavanje(
-          NAZIVI.komorski,
+          NAZIVI_DAVANJA.komorski,
           komorskiDoprinos({ uPrveDvijeGodine: ulaz.noviObrt }, pravilaKomorskog),
         )
       : zbogPravnogOblika(
-          NAZIVI.komorski,
+          NAZIVI_DAVANJA.komorski,
           { kod: 'nije-obrt' },
           pravilaKomorskog.mjesecnaStopa.source,
         )
@@ -169,7 +177,7 @@ export const obveznaDavanjaZa = (
   const clanarinaHgkRedak =
     pravniOblik === 'trgovačko društvo'
       ? kaoDavanje(
-          NAZIVI.clanarinaHgk,
+          NAZIVI_DAVANJA.clanarinaHgk,
           clanarinaHgk({
             // Критерій скупини закон міряє по `prihod` за нарахуванням, а
             // форма знає лише касовий `primitak`. Те саме прирівнювання, що
@@ -183,7 +191,7 @@ export const obveznaDavanjaZa = (
           }),
         )
       : zbogPravnogOblika(
-          NAZIVI.clanarinaHgk,
+          NAZIVI_DAVANJA.clanarinaHgk,
           { kod: 'nije-trgovacko-drustvo' },
           OBVEZNO_CLANSTVO_U_HGK,
         )
@@ -198,9 +206,12 @@ export const obveznaDavanjaZa = (
     return [
       komorski,
       clanarinaHgkRedak,
-      nemaDjelatnosti(NAZIVI.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
-      nemaDjelatnosti(NAZIVI.renta, IZVOR_RENTE_PO_POVRSINI),
-      nemaDjelatnosti(NAZIVI.indirektnaRenta, INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source),
+      nemaDjelatnosti(NAZIVI_DAVANJA.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
+      nemaDjelatnosti(NAZIVI_DAVANJA.renta, IZVOR_RENTE_PO_POVRSINI),
+      nemaDjelatnosti(
+        NAZIVI_DAVANJA.indirektnaRenta,
+        INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source,
+      ),
     ]
   }
 
@@ -208,11 +219,14 @@ export const obveznaDavanjaZa = (
     return [
       komorski,
       clanarinaHgkRedak,
-      bezDjelatnosti(NAZIVI.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
+      bezDjelatnosti(NAZIVI_DAVANJA.clanarina, TURISTICKA_CLANARINA_DJELATNOSTI.source),
       // Рента за площею від `NKD` не залежить узагалі — її вирішує саме
       // місце, тож і норма тут інша, ніж у двох сусідів.
-      bezDjelatnosti(NAZIVI.renta, IZVOR_RENTE_PO_POVRSINI),
-      bezDjelatnosti(NAZIVI.indirektnaRenta, INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source),
+      bezDjelatnosti(NAZIVI_DAVANJA.renta, IZVOR_RENTE_PO_POVRSINI),
+      bezDjelatnosti(
+        NAZIVI_DAVANJA.indirektnaRenta,
+        INDIREKTNA_SPOMENICKA_RENTA_DJELATNOSTI.source,
+      ),
     ]
   }
 
@@ -230,7 +244,7 @@ export const obveznaDavanjaZa = (
     komorski,
     clanarinaHgkRedak,
     kaoDavanje(
-      NAZIVI.clanarina,
+      NAZIVI_DAVANJA.clanarina,
       turistickaClanarina({
         nkd: djelatnost.nkd,
         primitak: godisnjiPrimitak.amount,
@@ -238,8 +252,8 @@ export const obveznaDavanjaZa = (
         potpomognutoPodrucje: djelatnost.potpomognutoPodrucje,
       }),
     ),
-    kaoDavanje(NAZIVI.renta, povrsinska),
-    kaoDavanje(NAZIVI.indirektnaRenta, indirektna),
+    kaoDavanje(NAZIVI_DAVANJA.renta, povrsinska),
+    kaoDavanje(NAZIVI_DAVANJA.indirektnaRenta, indirektna),
   ]
 }
 

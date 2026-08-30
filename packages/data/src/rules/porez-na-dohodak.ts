@@ -161,7 +161,7 @@ export interface ObrtNaDohodakPravila {
 export const obrtNaDohodak2026: ObrtNaDohodakPravila = {
   porez: {
     osobniOdbitak: {
-      // Спільна величина: плаћа й `obrt na dobit` беруть її з того самого
+      // Спільна величина: plaća й `obrt na dobit` беруть її з того самого
       // місця, бо закон не розводить `osobni odbitak` за джерелом доходу.
       osnovni: OSNOVNI_OSOBNI_ODBITAK,
       koeficijentUzdrzavanogClana: sourced(new Decimal('0.5'), TABLICA_KOEFICIJENATA),

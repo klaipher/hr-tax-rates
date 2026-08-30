@@ -386,6 +386,9 @@ export const hr: Dictionary = {
   },
 
   pretpostavke: {
+    susjedniKalkulator:
+      'Radite u radnom odnosu i vodite obrt uz njega? To je druga djelatnost — druga osnovica doprinosa i upola niže stope. Zaseban izračun:',
+    susjedniKalkulatorPoveznica: 'obrt uz radni odnos',
     objasnjenjeNaslov: 'Odakle taj iznos i zašto stoji odvojeno od pravila',
     naslov: 'Pretpostavke',
     godina: (godina: string) => `Pravila su na snazi za ${godina}. godinu.`,

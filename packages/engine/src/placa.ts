@@ -8,9 +8,9 @@
  * сума і яка законна підлога під базою внесків, тож підлога приходить
  * аргументом, а не живе всередині.
  *
- * Головне, що цей модуль знає і чого не знав жоден попередній: у плаћі
- * **дві сторони**. MO обох стовпів утримують із самої плаће — гроші людини.
- * ZO платить роботодавець понад плаћу — гроші, яких людина не бачила ніколи.
+ * Головне, що цей модуль знає і чого не знав жоден попередній: у plaća
+ * **дві сторони**. MO обох стовпів утримують із самої plaća — гроші людини.
+ * ZO платить роботодавець понад plaća — гроші, яких людина не бачила ніколи.
  * Обидва внески реальні, обидва оплачують її страхування, і обидва мусять
  * бути на картці; але відняти від «на руки» можна лише перший.
  */
@@ -45,11 +45,11 @@ export interface NajnizaOsnovica {
 }
 
 export interface UlazPlace {
-  /** Місячна брутто-плаћа — те число, яке стоїть у трудовому договорі. */
+  /** Місячна bruto plaća — те число, яке стоїть у трудовому договорі. */
   readonly mjesecnaBrutoPlaca: Money<'EUR'>
   /**
    * Ставки `porez na dohodak` тієї `jedinica lokalne samouprave`, де живе
-   * працівник. Плаћа оподатковується за місцем проживання, а не за місцем
+   * працівник. Plaća оподатковується за місцем проживання, а не за місцем
    * роботи.
    */
   readonly stope: ParStopa
@@ -64,7 +64,7 @@ export interface UlazPlace {
   readonly najnizaOsnovica: NajnizaOsnovica
   /**
    * Річна сума `neoporezivi primici` — виплат, які роботодавець дає понад
-   * плаћу без податку й без внесків.
+   * plaća без податку й без внесків.
    *
    * Приходить числом, а не виводиться зі стель закону: закон називає стелю,
    * а не зобов'язання, і підставити її означало б показати чужу щедрість як
@@ -81,7 +81,7 @@ export interface UlazPlace {
    *
    * Не вік: вікове звільнення від внесків скасовано з 1 січня 2025 року. Це
    * інша, чинна норма, і вона знімає з роботодавця ZO — тобто здешевлює
-   * плаћу фірмі на 16,5 %, не змінюючи «на руки» ані на цент.
+   * plaća фірмі на 16,5 %, не змінюючи «на руки» ані на цент.
    */
   readonly prvoZaposlenje: boolean
   /**
@@ -136,7 +136,7 @@ export interface OlaksicaZaMlade {
 }
 
 /**
- * Зменшення річного податку, яке рахується від **усього** податку з плаће, а
+ * Зменшення річного податку, яке рахується від **усього** податку з plaća, а
  * не від частини за нижчою ставкою.
  *
  * Форма та сама, що в `OlaksicaZaMlade`, а поняття інше, і саме тому це
@@ -149,12 +149,12 @@ export interface UmanjenjeGodisnjegPoreza {
   readonly izvor: import('@hr-tax/data').LegalReference
 }
 
-/** Розрахунок плаће за рік. */
+/** Розрахунок plaća за рік. */
 export interface IzracunPlace {
   readonly mjesecnaBrutoPlaca: Money<'EUR'>
   readonly godisnjaBrutoPlaca: Money<'EUR'>
   /**
-   * Місячна `osnovica` внесків — сама плаћа, підведена до законної підлоги,
+   * Місячна `osnovica` внесків — сама plaća, підведена до законної підлоги,
    * якщо вона нижча.
    */
   readonly mjesecnaOsnovicaDoprinosa: Money<'EUR'>
@@ -173,7 +173,7 @@ export interface IzracunPlace {
    */
   readonly umanjenjeZaPodrucje: UmanjenjeGodisnjegPoreza | undefined
   /**
-   * `čl. 46. st. 3.` — увесь річний податок із плаће поверненцеві з-за
+   * `čl. 46. st. 3.` — увесь річний податок із plaća поверненцеві з-за
    * кордону. `undefined`, коли підстави немає.
    *
    * Коли воно є, обидва інші зменшення — `undefined`, і це не помилка
@@ -189,12 +189,17 @@ export interface IzracunPlace {
    */
   readonly ukupniPovrat: Money<'EUR'>
   /**
-   * Скільки з плаће справді лишається людині за рік: брутто без утриманих
+   * Як прогресія розклала податок. Окремо від `porez`, бо там ставка одна —
+   * ефективна, — а тут їх дві, кожна зі своєю частиною бази.
+   */
+  readonly raspodjelaPoStopama: RaspodjelaPoStopama
+  /**
+   * Скільки з plaća справді лишається людині за рік: брутто без утриманих
    * внесків, без податку і з поверненням пільги.
    */
   readonly godisnjiNeto: Money<'EUR'>
   /**
-   * Скільки плаћа коштує роботодавцю: брутто разом із внесками, які він
+   * Скільки plaća коштує роботодавцю: брутто разом із внесками, які він
    * платить понад неї.
    *
    * Головне число для порівняння з обртом: клієнт обрту платить рівно
@@ -205,7 +210,7 @@ export interface IzracunPlace {
 }
 
 /**
- * Внески з плаће: MO обох стовпів із неї, ZO — понад неї.
+ * Внески з plaća: MO обох стовпів із неї, ZO — понад неї.
  *
  * Ставки ті самі, що в решти режимів, — різниця в тому, хто платить. Саме
  * тут `teretiOsobu` вперше стає `false`, і саме заради цього поле існує.
@@ -244,7 +249,7 @@ const doprinosiZa = (
     godisnjaOsnovica: prvoZaposlenje ? zero('EUR') : godisnjaOsnovica,
     osobnaStednja: false,
     // Внесок «na osnovicu» (`čl. 81. t. 2.` ZoD): роботодавець платить його
-    // понад плаћу. Чиї це гроші — залежить від того, хто роботодавець. У
+    // понад plaća. Чиї це гроші — залежить від того, хто роботодавець. У
     // чужій фірмі вони не були працівниковими ніколи; у власній вони
     // виходять із тієї самої `dobit`, яку власник забрав би дивідендами.
     teretiOsobu: vlastitiPoslodavac,
@@ -269,11 +274,11 @@ const doprinosiZa = (
  * `umanjenje osnovice` для MO I. stup — знижка бази, яку `čl. 21.a` дає
  * невисоким зарплатам.
  *
- * Поріг міряється по **фактичній** плаћі, а не по базі після законної
+ * Поріг міряється по **фактичній** plaća, а не по базі після законної
  * підлоги: це два різні числа, і працівник на пів ставки може мати підняту
  * базу й водночас знижку від неї.
  *
- * Нуль повертається, коли плаћа переступила верхню межу, — і це справді
+ * Нуль повертається, коли plaća переступила верхню межу, — і це справді
  * нуль, а не відсутність: знижка порахована й вийшла нульовою.
  */
 const umanjenjeZa = (
@@ -317,7 +322,7 @@ const mjesecniOsobniOdbitak = (
 }
 
 /**
- * Річний податок із плаће, розведений за ставками.
+ * Річний податок із plaća, розведений за ставками.
  *
  * Розведений навмисно, а не заради краси: `olakšica za mlade` повертає лише
  * ту частину, яку нараховано нижчою ставкою (`čl. 46. st. 2.`). Схлопнути
@@ -328,10 +333,46 @@ interface PorezPoStopama {
   readonly poreznaOsnovica: Money<'EUR'>
   readonly poNizojStopi: Money<'EUR'>
   readonly poVisojStopi: Money<'EUR'>
+  /** Річна частина бази, що лягла під нижчу ставку. */
+  readonly osnovicaDoPraga: Money<'EUR'>
+  /** Річна частина бази понад поріг — те, що обкладено вищою ставкою. */
+  readonly osnovicaIznadPraga: Money<'EUR'>
+  /** Річний `osobni odbitak`, який уже віднято з plaća до розведення. */
+  readonly godisnjiOsobniOdbitak: Money<'EUR'>
+}
+
+/** Одна смуга прогресії: ставка, база під нею і податок із цієї бази. */
+export interface TrakaStope {
+  /** Ставка смуги — частка від 0 до 1, а не відсотки. */
+  readonly stopa: Decimal
+  /** Річна частина `porezna osnovica`, що потрапила під цю ставку. */
+  readonly osnovica: Money<'EUR'>
+  readonly iznos: Money<'EUR'>
 }
 
 /**
- * `predujam poreza` рахується помісячно (`čl. 24.`): з плаће віднімаються
+ * Як прогресія розклала податок із plaća.
+ *
+ * Ставок дві, і обидві встановлює `jedinica lokalne samouprave` в межах
+ * `čl. 19.a st. 2.`; поріг між ними — місячний і той самий по всій країні
+ * (`čl. 24. st. 3.`). Розклад виставляється назовні, бо без нього `Porez`
+ * несе лише ефективну частку — число правдиве, але таке, з якого не видно,
+ * що ставок узагалі дві.
+ */
+export interface RaspodjelaPoStopama {
+  /** Річна `porezna osnovica`: plaća без утриманих внесків і без відрахунку. */
+  readonly poreznaOsnovica: Money<'EUR'>
+  /** Річний `osobni odbitak` — те, що до бази не дійшло взагалі. */
+  readonly osobniOdbitak: Money<'EUR'>
+  /** Місячний поріг, за яким починається вища ставка. */
+  readonly mjesecniPrag: Money<'EUR'>
+  readonly izvorPraga: import('@hr-tax/data').LegalReference
+  readonly niza: TrakaStope
+  readonly visa: TrakaStope
+}
+
+/**
+ * `predujam poreza` рахується помісячно (`čl. 24.`): з plaća віднімаються
  * утримані з неї внески й місячний `osobni odbitak`, а далі нижча ставка діє
  * до місячного порога і вища — понад нього.
  *
@@ -362,6 +403,9 @@ const porezPoStopama = ({
     poreznaOsnovica: godisnje(mjesecnaPoreznaOsnovica),
     poNizojStopi: godisnje(scale(doPraga, udio(stope.niza))),
     poVisojStopi: godisnje(scale(iznadPraga, udio(stope.visa))),
+    osnovicaDoPraga: godisnje(doPraga),
+    osnovicaIznadPraga: godisnje(iznadPraga),
+    godisnjiOsobniOdbitak: godisnje(mjesecniOdbitak),
   }
 }
 
@@ -532,7 +576,7 @@ const napomeneZa = ({
   readonly pravila: PlacaPravila
 }): readonly NapomenaRezima[] => {
   // Про прочитання слайдера цей модуль не знає нічого: він отримав місячну
-  // плаћу й нічого не припускав. Застереження про вісь додає той режим, який
+  // plaća й нічого не припускав. Застереження про вісь додає той режим, який
   // справді прирівняв одне до одного.
   //
   // Порожнє поле неоподаткованих і введений нуль — це те саме: жодних таких
@@ -617,7 +661,7 @@ const napomeneZa = ({
 }
 
 /**
- * Розрахунок плаће за рік.
+ * Розрахунок plaća за рік.
  *
  * Жодного числа з закону модуль не знає: правила приходять аргументом, а
  * підлога бази — окремо від них, бо її обирає той, хто знає, ким саме є ця
@@ -628,9 +672,9 @@ export const izracunajPlacu = (
   podloga: Podloga,
   pravila: PlacaPravila,
 ): IzracunPlace => {
-  // Підлога стосується бази внесків, а не самої плаће: працівник на пів
+  // Підлога стосується бази внесків, а не самої plaća: працівник на пів
   // ставки отримує менше, ніж підлога, але внески закон однаково нарахує з
-  // неї. Податок при цьому лишається на справжній плаћі.
+  // неї. Податок при цьому лишається на справжній plaća.
   const mjesecnaOsnovicaDoprinosa = isGreaterThan(
     ulaz.najnizaOsnovica.mjesecniIznos,
     ulaz.mjesecnaBrutoPlaca,
@@ -663,9 +707,9 @@ export const izracunajPlacu = (
       ).zo.godisnjiIznos
     : undefined
 
-  // Утримується з плаће лише MO обох стовпів — незалежно від того, чия це
+  // Утримується з plaća лише MO обох стовпів — незалежно від того, чия це
   // фірма. `ukupnoGodisnjeNaTeretOsobe` для власної фірми включає ще й ZO,
-  // тож брати його тут означало б відняти ZO з плаће, якої він не торкався.
+  // тож брати його тут означало б відняти ZO з plaća, якої він не торкався.
   const godisnjiDoprinosiIzPlace = add(
     doprinosi.moPrviStup.godisnjiIznos,
     doprinosi.moDrugiStup.godisnjiIznos,
@@ -725,6 +769,22 @@ export const izracunajPlacu = (
     umanjenjeZaPodrucje: umanjenja.zaPodrucje,
     umanjenjeZaPovratnika: umanjenja.zaPovratnika,
     ukupniPovrat: umanjenja.ukupno,
+    raspodjelaPoStopama: {
+      poreznaOsnovica: poStopama.poreznaOsnovica,
+      osobniOdbitak: poStopama.godisnjiOsobniOdbitak,
+      mjesecniPrag: eur(pravila.mjesecniPragViseStope.value),
+      izvorPraga: pravila.mjesecniPragViseStope.source,
+      niza: {
+        stopa: udio(ulaz.stope.niza),
+        osnovica: poStopama.osnovicaDoPraga,
+        iznos: poStopama.poNizojStopi,
+      },
+      visa: {
+        stopa: udio(ulaz.stope.visa),
+        osnovica: poStopama.osnovicaIznadPraga,
+        iznos: poStopama.poVisojStopi,
+      },
+    },
     // Повернення пільги входить у річний результат, хоч і надійде наступного
     // року: рік рахується цілком, а не за платіжками. Що гроші прийдуть
     // пізніше, каже окреме застереження.

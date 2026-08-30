@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { pretpostavke2026 } from './hr-2026.ts'
 import {
+  prosjecnaPlacaPrethodneGodineZa,
   prosjecnaPlacaZa,
   SLUZBENE_PROSJECNE_PLACE,
   sProsjecnomPlacom,
+  sProsjecnomPlacomPrethodneGodine,
   ZADANA_PROSJECNA_PLACA,
 } from './izbor-prosjecne-place.ts'
 import { pretpostavkeNajave2027 } from './najava-2027.ts'
@@ -62,5 +64,36 @@ describe('sProsjecnomPlacom', () => {
     expect(Object.keys(sProsjecnomPlacom(pretpostavke2026, 2500)).sort()).toEqual(
       Object.keys(pretpostavke2026).sort(),
     )
+  })
+})
+
+describe('prosjecnaPlacaPrethodneGodineZa', () => {
+  it('офіційне значення зберігає своє джерело', () => {
+    const sluzbena = pretpostavke2026.prosjecnaPlacaPrethodneGodine
+    expect(sluzbena).toBeDefined()
+    if (sluzbena === undefined) return
+
+    expect(prosjecnaPlacaPrethodneGodineZa(sluzbena.value)).toBe(sluzbena)
+  })
+
+  it('власне число стає `rucno`, а не привласнює чужу публікацію', () => {
+    expect(prosjecnaPlacaPrethodneGodineZa('2100').source).toEqual({ status: 'rucno' })
+  })
+
+  it('не бере офіційного значення сусідньої статистики', () => {
+    // 1 993 € — це середня за січень–серпень, і для порога `EU plava karta`
+    // вона не є офіційною: те саме число з іншого періоду.
+    expect(prosjecnaPlacaPrethodneGodineZa(pretpostavke2026.prosjecnaPlaca.value).source).toEqual({
+      status: 'rucno',
+    })
+  })
+})
+
+describe('sProsjecnomPlacomPrethodneGodine', () => {
+  it('міняє лише свою статистику й лишає сусідню на місці', () => {
+    const zamijenjeno = sProsjecnomPlacomPrethodneGodine(pretpostavke2026, '2100')
+
+    expect(zamijenjeno.prosjecnaPlacaPrethodneGodine?.value.toFixed(2)).toBe('2100.00')
+    expect(zamijenjeno.prosjecnaPlaca).toBe(pretpostavke2026.prosjecnaPlaca)
   })
 })

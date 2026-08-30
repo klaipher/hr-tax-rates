@@ -235,11 +235,11 @@ export const DEADLINES: Readonly<Record<ObligationKind, Sourced<Deadline>>> = {
   ),
 
   /**
-   * `predujam poreza` із плаће — утримує й перераховує роботодавець,
-   * одночасно з виплатою самої плаће.
+   * `predujam poreza` із plaća — утримує й перераховує роботодавець,
+   * одночасно з виплатою самої plaća.
    *
    * Дати як такої закон не називає: він в'яже платіж до події. Крайню межу
-   * події задає трудове право — плаћу за минулий місяць треба виплатити
+   * події задає трудове право — plaća за минулий місяць треба виплатити
    * найпізніше до п'ятнадцятого числа наступного, — і саме цю крайню межу
    * показує календар. Виплатять раніше — раніше піде й податок.
    */
@@ -249,10 +249,10 @@ export const DEADLINES: Readonly<Record<ObligationKind, Sourced<Deadline>>> = {
   ),
 
   /**
-   * `doprinosi` з плаће й на плаћу — «obračunavaju se istodobno s obračunom
+   * `doprinosi` з plaća й на plaća — «obračunavaju se istodobno s obračunom
    * plaće i dospijevaju na naplatu istodobno s isplatom plaće».
    *
-   * Той самий прив'язок до події, що й у податку з плаће, і та сама крайня
+   * Той самий прив'язок до події, що й у податку з plaća, і та сама крайня
    * межа з трудового права.
    */
   'doprinosi (plaća)': sourced(

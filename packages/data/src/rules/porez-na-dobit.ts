@@ -11,10 +11,10 @@ import { MJESECNI_PRAG_VISE_STOPE, OSNOVNI_OSOBNI_ODBITAK } from './zajednicke-v
  * — `Zakon o doprinosima` — `koeficijent` найнижчої `osnovica`
  *   `poduzetnička plaća`;
  * — `Zakon o porezu na dohodak` — усе, що стосується оподаткування самої
- *   `poduzetnička plaća` як плаће, і ставку на виплату `dobit` власнику.
+ *   `poduzetnička plaća` як plaća, і ставку на виплату `dobit` власнику.
  *
  * Тому це три різні податки під двома законами, і зводити їх в одну суму
- * не можна: `dobit` рахується за методом нарахування, `dohodak` із плаће —
+ * не можна: `dobit` рахується за методом нарахування, `dohodak` із plaća —
  * за іншим законом і з іншої бази (CONTEXT.md).
  */
 
@@ -93,9 +93,9 @@ export interface UlazakUSustavPravila {
 /**
  * Правила `poduzetnička plaća` (підприємницька зарплата / owner's salary).
  *
- * Плаћа живе одразу в двох законах: `Zakon o doprinosima` бере з неї
+ * Plaća живе одразу в двох законах: `Zakon o doprinosima` бере з неї
  * `osnovica` для внесків, а `Zakon o porezu na dohodak` оподатковує її як
- * плаћу і водночас дозволяє віднести її до витрат при розрахунку
+ * plaća і водночас дозволяє віднести її до витрат при розрахунку
  * `porez na dobit`.
  */
 export interface PoduzetnickaPlacaPravila {
@@ -106,7 +106,7 @@ export interface PoduzetnickaPlacaPravila {
    */
   readonly koeficijent: Sourced<Decimal>
   /**
-   * Стаття, яка робить саму плаћу `osnovica` внесків.
+   * Стаття, яка робить саму plaća `osnovica` внесків.
    *
    * Числа не несе — саме правило числом і не є. Але воно так само мусить
    * вести до тексту акта, і зберігати його разом із рушієм означало б
@@ -115,7 +115,7 @@ export interface PoduzetnickaPlacaPravila {
   readonly izvorOsnovice: LegalReference
   /**
    * `osnovni osobni odbitak` (основний особистий відрахунок) на місяць — на
-   * нього зменшується місячна база `porez na dohodak` із плаће.
+   * нього зменшується місячна база `porez na dohodak` із plaća.
    *
    * Ця ж величина потрібна розрахунку `porez na dohodak` звичайного обрту,
    * який належить іншому тікету. Під час злиття гілок вона має лишитися в
@@ -189,16 +189,16 @@ export const obrtNaDobit2026: ObrtNaDobitPravila = {
       article: 'čl. 82. st. 2.',
       checkedOn: CHECKED_ON,
     }),
-    // Стаття цілком: `st. 1.` робить плаћу базою внесків, `st. 2.` не дає
+    // Стаття цілком: `st. 1.` робить plaća базою внесків, `st. 2.` не дає
     // опустити базу нижче за мінімум, `st. 3.` каже, що робити тому, хто
-    // плаћу собі не виплачує. Правило працює всіма трьома разом.
+    // plaća собі не виплачує. Правило працює всіма трьома разом.
     izvorOsnovice: {
       ...ZAKON_O_DOPRINOSIMA,
       article: 'čl. 82.',
       checkedOn: CHECKED_ON,
     },
-    // Обидві величини спільні з плаћою: `poduzetnička plaća` оподатковується
-    // як плаћа, тож і відрахунок, і місячний поріг у неї ті самі.
+    // Обидві величини спільні з plaća: `poduzetnička plaća` оподатковується
+    // як plaća, тож і відрахунок, і місячний поріг у неї ті самі.
     osnovniOsobniOdbitak: OSNOVNI_OSOBNI_ODBITAK,
     mjesecniPragViseStope: MJESECNI_PRAG_VISE_STOPE,
   },

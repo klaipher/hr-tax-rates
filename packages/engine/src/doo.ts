@@ -5,10 +5,10 @@
  * Власник дістає гроші двома взаємовиключними шляхами, і закон рахує їх
  * по-різному:
  *
- * 1. `doo-plaća` — власник у трудовому договорі з власною фірмою. Плаћа
+ * 1. `doo-plaća` — власник у трудовому договорі з власною фірмою. Plaća
  *    оподатковується як будь-яка інша, іде у витрати й зменшує `dobit`; те,
  *    що лишилося, виходить дивідендами.
- * 2. `doo-član-uprave` — трудового договору немає. Плаће теж немає, тож немає
+ * 2. `doo-član-uprave` — трудового договору немає. Plaća теж немає, тож немає
  *    і податку з неї; внески нараховуються на приписану законом `osnovica`, а
  *    всі гроші виходять дивідендами.
  *
@@ -58,7 +58,7 @@ export interface UlazDoo {
   readonly uzdrzavani: UzdrzavaniClanovi
   readonly dob: number | undefined
   /**
-   * Місячна плаћа, яку власник призначив собі сам. Стосується лише
+   * Місячна plaća, яку власник призначив собі сам. Стосується лише
    * `doo-plaća`; не задано — береться законна підлога.
    */
   readonly mjesecnaPlacaVlasnika: Money<'EUR'> | undefined
@@ -92,7 +92,7 @@ const dovrsi = ({
   readonly godisnjiPrihod: Money<'EUR'>
   readonly dobitPrijeOporezivanja: Money<'EUR'>
   readonly doprinosi: Doprinosi
-  /** `undefined` у режимі без плаће: там першого податку просто немає. */
+  /** `undefined` у режимі без plaća: там першого податку просто немає. */
   readonly porezIzPlace: Porez | undefined
   readonly povratPoreza: Money<'EUR'>
   readonly napomene: readonly NapomenaRezima[]
@@ -130,7 +130,7 @@ const dovrsi = ({
 /**
  * `doo-plaća`: власник працевлаштований у власній фірмі.
  *
- * Підлога плаће тут — не `minimalna plaća`, як здається, а окрема, вища:
+ * Підлога plaća тут — не `minimalna plaća`, як здається, а окрема, вища:
  * той, хто водночас є членом правління й працює на повний час, не може мати
  * базу внесків нижчу за приписану (`čl. 19.` Naredbe). Саме цим d.o.o.
  * відрізняється від найму в чужій фірмі, де підлога значно нижча.
@@ -145,9 +145,9 @@ export const izracunajDooSPlacom = (
     pravila.clanUprave.koeficijentNajnizeOsnovicePlace.value,
   )
   // Не задано — беремо саму підлогу. Задано менше — лишаємо як задано:
-  // підлога стосується бази внесків, а не плаће. Власник справді може
+  // підлога стосується бази внесків, а не plaća. Власник справді може
   // виплатити собі менше, і закон однаково нарахує внески з приписаної
-  // `osnovica`, а податок — із того, що він таки виплатив. Підвести плаћу
+  // `osnovica`, а податок — із того, що він таки виплатив. Підвести plaća
   // тут означало б показати зарплату, якої ніхто не призначав.
   const mjesecnaBrutoPlaca = ulaz.mjesecnaPlacaVlasnika ?? najnizaMjesecna
 
@@ -164,7 +164,7 @@ export const izracunajDooSPlacom = (
       // Роботодавцем є та сама людина: ZO виходить із тієї самої `dobit`,
       // яку вона інакше забрала б дивідендами.
       vlastitiPoslodavac: true,
-      // Чотири входи, які ревізія плаће завела для найманого, тут навмисно
+      // Чотири входи, які ревізія plaća завела для найманого, тут навмисно
       // стоять на нулі й `false`.
       //
       // Не тому, що закон їх власникові d.o.o. не дає: він працівник за
@@ -186,7 +186,7 @@ export const izracunajDooSPlacom = (
     pravila.placa,
   )
 
-  // Плаћа разом із внесками на неї — рівно те, на що зменшується база
+  // Plaća разом із внесками на неї — рівно те, на що зменшується база
   // `porez na dobit` (`čl. 21. st. 1. t. 2.` ZoPD).
   const ukupniTrosakPlace = placa.trosakZaPoslodavca
 
@@ -210,7 +210,7 @@ export const izracunajDooSPlacom = (
 /**
  * `doo-član-uprave`: трудового договору немає.
  *
- * Плаће немає, тож немає ані податку з неї, ані `osobni odbitak`, ані
+ * Plaća немає, тож немає ані податку з неї, ані `osobni odbitak`, ані
  * `olakšica za mlade` — усе це стосується доходу від несамостійної праці, а
  * його тут не виникає. Лишаються внески з приписаної `osnovica`, які фірма
  * несе як витрату, і два податки на шляху грошей до власника.
@@ -235,7 +235,7 @@ export const izracunajDooClanUprave = (
   return dovrsi({
     godisnjiPrihod: ulaz.godisnjiPrihod,
     // Внески члена правління — витрата фірми, тож база `porez na dobit`
-    // зменшується на них так само, як зменшилася б на плаћу.
+    // зменшується на них так само, як зменшилася б на plaća.
     dobitPrijeOporezivanja: subtract(
       subtract(ulaz.godisnjiPrihod, ulaz.godisnjiRashod),
       doprinosi.ukupnoGodisnje,

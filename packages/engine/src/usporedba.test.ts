@@ -346,7 +346,7 @@ describe('усі три обртні режими в одному порівня
       const { doprinosi, netoZaOsobu, ukupanPorez } = zaposlenik
 
       // Підсумок внесків більший за той, що віднімається: ZO платить
-      // роботодавець понад плаћу.
+      // роботодавець понад plaća.
       expect(
         doprinosi.ukupnoGodisnje.amount.greaterThan(doprinosi.ukupnoGodisnjeNaTeretOsobe.amount),
       ).toBe(true)
@@ -374,10 +374,10 @@ describe('усі три обртні режими в одному порівня
       )
     })
 
-    it('вартість найманого для роботодавця — це плаћа разом із внеском понад неї', () => {
+    it('вартість найманого для роботодавця — це plaća разом із внеском понад неї', () => {
       const { ukupniTrosak, doprinosi } = izracun('zaposlenik')
 
-      // 30 000 брутто + 16,5 % ZO, які роботодавець платить понад плаћу.
+      // 30 000 брутто + 16,5 % ZO, які роботодавець платить понад plaća.
       expect(toCentString(ukupniTrosak)).toBe(
         toCentString(
           add(eur(30000), subtract(doprinosi.ukupnoGodisnje, doprinosi.ukupnoGodisnjeNaTeretOsobe)),
@@ -424,7 +424,7 @@ describe('усі три обртні режими в одному порівня
       // Спільна формула «на руки» будується з `godisnjiPrimitak`, а ці гроші
       // приходять понад нього. Поки цього доданка не було, введена сума чесно
       // з'являлася в застереженні й тихо зникала з числа, заради якого картку
-      // взагалі читають. Розрахунок самої плаће при цьому був правильний — тож
+      // взагалі читають. Розрахунок самої plaća при цьому був правильний — тож
       // модульний тест рушія цього не бачив, а браузер побачив одразу.
       const bez = izracun('zaposlenik')
       const z = izracun('zaposlenik', { neoporeziviPrimici: eur(1200) })
@@ -450,7 +450,7 @@ describe('усі три обртні режими в одному порівня
       expect(kodovi(1_000_001)).toContain('porez-na-dobit-postaje-obvezan')
     })
 
-    it('витрати форми не віднімаються від плаће: у найманого їх немає', () => {
+    it('витрати форми не віднімаються від plaća: у найманого їх немає', () => {
       // Обртні режими віднімають витрати форми, найм — ні: це витрати
       // діяльності, а не людини. Найманий працівник не орендує офісу.
       expect(toCentString(izracun('zaposlenik').ukupniIzdaci)).toBe('0.00')

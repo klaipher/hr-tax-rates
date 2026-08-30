@@ -117,7 +117,7 @@ export interface StanjeForme {
   /** Чи людина повернулася з-за кордону за `čl. 46. st. 3.` */
   readonly povratnik: boolean
   /**
-   * Місячна брутто-плаћа, яку власник d.o.o. призначив собі сам.
+   * Місячна bruto plaća, яку власник d.o.o. призначив собі сам.
    * `undefined` — береться законна підлога.
    */
   readonly mjesecnaPlacaVlasnika: number | undefined

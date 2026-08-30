@@ -79,7 +79,7 @@ describe('правила obrt na dobit на 2026', () => {
       expect(mjesecniPragViseStope.source.article).toBe('čl. 24. st. 3.')
     })
 
-    it('веде саме правило «плаћа і є osnovica» до своєї статті', () => {
+    it('веде саме правило «plaća і є osnovica» до своєї статті', () => {
       // Правило числом не є, але без статті воно так само нічим не
       // підтверджене, як і ставка без джерела (ADR-0002).
       const { izvorOsnovice } = obrtNaDobit2026.poduzetnickaPlaca
@@ -89,8 +89,8 @@ describe('правила obrt na dobit на 2026', () => {
       expect(izvorOsnovice.status).toBe('in-force')
     })
 
-    it('веде плаћу до закону про porez na dohodak, а не про dobit', () => {
-      // `poduzetnička plaća` оподатковується як плаћа і лише зменшує базу
+    it('веде plaća до закону про porez na dohodak, а не про dobit', () => {
+      // `poduzetnička plaća` оподатковується як plaća і лише зменшує базу
       // porez na dobit — це два різні закони, і сплутати їх означало б
       // оподаткувати зарплату власника ставкою прибутку.
       const { osnovniOsobniOdbitak, mjesecniPragViseStope } = obrtNaDobit2026.poduzetnickaPlaca
