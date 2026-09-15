@@ -5,20 +5,20 @@ packages:
 # Єдине місце, де живуть версії залежностей на весь монорепо.
 # Пакети посилаються на них через `catalog:`.
 catalog:
-  '@biomejs/biome': 2.5.7
-  '@types/node': 26.1.2
-  '@types/react': 19.2.18
-  '@types/react-dom': 19.2.4
-  '@vitejs/plugin-react': 6.0.5
+  '@biomejs/biome': 2.5.13
+  '@types/node': 26.5.1
+  '@types/react': 19.3.0
+  '@types/react-dom': 19.3.0
+  '@vitejs/plugin-react': 6.1.1
   decimal.js: 10.6.0
-  fast-xml-parser: 5.10.1
+  fast-xml-parser: 5.11.1
   fflate: 0.8.3
-  knip: 6.31.0
-  react: 19.2.8
-  react-dom: 19.2.8
+  knip: 6.35.1
+  react: 19.3.0
+  react-dom: 19.3.0
   typescript: 7.0.2
-  vite: 8.2.0
-  vitest: 4.1.10
+  vite: 8.3.0
+  vitest: 5.0.0
 
 minimumReleaseAgeExclude:
   - '@biomejs/biome@2.5.7'
